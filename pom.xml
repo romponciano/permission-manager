@@ -18,6 +18,19 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.18.0</version>
         </dependency>
+        <!--  driver para conexão com oracle | é preciso instalar o driver manualmente -->
+		<dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.2.0</version>
+        </dependency>
+        <!--  dependências para minglayout -->
+		<dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>5.2</version>
+		</dependency>
+
     </dependencies>
 
     <build>
@@ -37,10 +50,9 @@
                <artifactId>maven-jar-plugin</artifactId>
                <version>3.1.0</version>
                <configuration>
-                   <archive>
+               	<archive>
 		          <manifest>
 		            <addClasspath>true</addClasspath>
-		            <classpathPrefix>lib/</classpathPrefix>
 		            <mainClass>client.GUI</mainClass>
 		          </manifest>
 		        </archive>
