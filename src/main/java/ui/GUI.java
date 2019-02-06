@@ -2,8 +2,6 @@ package ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -30,7 +28,7 @@ public class GUI implements Serializable {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		// ---------- Components: Update
+		// ---------- Components: Consulta
 		String[] tiposConsulta = {TIPO_CONSULTA.Usuário.toString(), TIPO_CONSULTA.Plugin.toString(), TIPO_CONSULTA.Funcionalidade.toString()};
 		final JComboBox<String> cmbTipoConsulta = new JComboBox<String>(tiposConsulta);
 		final JButton btnConsultar = new JButton("Consultar");
