@@ -2,6 +2,8 @@ package ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -24,10 +26,6 @@ import net.miginfocom.swing.MigLayout;
 public class GUI implements Serializable {
 	private static final long serialVersionUID = -188826826138600878L;
 	
-	private static enum TIPO_CONSULTA {
-		Usuário, Plugin, Funcionalidade
-	}
-
 	public static void init() {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -73,6 +71,25 @@ public class GUI implements Serializable {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+				}
+			}
+		});
+		
+		// ----------- Listeners: Atualizar cmb de parâmetros na troca do cmb de consulta ----------------
+		cmbTipoConsulta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				cmbParametroConsulta.removeAllItems();
+				String tipo = String.valueOf(cmbTipoConsulta.getSelectedItem());
+				if(tipo.equals(TIPO_CONSULTA.Usuário.toString())) {
+					cmbParametroConsulta.addItem(FILTROS_USUARIO.Login.toString());
+					cmbParametroConsulta.addItem(FILTROS_USUARIO.Nome.toString());
+					cmbParametroConsulta.addItem(FILTROS_USUARIO.Status.toString());
+					cmbParametroConsulta.addItem(FILTROS_USUARIO.Gerência.toString());
+				}
+				else if(tipo.equals(TIPO_CONSULTA.Plugin.toString()) || tipo.equals(TIPO_CONSULTA.Funcionalidade.toString())) {
+					cmbParametroConsulta.addItem(FILTROS_PLUGIN_FUNC.Nome.toString());
+					cmbParametroConsulta.addItem(FILTROS_PLUGIN_FUNC.Descrição.toString());
+					cmbParametroConsulta.addItem(FILTROS_PLUGIN_FUNC.Data.toString());
 				}
 			}
 		});
