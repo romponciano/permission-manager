@@ -22,7 +22,8 @@ public class Client {
 
 	public static void main(String[] args) {
 		try {
-			GUI.init();
+			GUI gui = new GUI();
+			gui.init();
 		} catch (Exception e) {
 			System.err.println("Client exception: " + e.toString());
 			e.printStackTrace();
