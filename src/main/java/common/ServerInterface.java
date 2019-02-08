@@ -4,6 +4,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import exception.DBConnectException;
+import exception.DBConsultException;
 import model.User;
 
 /**
@@ -20,9 +22,11 @@ public interface ServerInterface extends Remote {
    * Obtém todos os usuários do sistema.
    * 
    * @return lista com os usuários
+   * @throws DBConnectException 
+   * @throws DBConsultException 
    * @throws RemoteException .
    */
-  List<User> getUsers() throws RemoteException;
+  List<User> getUsers() throws RemoteException, DBConnectException, DBConsultException;
   
   /**
    * Obtém todos os plugins do sistema.

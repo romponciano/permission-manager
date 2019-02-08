@@ -12,6 +12,12 @@ public final class Const implements Serializable {
     // Database credentials 
     public static final String USER = "ROMULOPONCIANO"; 
     public static final String PASS = "root";
+    
+    // Auto messages
+    public static final String ERROR_REMOTE_EXCEPT = "Erro ao tentar realizar comunicação com o servidor";
+    public static final String ERROR_DB_CONNECT = "Erro ao tentar conectar com o banco de dados.";
+    public static final String ERROR_DB_CONSULT = "Erro ao tentar consultar o banco de dados.";
+    public static final String ERROR_NOTBOUND_EXCEPT = "Erro ao renderizar interface.";
 	
 	/**
 	   The caller references the constants using <tt>Consts.EMPTY_STRING</tt>, 

@@ -11,6 +11,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -18,6 +19,9 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import client.Client;
+import common.Const;
+import exception.DBConnectException;
+import exception.DBConsultException;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 
@@ -25,7 +29,7 @@ public class GUI implements Serializable {
 	private static final long serialVersionUID = -188826826138600878L;
 	
 	public static void init() {
-		JFrame frame = new JFrame();
+		final JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		// ---------- Components: Consulta
@@ -65,9 +69,14 @@ public class GUI implements Serializable {
 					try {
 						List<User> users = Client.getServer().getUsers();
 						popularTabelaResultadosComUsuarios(tblResultado, users, tipo);
-					} catch (RemoteException | NotBoundException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+					} catch (DBConsultException err) {
+						JOptionPane.showMessageDialog(frame, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} catch (DBConnectException err) {
+						JOptionPane.showMessageDialog(frame, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} catch (RemoteException err) {
+						JOptionPane.showMessageDialog(frame, Const.ERROR_REMOTE_EXCEPT, "Error", JOptionPane.ERROR_MESSAGE);
+					} catch (NotBoundException err) {
+						JOptionPane.showMessageDialog(frame, Const.ERROR_NOTBOUND_EXCEPT, "Error", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}

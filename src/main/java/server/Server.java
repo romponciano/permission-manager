@@ -10,10 +10,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.Const;
 import common.DatabaseConnection;
 import common.FunctionalityInterface;
 import common.PluginInterface;
 import common.ServerInterface;
+import exception.DBConnectException;
+import exception.DBConsultException;
 import model.User;
 
 public class Server implements ServerInterface {
@@ -34,32 +37,30 @@ public class Server implements ServerInterface {
 	}
 	
 	@Override
-	public List<User> getUsers() throws RemoteException {
+	public List<User> getUsers() throws RemoteException, DBConnectException, DBConsultException {
 		List<User> usrs = new ArrayList<User>();
 		DatabaseConnection db = null;
-		Statement st = null;
-		ResultSet rs = null;
+		Statement statment = null;
+		ResultSet result = null;
 		try {
 			db = new DatabaseConnection();
-			st = db.getConnection().createStatement();
-			rs = st.executeQuery("SELECT * FROM USUARIO");
-			while(rs.next()) {
+			statment = db.getConnection().createStatement();
+			result = statment.executeQuery("SELECT * FROM USUARIO");
+			while(result.next()) {
 				usrs.add(new User(
-					rs.getInt("id"),
-					rs.getString("nomeCompleto"),
-					rs.getString("login"),
-					rs.getInt("status"),
-					rs.getString("gerenciaAtual")
+					result.getInt("id"),
+					result.getString("nomeCompleto"),
+					result.getString("login"),
+					result.getInt("status"),
+					result.getString("gerenciaAtual")
 				));
 			};
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (DBConnectException e) {
+			throw e;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new DBConsultException(Const.ERROR_DB_CONSULT);
 		} finally {
-		    try { rs.close(); } catch (Exception e) { /* ignored */ }
+		    try { result.close(); } catch (Exception e) { /* ignorar */ }
 		    db.closeConnection();
 		}
 		return usrs;
