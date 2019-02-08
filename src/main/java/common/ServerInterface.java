@@ -44,8 +44,10 @@ public interface ServerInterface extends Remote {
    * Obtém todas as funcionalidades do sistema.
    * 
    * @return lista com as funcionalidades
+ * @throws DBConnectException 
+ * @throws DBConsultException 
    * @throws RemoteException .
    */
-  List<Functionality> getFunctionalities() throws RemoteException;
+  List<Functionality> getFunctionalities() throws RemoteException, DBConsultException, DBConnectException;
 
 }
