@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,7 +13,10 @@ import exception.DBConnectException;
 import exception.DBConsultException;
 import model.User;
 
-public class UserDAO {
+public class UserDAO implements Serializable {
+	
+	private static final long serialVersionUID = -1503189464001292373L;
+
 	public List<User> getUsers() throws DBConsultException, DBConnectException {
 		List<User> usrs = new ArrayList<User>();
 		DatabaseConnection db = null;

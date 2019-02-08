@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,7 +13,10 @@ import exception.DBConnectException;
 import exception.DBConsultException;
 import model.Functionality;
 
-public class FunctionalityDAO {
+public class FunctionalityDAO implements Serializable {
+	
+	private static final long serialVersionUID = 2933870645847680620L;
+
 	public List<Functionality> getFunctionalities() throws DBConsultException, DBConnectException {
 		List<Functionality> plugins = new ArrayList<Functionality>();
 		DatabaseConnection db = null;

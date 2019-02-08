@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -8,8 +9,10 @@ import exception.DBConnectException;
 import exception.DBConsultException;
 import model.Log;
 
-public class LogDAO {
+public class LogDAO implements Serializable {
 	
+	private static final long serialVersionUID = 2471323214818735602L;
+
 	public void createLog(Log log) throws DBConsultException, DBConnectException {
 		DatabaseConnection db = null;
 		Statement statment = null;

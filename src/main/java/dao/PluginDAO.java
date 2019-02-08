@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,7 +13,10 @@ import exception.DBConnectException;
 import exception.DBConsultException;
 import model.Plugin;
 
-public class PluginDAO {
+public class PluginDAO implements Serializable {
+	
+	private static final long serialVersionUID = -5098749675099318542L;
+
 	public List<Plugin> getPlugins() throws DBConsultException, DBConnectException {
 		List<Plugin> plugins = new ArrayList<Plugin>();
 		DatabaseConnection db = null;
