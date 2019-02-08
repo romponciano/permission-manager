@@ -2,8 +2,6 @@ package model;
 
 import java.io.Serializable;
 
-import model.Status;
-
 public class User implements Serializable {
 	private static final long serialVersionUID = -311656302967427533L;
 	

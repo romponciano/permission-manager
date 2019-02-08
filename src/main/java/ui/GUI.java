@@ -22,6 +22,7 @@ import client.Client;
 import common.Const;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import model.Plugin;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 
@@ -64,20 +65,23 @@ public class GUI implements Serializable {
 		// ----------- Listeners: Click para consultar ----------------
 		btnConsultar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String tipo = String.valueOf(cmbTipoConsulta.getSelectedItem());
-				if(tipo.equals(TIPO_CONSULTA.Usuário.toString())) {
-					try {
+				try {
+					String tipo = String.valueOf(cmbTipoConsulta.getSelectedItem());
+					if(tipo.equals(TIPO_CONSULTA.Usuário.toString())) {
 						List<User> users = Client.getServer().getUsers();
 						popularTabelaResultadosComUsuarios(tblResultado, users, tipo);
-					} catch (DBConsultException err) {
-						JOptionPane.showMessageDialog(frame, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-					} catch (DBConnectException err) {
-						JOptionPane.showMessageDialog(frame, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-					} catch (RemoteException err) {
-						JOptionPane.showMessageDialog(frame, Const.ERROR_REMOTE_EXCEPT, "Error", JOptionPane.ERROR_MESSAGE);
-					} catch (NotBoundException err) {
-						JOptionPane.showMessageDialog(frame, Const.ERROR_NOTBOUND_EXCEPT, "Error", JOptionPane.ERROR_MESSAGE);
+					} else if(tipo.equals(TIPO_CONSULTA.Plugin.toString())) {
+						List<Plugin> plugins = Client.getServer().getPlugins();
+						popularTabelaResultadosComPlugin(tblResultado, plugins, tipo);
 					}
+				} catch (DBConsultException err) {
+					JOptionPane.showMessageDialog(frame, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (DBConnectException err) {
+					JOptionPane.showMessageDialog(frame, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (RemoteException err) {
+					JOptionPane.showMessageDialog(frame, Const.ERROR_REMOTE_EXCEPT, "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (NotBoundException err) {
+					JOptionPane.showMessageDialog(frame, Const.ERROR_NOTBOUND_EXCEPT, "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -107,7 +111,6 @@ public class GUI implements Serializable {
 		Vector<Object> linha;
 		for(User usr : users) {
 			linha = new Vector<Object>();
-			linha.add(usr.getId());
 			linha.add(usr.getNome());
 			linha.add(usr.getLogin());
 			linha.add(usr.getStatus());
@@ -116,15 +119,31 @@ public class GUI implements Serializable {
 		};
 		tblResultado.setModel(new DefaultTableModel(dadosFinal, gerarHeader(tipo)));
 	}
+	
+	private static void popularTabelaResultadosComPlugin(JTable tblResultado, List<Plugin> plugins, String tipo) {
+		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
+		Vector<Object> linha;
+		for(Plugin plugin : plugins) {
+			linha = new Vector<Object>();
+			linha.add(plugin.getNome());
+			linha.add(plugin.getDescricao());
+			linha.add(plugin.getDataCriacao());
+			dadosFinal.add(linha);
+		};
+		tblResultado.setModel(new DefaultTableModel(dadosFinal, gerarHeader(tipo)));
+	}
 
 	private static Vector<String> gerarHeader(String tipo) {
 		Vector<String> header = new Vector<String>();
 		if(tipo.equals(TIPO_CONSULTA.Usuário.toString())) {
-			header.add("ID");
 			header.add("NOME");
 			header.add("LOGIN");
 			header.add("STATUS");
 			header.add("GERÊNCIA ATUAL");
+		} else if(tipo.equals(TIPO_CONSULTA.Plugin.toString())) {
+			header.add("NOME");
+			header.add("DESCRIÇÃO");
+			header.add("DATA DE CRIAÇÃO");
 		}
 		return header;
 	}
