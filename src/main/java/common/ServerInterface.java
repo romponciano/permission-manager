@@ -6,6 +6,7 @@ import java.util.List;
 
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.ServerServiceException;
 import model.Functionality;
 import model.Plugin;
 import model.User;
@@ -28,7 +29,7 @@ public interface ServerInterface extends Remote {
    * @throws DBConsultException 
    * @throws RemoteException .
    */
-  List<User> getUsers() throws RemoteException, DBConnectException, DBConsultException;
+  List<User> getUsers() throws RemoteException, ServerServiceException;
   
   /**
    * Obtém todos os plugins do sistema.
@@ -38,7 +39,7 @@ public interface ServerInterface extends Remote {
    * @throws DBConsultException 
    * @throws RemoteException .
    */
-  List<Plugin> getPlugins() throws RemoteException, DBConnectException, DBConsultException;
+  List<Plugin> getPlugins() throws RemoteException, ServerServiceException;
   
   /**
    * Obtém todas as funcionalidades do sistema.
@@ -48,6 +49,6 @@ public interface ServerInterface extends Remote {
  * @throws DBConsultException 
    * @throws RemoteException .
    */
-  List<Functionality> getFunctionalities() throws RemoteException, DBConsultException, DBConnectException;
+  List<Functionality> getFunctionalities() throws RemoteException, ServerServiceException;
 
 }

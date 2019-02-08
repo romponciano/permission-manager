@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.List;
 
 import common.ServerInterface;
@@ -12,6 +13,7 @@ import dao.PluginDAO;
 import dao.UserDAO;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.ServerServiceException;
 import model.Functionality;
 import model.Plugin;
 import model.User;
@@ -34,21 +36,41 @@ public class Server implements ServerInterface {
 	}
 	
 	@Override
-	public List<User> getUsers() throws RemoteException, DBConnectException, DBConsultException {
+	public List<User> getUsers() throws RemoteException, ServerServiceException {
 		UserDAO userDAO = new UserDAO();
-		return userDAO.getUsers();
+		List<User> users = new ArrayList<User>();
+		try {
+			users = userDAO.getUsers();
+		} catch (DBConsultException | DBConnectException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return users;
 	}
 
 	@Override
-	public List<Plugin> getPlugins() throws RemoteException, DBConnectException, DBConsultException {
-		PluginDAO pluginDAO = new PluginDAO(); 
-		return pluginDAO.getPlugins();
+	public List<Plugin> getPlugins() throws RemoteException, ServerServiceException {
+		PluginDAO pluginDAO = new PluginDAO();
+		List<Plugin> plugins = new ArrayList<Plugin>();
+		try {
+			plugins = pluginDAO.getPlugins();
+		} catch (DBConsultException | DBConnectException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return plugins;
 	}
 
 	@Override
-	public List<Functionality> getFunctionalities() throws RemoteException, DBConsultException, DBConnectException {
+	public List<Functionality> getFunctionalities() throws RemoteException, ServerServiceException {
 		FunctionalityDAO functionalityDAO = new FunctionalityDAO();
-		functionalityDAO.getFunctionalities();
-		return null;
+		List<Functionality> funcionalidades = new ArrayList<Functionality>();
+		try {
+			funcionalidades = functionalityDAO.getFunctionalities();
+		} catch (DBConsultException | DBConnectException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return funcionalidades;
 	}
 }

@@ -25,6 +25,7 @@ import client.Client;
 import common.Const;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.ServerServiceException;
 import model.Plugin;
 import model.User;
 import net.miginfocom.swing.MigLayout;
@@ -103,9 +104,7 @@ public class GUI implements Serializable {
 						List<Plugin> plugins = Client.getServer().getPlugins();
 						popularTabelaResultadosComPlugin(plugins, tipo);
 					}
-				} catch (DBConsultException err) {
-					exibirDialogError(err.getMessage());
-				} catch (DBConnectException err) {
+				} catch (ServerServiceException err) {
 					exibirDialogError(err.getMessage());
 				} catch (RemoteException err) {
 					exibirDialogError(Const.ERROR_REMOTE_EXCEPT);
