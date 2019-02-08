@@ -33,6 +33,7 @@ CREATE TABLE Funcionalidade (
 CREATE TABLE LOG(
 	id 		INT PRIMARY KEY, 
 	tipo 		VARCHAR(255), 
-	mensagem	VARCHAR(255)
+	mensagem	VARCHAR(255),
+	causa		VARCHAR(255),
 );
 

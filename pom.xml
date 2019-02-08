@@ -30,6 +30,8 @@
             <artifactId>miglayout-swing</artifactId>
             <version>5.2</version>
 		</dependency>
+		<!--  dependências para teste -->
+				
 
     </dependencies>
 

@@ -9,6 +9,7 @@ public class Log implements Serializable {
 	private int id;
 	private String tipo;
 	private String mensagem;
+	private String causa;
 	
 	public static enum TIPOS_LOG {
 			SUCESSO,
@@ -28,10 +29,15 @@ public class Log implements Serializable {
 	public String getMessage() {
 		return mensagem;
 	}
+	
+	public String getCausa() {
+		return causa;
+	}
 
-	public Log(int id, String tipo, String mensagem) {
+	public Log(int id, String tipo, String mensagem, String causa) {
 		this.id = id;
 		this.tipo = tipo;
 		this.mensagem = mensagem;
+		this.causa = causa;
 	}
 }

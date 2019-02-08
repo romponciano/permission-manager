@@ -21,7 +21,7 @@ public class LogDAO implements Serializable {
 			db = new DatabaseConnection();
 			statment = db.getConnection().createStatement();
 			result = statment.executeQuery(
-				"INSERT INTO LOG (id, tipo, mensagem) VALUES " + 
+				"INSERT INTO LOG (id, tipo, mensagem, causa) VALUES " + 
 				"(" + criarStringValores(log) + ")"
 			);
 		} catch (Exception e) {
@@ -36,7 +36,8 @@ public class LogDAO implements Serializable {
 		String saida = "";
 		saida += log.getId() + ",";
 		saida += log.getTipo() + ",";
-		saida += log.getMessage();
+		saida += log.getMessage() + ",";
+		saida += log.getCausa();
 		return saida;
 	}
 	
