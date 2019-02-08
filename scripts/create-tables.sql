@@ -29,3 +29,10 @@ CREATE TABLE Funcionalidade (
 	pluginId 	INT NOT NULL,
 	FOREIGN KEY (pluginId) REFERENCES PLUGIN(id)
 );
+
+CREATE TABLE LOG(
+	id 		INT PRIMARY KEY, 
+	tipo 		VARCHAR(255), 
+	mensagem	VARCHAR(255)
+);
+
