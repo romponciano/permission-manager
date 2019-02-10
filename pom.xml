@@ -18,12 +18,14 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.18.0</version>
         </dependency>
-        <!--  driver para conexão com oracle | é preciso instalar o driver manualmente -->
+        <!--  driver para conexão com oracle | é preciso instalar o driver manualmente | execute o comando abaixo antes da primeira execução na máquina -->
+		<!-- mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0.3 -Dpackaging=jar -Dfile=ojdbc6-11.2.0.3.jar -DgeneratePom=true -->
 		<dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <version>11.2.0</version>
-        </dependency>
+		    <groupId>com.oracle</groupId>
+		    <artifactId>ojdbc6</artifactId>
+		    <version>11.2.0.3</version>
+		</dependency>
+
         <!--  dependências para minglayout -->
 		<dependency>
             <groupId>com.miglayout</groupId>
