@@ -33,10 +33,19 @@ public class Log implements Serializable {
 	public String getCausa() {
 		return causa;
 	}
+	
+	public void setCausa(String causa) {
+		this.causa = causa;
+	}
 
 	public Log(TIPOS_LOG tipo, String mensagem, String causa) {
 		this.tipo = tipo.toString();
 		this.mensagem = mensagem;
 		this.causa = causa;
+	}
+	
+	public Log(TIPOS_LOG tipo, String mensagem) {
+		this.tipo = tipo.toString();
+		this.mensagem = mensagem;
 	}
 }

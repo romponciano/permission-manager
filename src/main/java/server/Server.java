@@ -15,6 +15,7 @@ import dao.PluginDAO;
 import dao.UserDAO;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.DBDataNotFoundException;
 import exception.ServerServiceException;
 import model.Functionality;
 import model.Log;
@@ -23,8 +24,6 @@ import model.Plugin;
 import model.User;
 
 public class Server implements ServerInterface {
-	
-	LogDAO logDAO = new LogDAO();
 	
 	public static void main(String args[]) {
 		try {
@@ -48,13 +47,14 @@ public class Server implements ServerInterface {
 		try {
 			users = userDAO.getUsers();
 		} catch (DBConsultException e) {
-			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
-			logDAO.createLog(log);
+			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
 		} catch (DBConnectException e) {
-			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
-			logDAO.createLog(log);
+			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		} catch (DBDataNotFoundException e) {
+			logarException(TIPOS_LOG.INFO, e);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return users;
 	}
@@ -66,13 +66,14 @@ public class Server implements ServerInterface {
 		try {
 			plugins = pluginDAO.getPlugins();
 		} catch (DBConsultException e) {
-			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
-			logDAO.createLog(log);
+			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
 		} catch (DBConnectException e) {
-			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
-			logDAO.createLog(log);
+			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		} catch (DBDataNotFoundException e) {
+			logarException(TIPOS_LOG.INFO, e);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return plugins;
 	}
@@ -84,14 +85,22 @@ public class Server implements ServerInterface {
 		try {
 			funcionalidades = functionalityDAO.getFunctionalities();
 		} catch (DBConsultException e) {
-			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
-			logDAO.createLog(log);
+			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
 		} catch (DBConnectException e) {
-			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
-			logDAO.createLog(log);
+			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		} catch (DBDataNotFoundException e) {
+			logarException(TIPOS_LOG.INFO, e);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return funcionalidades;
+	}
+	
+	private void logarException(TIPOS_LOG tipo, Exception e) {
+		LogDAO logDAO = new LogDAO();
+		Log log = new Log(tipo, e.getMessage());
+		if(e.getCause() != null) log.setCausa(e.getCause().toString());
+		logDAO.createLog(log);
 	}
 }

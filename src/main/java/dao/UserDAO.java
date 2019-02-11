@@ -10,13 +10,14 @@ import java.util.List;
 import common.DatabaseConnection;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.DBDataNotFoundException;
 import model.User;
 
 public class UserDAO implements Serializable {
 	
 	private static final long serialVersionUID = -1503189464001292373L;
 
-	public List<User> getUsers() throws DBConsultException, DBConnectException {
+	public List<User> getUsers() throws DBConsultException, DBConnectException, DBDataNotFoundException {
 		List<User> usrs = new ArrayList<User>();
 		DatabaseConnection db = null;
 		Statement statment = null;
@@ -26,7 +27,7 @@ public class UserDAO implements Serializable {
 			statment = db.getConnection().createStatement();
 			result = statment.executeQuery("SELECT * FROM USUARIO");
 			if(!result.isBeforeFirst()) {
-				throw new DBConsultException("Nenhum dado encontrado.");
+				throw new DBDataNotFoundException();
 			}
 			while(result.next()) {
 				usrs.add(new User(

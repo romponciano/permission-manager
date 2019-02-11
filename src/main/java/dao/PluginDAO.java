@@ -7,17 +7,17 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.Const;
 import common.DatabaseConnection;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.DBDataNotFoundException;
 import model.Plugin;
 
 public class PluginDAO implements Serializable {
 	
 	private static final long serialVersionUID = -5098749675099318542L;
 
-	public List<Plugin> getPlugins() throws DBConsultException, DBConnectException {
+	public List<Plugin> getPlugins() throws DBConsultException, DBConnectException, DBDataNotFoundException {
 		List<Plugin> plugins = new ArrayList<Plugin>();
 		DatabaseConnection db = null;
 		Statement statment = null;
@@ -27,7 +27,7 @@ public class PluginDAO implements Serializable {
 			statment = db.getConnection().createStatement();
 			result = statment.executeQuery("SELECT * FROM PLUGIN");
 			if(!result.isBeforeFirst()) {
-				throw new DBConsultException("Nenhum dado encontrado.");
+				throw new DBDataNotFoundException();
 			}
 			while(result.next()) {
 				plugins.add(new Plugin(
@@ -40,7 +40,7 @@ public class PluginDAO implements Serializable {
 		} catch (DBConnectException e) {
 			throw e;
 		} catch (SQLException e) {
-			throw new DBConsultException(Const.ERROR_DB_CONSULT);
+			throw new DBConsultException(e.getMessage(), e.getCause());
 		} finally {
 		    try { result.close(); } catch (Exception e) { /* ignorar */ }
 		    db.closeConnection();
