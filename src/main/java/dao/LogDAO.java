@@ -1,44 +1,32 @@
 package dao;
 
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 import common.DatabaseConnection;
-import exception.DBConnectException;
-import exception.DBConsultException;
 import model.Log;
 
 public class LogDAO implements Serializable {
 	
 	private static final long serialVersionUID = 2471323214818735602L;
 
-	public void createLog(Log log) throws DBConsultException, DBConnectException {
+	public void createLog(Log log) {
 		DatabaseConnection db = null;
-		Statement statment = null;
-		ResultSet result = null;
+		PreparedStatement statment = null;
 		try {
 			db = new DatabaseConnection();
-			statment = db.getConnection().createStatement();
-			result = statment.executeQuery(
-				"INSERT INTO LOG (id, tipo, mensagem, causa) VALUES " + 
-				"(" + criarStringValores(log) + ")"
-			);
+			statment = db.getConnection().prepareStatement("INSERT INTO LOG (tipo, mensagem, causa) VALUES (?,?,?)");
+			statment.setString(1, log.getTipo());
+			statment.setString(2, log.getMessage());
+			statment.setString(3, log.getCausa());
+			statment.executeUpdate();
 		} catch (Exception e) {
+			System.out.println("ERROR!!!!!!!!!!!!!!!!!!!! " + e.getMessage());
 			 // Ignorar pq qualquer exceção ao inserir o Log, não tem o que ser feito
 		} finally {
-		    try { result.close(); } catch (Exception e) { /* ignorar */ }
+		    try { statment.close(); } catch (Exception e) { /* ignorar */ }
 		    db.closeConnection();
 		}
-	}
-	
-	private String criarStringValores(Log log) {
-		String saida = "";
-		saida += log.getId() + ",";
-		saida += log.getTipo() + ",";
-		saida += log.getMessage() + ",";
-		saida += log.getCausa();
-		return saida;
 	}
 	
 }

@@ -22,7 +22,7 @@ public class DatabaseConnection implements Serializable {
     		Class.forName(Const.JDBC_DRIVER);
         	this.getConnection();
     	} catch (Exception e) {
-    		throw new DBConnectException(Const.ERROR_DB_CONNECT);
+    		throw new DBConnectException(e.getMessage(), e.getCause());
     	}
     };
     
@@ -35,7 +35,7 @@ public class DatabaseConnection implements Serializable {
     		try {
 				this.connection = DriverManager.getConnection(Const.DB_URL, Const.USER, Const.PASS);
 			} catch (SQLException e) {
-				throw new DBConnectException(Const.ERROR_DB_CONNECT);
+				throw new DBConnectException(e.getMessage(), e.getCause());
 			}
     	}
     	return this.connection;

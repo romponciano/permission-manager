@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.Const;
 import common.DatabaseConnection;
 import exception.DBConnectException;
 import exception.DBConsultException;
@@ -41,7 +40,7 @@ public class UserDAO implements Serializable {
 		} catch (DBConnectException e) {
 			throw e;
 		} catch (SQLException e) {
-			throw new DBConsultException(Const.ERROR_DB_CONSULT);
+			throw new DBConsultException(e.getMessage(), e.getCause());
 		} finally {
 		    try { result.close(); } catch (Exception e) { /* ignorar */ }
 		    db.closeConnection();

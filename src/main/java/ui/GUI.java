@@ -23,8 +23,6 @@ import javax.swing.table.DefaultTableModel;
 
 import client.Client;
 import common.Const;
-import exception.DBConnectException;
-import exception.DBConsultException;
 import exception.ServerServiceException;
 import model.Plugin;
 import model.User;

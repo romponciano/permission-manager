@@ -7,19 +7,25 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.Const;
 import common.ServerInterface;
 import dao.FunctionalityDAO;
+import dao.LogDAO;
 import dao.PluginDAO;
 import dao.UserDAO;
 import exception.DBConnectException;
 import exception.DBConsultException;
 import exception.ServerServiceException;
 import model.Functionality;
+import model.Log;
+import model.Log.TIPOS_LOG;
 import model.Plugin;
 import model.User;
 
 public class Server implements ServerInterface {
-
+	
+	LogDAO logDAO = new LogDAO();
+	
 	public static void main(String args[]) {
 		try {
 			ServerInterface server = new Server();
@@ -41,9 +47,14 @@ public class Server implements ServerInterface {
 		List<User> users = new ArrayList<User>();
 		try {
 			users = userDAO.getUsers();
-		} catch (DBConsultException | DBConnectException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (DBConsultException e) {
+			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
+			logDAO.createLog(log);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+		} catch (DBConnectException e) {
+			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
+			logDAO.createLog(log);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 		return users;
 	}
@@ -54,9 +65,14 @@ public class Server implements ServerInterface {
 		List<Plugin> plugins = new ArrayList<Plugin>();
 		try {
 			plugins = pluginDAO.getPlugins();
-		} catch (DBConsultException | DBConnectException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (DBConsultException e) {
+			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
+			logDAO.createLog(log);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+		} catch (DBConnectException e) {
+			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
+			logDAO.createLog(log);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 		return plugins;
 	}
@@ -67,9 +83,14 @@ public class Server implements ServerInterface {
 		List<Functionality> funcionalidades = new ArrayList<Functionality>();
 		try {
 			funcionalidades = functionalityDAO.getFunctionalities();
-		} catch (DBConsultException | DBConnectException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (DBConsultException e) {
+			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
+			logDAO.createLog(log);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+		} catch (DBConnectException e) {
+			Log log = new Log(TIPOS_LOG.ERRO, e.getMessage(), e.getCause().toString());
+			logDAO.createLog(log);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 		return funcionalidades;
 	}
