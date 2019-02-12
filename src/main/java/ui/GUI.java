@@ -24,8 +24,8 @@ public class GUI implements Serializable {
 	public GUI() {
 		frame = new JFrame();
 		abasContainer = new JTabbedPane();
-		abaUsuario = new AbaUsuario();
-		abaPlugin = new AbaPlugin();
+		abaUsuario = new AbaUsuario(frame);
+		abaPlugin = new AbaPlugin(frame);
 	}
 	
 	/**

@@ -1,6 +1,7 @@
 package dao;
 
 import java.io.Serializable;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -10,6 +11,7 @@ import java.util.List;
 import common.DatabaseConnection;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.DBCreateException;
 import exception.DBDataNotFoundException;
 import model.Plugin;
 
@@ -34,7 +36,7 @@ public class PluginDAO implements Serializable {
 					result.getInt("id"),
 					result.getString("nome"),
 					result.getString("descricao"),
-					result.getDate("dataCriacao")
+					result.getString("dataCriacao")
 				));
 			};
 		} catch (DBConnectException e) {
@@ -46,5 +48,24 @@ public class PluginDAO implements Serializable {
 		    db.closeConnection();
 		}
 		return plugins;
+	}
+	
+	public void createPlugin(Plugin plugin) throws DBConnectException, DBCreateException {
+		DatabaseConnection db = null;
+		PreparedStatement statment = null;
+		try {
+			db = new DatabaseConnection();
+			statment = db.getConnection().prepareStatement("INSERT INTO PLUGIN (nome, descricao) VALUES (?, ?)");
+			statment.setString(1, plugin.getNome());
+			statment.setString(2, plugin.getDescricao());
+			statment.executeUpdate();
+		} catch(SQLException e) {
+			throw new DBCreateException(e.getMessage(), e.getCause());
+		} catch(DBConnectException e) {
+			throw e;
+		} finally {
+			try { statment.close(); } catch (Exception e) { /* ignorar */ }
+		    db.closeConnection();
+		}
 	}
 }

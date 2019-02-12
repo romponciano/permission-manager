@@ -13,6 +13,7 @@ import dao.FunctionalityDAO;
 import dao.LogDAO;
 import dao.PluginDAO;
 import dao.UserDAO;
+import exception.DBCreateException;
 import exception.DBConnectException;
 import exception.DBConsultException;
 import exception.DBDataNotFoundException;
@@ -41,6 +42,34 @@ public class Server implements ServerInterface {
 	}
 	
 	@Override
+	public void createUser(User user) throws ServerServiceException {
+		UserDAO userDAO = new UserDAO();
+		try {
+			userDAO.createUser(user);
+		} catch (DBCreateException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CREATE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	@Override
+	public void createPlugin(Plugin plg) throws ServerServiceException {
+		PluginDAO pluginDAO = new PluginDAO();
+		try {
+			pluginDAO.createPlugin(plg);
+		} catch (DBCreateException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CREATE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	@Override
 	public List<User> getUsers() throws RemoteException, ServerServiceException {
 		UserDAO userDAO = new UserDAO();
 		List<User> users = new ArrayList<User>();
@@ -48,7 +77,7 @@ public class Server implements ServerInterface {
 			users = userDAO.getUsers();
 		} catch (DBConsultException e) {
 			logarException(TIPOS_LOG.ERRO, e);
-			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+			//throw new ServerServiceException(Const.ERROR_DB_CONSULT);
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
@@ -67,7 +96,7 @@ public class Server implements ServerInterface {
 			plugins = pluginDAO.getPlugins();
 		} catch (DBConsultException e) {
 			logarException(TIPOS_LOG.ERRO, e);
-			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+			//throw new ServerServiceException(Const.ERROR_DB_CONSULT);
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);

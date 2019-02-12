@@ -19,6 +19,8 @@ public class User implements Serializable {
 		this.gerenciaAtual = gerenciaAtual;
 	}
 
+	public User() {	}
+
 	public Integer getId() {
 		return id;
 	}
@@ -38,6 +40,23 @@ public class User implements Serializable {
 	public String getGerenciaAtual() {
 		return gerenciaAtual;
 	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
+	public void setGerenciaAtual(String gerenciaAtual) {
+		this.gerenciaAtual = gerenciaAtual;
+	}
+	
 	
 	
 }

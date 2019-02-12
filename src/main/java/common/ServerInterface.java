@@ -4,8 +4,6 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import exception.DBConnectException;
-import exception.DBConsultException;
 import exception.ServerServiceException;
 import model.Functionality;
 import model.Plugin;
@@ -22,12 +20,27 @@ public interface ServerInterface extends Remote {
   int RMI_PORT = 1099;
 
   /**
+   * Insere novo usuário no sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void createUser(User user) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Insere novo plugin no sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void createPlugin(Plugin plg) throws RemoteException, ServerServiceException;
+  
+  /**
    * Obtém todos os usuários do sistema.
    * 
    * @return lista com os usuários
-   * @throws DBConnectException 
-   * @throws DBConsultException 
    * @throws RemoteException .
+   * @throws ServerServiceException
    */
   List<User> getUsers() throws RemoteException, ServerServiceException;
   
@@ -35,9 +48,8 @@ public interface ServerInterface extends Remote {
    * Obtém todos os plugins do sistema.
    * 
    * @return lista com os plugins
-   * @throws DBConnectException 
-   * @throws DBConsultException 
    * @throws RemoteException .
+   * @throws ServerServiceException
    */
   List<Plugin> getPlugins() throws RemoteException, ServerServiceException;
   
@@ -45,10 +57,11 @@ public interface ServerInterface extends Remote {
    * Obtém todas as funcionalidades do sistema.
    * 
    * @return lista com as funcionalidades
- * @throws DBConnectException 
- * @throws DBConsultException 
    * @throws RemoteException .
+   * @throws ServerServiceException
    */
   List<Functionality> getFunctionalities() throws RemoteException, ServerServiceException;
+
+  
 
 }

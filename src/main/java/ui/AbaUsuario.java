@@ -1,10 +1,13 @@
 package ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -13,7 +16,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import client.Client;
+import common.Const;
 import exception.ServerServiceException;
+import exception.UICheckFieldException;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 
@@ -25,34 +30,60 @@ public class AbaUsuario extends AbaGenerica {
 	private JLabel lblLogin = new JLabel("Login: ");
 	private JLabel lblStatus = new JLabel("Status: ");
 	private JLabel lblGerencia = new JLabel("Gerência Atual: ");
-	private JTextField txtNomeUsuario = new JTextField(15);
-	private JTextField txtLogin = new JTextField(15);
-	private JTextField txtStatus = new JTextField(15);
-	private JTextField txtGerencia = new JTextField(15);
+	final private JTextField txtNomeUsuario = new JTextField(15);
+	final private JTextField txtLogin = new JTextField(15);
+	final private JTextField txtStatus = new JTextField(15);
+	final private JTextField txtGerencia = new JTextField(15);
 
-	public AbaUsuario() {
-		super();
+	public AbaUsuario(JFrame parentFrame) {
+		super(parentFrame);
 		initPnlForm();
 		setContextoEditar(false);
-	}
-
-	@Override
-	public void initListeners() {
-		super.initListeners();
-		setOnItemSelectListenerTableResult(
-				new ListSelectionListener() {
-					public void valueChanged(ListSelectionEvent event) {
-						int linhaSelecionada = getTblResultado().getSelectedRow();
-						if (linhaSelecionada > -1) {
-							txtNomeUsuario.setText(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-							txtLogin.setText(getTblResultado().getValueAt(linhaSelecionada, 1).toString());
-							txtStatus.setText(getTblResultado().getValueAt(linhaSelecionada, 2).toString());
-							txtGerencia.setText(getTblResultado().getValueAt(linhaSelecionada, 3).toString());
-							setContextoEditar(true);
+		
+		// iniciando listeners
+		ListSelectionListener selectItemTable = new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent event) {
+				int linhaSelecionada = getTblResultado().getSelectedRow();
+				if (linhaSelecionada > -1) {
+					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 0);
+					txtNomeUsuario.setText(( campo != null ? (String)campo : ""));
+					campo = getTblResultado().getValueAt(linhaSelecionada, 1);
+					txtLogin.setText(( campo != null ? (String)campo : ""));
+					campo = getTblResultado().getValueAt(linhaSelecionada, 2);
+					txtStatus.setText(( campo != null ? ((Integer)campo).toString() : ""));
+					campo = getTblResultado().getValueAt(linhaSelecionada, 3);
+					txtGerencia.setText(( campo != null ? (String)campo : ""));
+					setContextoEditar(true);
+				};
+			}
+		};
+		ActionListener saveClick = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
+					consequentemente, não representa um novo item, mas sim um update. */
+				if(getBtnNovo().isEnabled()) {
+					// update
+				} else {
+					try {
+						if(checkFieldsOnCreate()) {
+							User usr = new User();
+							usr.setNome(txtNomeUsuario.getText());
+							usr.setLogin(txtLogin.getText());
+							usr.setGerenciaAtual(txtGerencia.getText());
+							usr.setStatus(Integer.parseInt(txtStatus.getText()));
+							Client.getServer().createUser(usr);
+							loadData();
+							getBtnNovo().setEnabled(true);
 						};
 					}
+					catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
+					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 				}
-		);
+			}
+		};
+		initListeners(selectItemTable, saveClick);
 	}
 
 	@Override
@@ -121,5 +152,22 @@ public class AbaUsuario extends AbaGenerica {
 			dadosFinal.add(linha);
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
+	}
+
+	@Override
+	public boolean checkFieldsOnCreate() throws UICheckFieldException {
+		String campo;
+		campo = this.txtNomeUsuario.getText();
+		if(campo == null || campo.length() <= 0) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+		}
+		campo = this.txtLogin.getText();
+		if(campo == null || campo.length() <= 0) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "login"));
+		}
+		if(campo.length() > 4) {
+			throw new UICheckFieldException(Const.INFO_BIG_FIELD.replaceFirst("\\?", "login").replaceFirst("\\?", "4"));
+		}
+		return true;
 	}
 }

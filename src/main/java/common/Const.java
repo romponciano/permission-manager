@@ -18,7 +18,11 @@ public final class Const implements Serializable {
     public static final String ERROR_DB_CONNECT = "Erro ao tentar conectar com o banco de dados.";
     public static final String ERROR_DB_CONSULT = "Erro ao tentar consultar o banco de dados.";
     public static final String ERROR_NOTBOUND_EXCEPT = "Erro ao renderizar interface.";
-    public static final String INFO_DATA_NOT_FOUND = "Nenhum dado encontrado.";
+	public static final String ERROR_DB_CREATE = "Erro ao tentar realizar o cadastro.";
+
+	public static final String INFO_DATA_NOT_FOUND = "Nenhum dado encontrado.";
+	public static final String INFO_EMPTY_FIELD = "O campo ? não pode ser vazio.";
+	public static final String INFO_BIG_FIELD = "O campo ? não pode ter mais de ? caracters";
 	
 	/**
 	   The caller references the constants using <tt>Consts.EMPTY_STRING</tt>, 

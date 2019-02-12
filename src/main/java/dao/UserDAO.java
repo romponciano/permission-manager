@@ -1,6 +1,7 @@
 package dao;
 
 import java.io.Serializable;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import common.DatabaseConnection;
+import exception.DBCreateException;
 import exception.DBConnectException;
 import exception.DBConsultException;
 import exception.DBDataNotFoundException;
@@ -44,8 +46,29 @@ public class UserDAO implements Serializable {
 			throw new DBConsultException(e.getMessage(), e.getCause());
 		} finally {
 		    try { result.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
+		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
 		}
 		return usrs;
+	}
+	
+	public void createUser(User user) throws DBConnectException, DBCreateException {
+		DatabaseConnection db = null;
+		PreparedStatement statment = null;
+		try {
+			db = new DatabaseConnection();
+			statment = db.getConnection().prepareStatement("INSERT INTO USUARIO (login, nomecompleto, status, gerenciaatual) VALUES (?, ?, ?, ?)");
+			statment.setString(1, user.getLogin());
+			statment.setString(2,  user.getNome());
+			statment.setInt(3,  user.getStatus());
+			statment.setString(4, user.getGerenciaAtual());
+			statment.executeUpdate();
+		} catch(SQLException e) {
+			throw new DBCreateException(e.getMessage(), e.getCause());
+		} catch(DBConnectException e) {
+			throw e;
+		} finally {
+			try { statment.close(); } catch (Exception e) { /* ignorar */ }
+		    db.closeConnection();
+		}
 	}
 }

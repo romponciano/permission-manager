@@ -1,10 +1,13 @@
 package ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -13,7 +16,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import client.Client;
+import common.Const;
 import exception.ServerServiceException;
+import exception.UICheckFieldException;
 import model.Plugin;
 import net.miginfocom.swing.MigLayout;
 
@@ -28,10 +33,49 @@ public class AbaPlugin extends AbaGenerica {
 	private JTextField txtDescricao = new JTextField(15);
 	private JTextField txtDataCriacao = new JTextField(15);
 
-	public AbaPlugin() {
-		super();
+	public AbaPlugin(JFrame parentFrame) {
+		super(parentFrame);
 		initPnlForm();
 		setContextoEditar(false);
+		
+		// iniciando listeners
+		ListSelectionListener selectItemList = new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent event) {
+				int linhaSelecionada = getTblResultado().getSelectedRow();
+				if (linhaSelecionada > -1) {
+					txtNomePlugin.setText(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+					txtDescricao.setText(getTblResultado().getValueAt(linhaSelecionada, 1).toString());
+					txtDataCriacao.setText(getTblResultado().getValueAt(linhaSelecionada, 2).toString());
+					setContextoEditar(true);
+				};
+			}
+		};
+		ActionListener saveClick = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
+					consequentemente, não representa um novo item, mas sim um update. */
+				if(getBtnNovo().isEnabled()) {
+					//Client.getServer().
+				} else {
+					try {
+						if(checkFieldsOnCreate()) {
+							Plugin plg = new Plugin();
+							plg.setNome(txtNomePlugin.getText());
+							plg.setDescricao(txtDescricao.getText());
+							plg.setDataCriacao(txtDataCriacao.getText());
+							Client.getServer().createPlugin(plg);
+							loadData();
+							getBtnNovo().setEnabled(true);
+						};
+					}
+					catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
+					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+				}
+			}
+		};
+		initListeners(selectItemList, saveClick);
 	}
 	
 	private void initPnlForm() {
@@ -96,24 +140,14 @@ public class AbaPlugin extends AbaGenerica {
 		popularTabelaResultado(plugins);
 		
 	}
-	
-	@Override
-	public void initListeners() {
-		super.initListeners();
-		setOnItemSelectListenerTableResult(
-				new ListSelectionListener() {
-					public void valueChanged(ListSelectionEvent event) {
-						int linhaSelecionada = getTblResultado().getSelectedRow();
-						if (linhaSelecionada > -1) {
-							txtNomePlugin.setText(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-							txtDescricao.setText(getTblResultado().getValueAt(linhaSelecionada, 1).toString());
-							txtDataCriacao.setText(getTblResultado().getValueAt(linhaSelecionada, 2).toString());
-							setContextoEditar(true);
-						};
-					}
-				}
-		);
-	}
 
-	
+	@Override
+	public boolean checkFieldsOnCreate() throws UICheckFieldException {
+		String campo;
+		campo = this.txtNomePlugin.getText();
+		if(campo == null || campo.length() <= 0) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+		}
+		return true;
+	}	
 }
