@@ -1,6 +1,6 @@
 package ui;
 
-public enum FILTROS_PLUGIN_FUNC {
+public enum FILTROS_PLUGIN {
 	Nome,
 	Descrição,
 	Data

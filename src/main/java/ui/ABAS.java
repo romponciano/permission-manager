@@ -1,5 +1,5 @@
 package ui;
 
-public enum TIPO_CONSULTA {
+public enum ABAS {
 	Usuário, Plugin, Funcionalidade
 }
