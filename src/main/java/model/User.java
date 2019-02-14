@@ -56,6 +56,10 @@ public class User implements Serializable {
 	public void setGerenciaAtual(String gerenciaAtual) {
 		this.gerenciaAtual = gerenciaAtual;
 	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 	
 	
 	

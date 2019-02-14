@@ -45,13 +45,13 @@ public class AbaUsuario extends AbaGenerica {
 			public void valueChanged(ListSelectionEvent event) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
-					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 0);
+					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
 					txtNomeUsuario.setText(( campo != null ? (String)campo : ""));
-					campo = getTblResultado().getValueAt(linhaSelecionada, 1);
-					txtLogin.setText(( campo != null ? (String)campo : ""));
 					campo = getTblResultado().getValueAt(linhaSelecionada, 2);
-					txtStatus.setText(( campo != null ? ((Integer)campo).toString() : ""));
+					txtLogin.setText(( campo != null ? (String)campo : ""));
 					campo = getTblResultado().getValueAt(linhaSelecionada, 3);
+					txtStatus.setText(( campo != null ? ((Integer)campo).toString() : ""));
+					campo = getTblResultado().getValueAt(linhaSelecionada, 4);
 					txtGerencia.setText(( campo != null ? (String)campo : ""));
 					setContextoEditar(true);
 				};
@@ -61,17 +61,22 @@ public class AbaUsuario extends AbaGenerica {
 			public void actionPerformed(ActionEvent evt) {
 				try {
 					if(checkFieldsOnCreate()) {
+						User usr = new User();
+						usr.setNome(txtNomeUsuario.getText());
+						usr.setLogin(txtLogin.getText());
+						usr.setGerenciaAtual(txtGerencia.getText());
+						usr.setStatus(Integer.parseInt(txtStatus.getText()));
 						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
 						consequentemente, não representa um novo item, mas sim um update. */
 						if(getBtnNovo().isEnabled()) {
-							 // update
+							int linhaSelecionada = getTblResultado().getSelectedRow();
+							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
+							usr.setId(Integer.parseInt(id));
+							Client.getServer().updateUser(usr);
+							loadData();
+							setContextoEditar(false);
 						/* se não, representa um create */
 						} else {
-							User usr = new User();
-							usr.setNome(txtNomeUsuario.getText());
-							usr.setLogin(txtLogin.getText());
-							usr.setGerenciaAtual(txtGerencia.getText());
-							usr.setStatus(Integer.parseInt(txtStatus.getText()));
 							Client.getServer().createUser(usr);
 							loadData();
 							getBtnNovo().setEnabled(true);
@@ -144,6 +149,7 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public Vector<String> gerarHeader() {
 		Vector<String> header = new Vector<String>();
+		header.add("ID");
 		header.add("NOME");
 		header.add("LOGIN");
 		header.add("STATUS");
@@ -161,6 +167,7 @@ public class AbaUsuario extends AbaGenerica {
 		Vector<Object> linha;
 		for (User usr : users) {
 			linha = new Vector<Object>();
+			linha.add(usr.getId());
 			linha.add(usr.getNome());
 			linha.add(usr.getLogin());
 			linha.add(usr.getStatus());

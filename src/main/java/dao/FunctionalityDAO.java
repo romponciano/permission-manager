@@ -29,12 +29,13 @@ public class FunctionalityDAO implements Serializable {
 		try {
 			db = new DatabaseConnection();
 			statment = db.getConnection().createStatement();
-			result = statment.executeQuery("SELECT pluginId, nome, descricao, dataCriacao FROM FUNCIONALIDADE");
+			result = statment.executeQuery("SELECT * FROM FUNCIONALIDADE");
 			if(!result.isBeforeFirst()) {
 				throw new DBDataNotFoundException();
 			}
 			while(result.next()) {
 				Functionality func = new Functionality();
+				func.setId(result.getInt("id"));
 				func.setPluginId(result.getInt("pluginId"));
 				func.setNome(result.getString("nome"));
 				func.setDescricao(result.getString("descricao"));

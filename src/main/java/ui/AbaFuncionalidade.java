@@ -55,10 +55,12 @@ public class AbaFuncionalidade extends AbaGenerica {
 			public void valueChanged(ListSelectionEvent event) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
-					txtNomePlugin.setText(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-					txtNomeFunc.setText(getTblResultado().getValueAt(linhaSelecionada, 1).toString());
-					txtDescricao.setText(getTblResultado().getValueAt(linhaSelecionada, 2).toString());
-					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+					txtNomePlugin.setText(getTblResultado().getValueAt(linhaSelecionada, 1).toString());
+					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+					txtNomeFunc.setText(( campo != null ? campo.toString() : ""));
+					campo =  getTblResultado().getValueAt(linhaSelecionada, 3);
+					txtDescricao.setText(( campo != null ? campo.toString() : ""));
+					String data = getTblResultado().getValueAt(linhaSelecionada, 4).toString();
 					if(!data.equals("")) {
 						setDataModelFromStringDate(data);
 					} else {
@@ -79,6 +81,9 @@ public class AbaFuncionalidade extends AbaGenerica {
 						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
 						consequentemente, não representa um novo item, mas sim um update. */
 						if(getBtnNovo().isEnabled()) {
+							int linhaSelecionada = getTblResultado().getSelectedRow();
+							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
+							func.setId(Integer.parseInt(id));
 							Client.getServer().updateFunctionality(func);
 							loadData();
 							setContextoEditar(false);
@@ -151,6 +156,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 	@Override
 	public Vector<String> gerarHeader() {
 		Vector<String> header = new Vector<String>();
+		header.add("ID");
 		header.add("PLUGIN");
 		header.add("NOME");
 		header.add("DESCRIÇÃO");
@@ -168,6 +174,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 		Vector<Object> linha;
 		for(Functionality func : funcs) {
 			linha = new Vector<Object>();
+			linha.add(func.getId());
 			linha.add(func.getPluginId());
 			linha.add(func.getNome());
 			linha.add(func.getDescricao());
@@ -175,6 +182,9 @@ public class AbaFuncionalidade extends AbaGenerica {
 			dadosFinal.add(linha);
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
+		this.getTblResultado().getColumnModel().getColumn(0).setMinWidth(0);
+		this.getTblResultado().getColumnModel().getColumn(0).setMaxWidth(0);
+		this.getTblResultado().getColumnModel().getColumn(0).setWidth(0);
 	}
 
 	@Override

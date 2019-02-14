@@ -53,9 +53,11 @@ public class AbaPlugin extends AbaGenerica {
 			public void valueChanged(ListSelectionEvent event) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
-					txtNomePlugin.setText(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-					txtDescricao.setText(getTblResultado().getValueAt(linhaSelecionada, 1).toString());
-					String data = getTblResultado().getValueAt(linhaSelecionada, 2).toString();
+					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+					txtNomePlugin.setText(( campo != null ? campo.toString() : ""));
+					campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+					txtDescricao.setText(( campo != null ? campo.toString() : ""));
+					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
 					if(!data.equals("")) {
 						setDataModelFromStringDate(data);
 					} else {
@@ -75,6 +77,9 @@ public class AbaPlugin extends AbaGenerica {
 						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
 						consequentemente, não representa um novo item, mas sim um update. */
 						if(getBtnNovo().isEnabled()) {
+							int linhaSelecionada = getTblResultado().getSelectedRow();
+							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
+							plg.setId(Integer.parseInt(id));
 							Client.getServer().updatePlugin(plg);
 							loadData();
 							setContextoEditar(false);
@@ -141,6 +146,7 @@ public class AbaPlugin extends AbaGenerica {
 	@Override
 	public Vector<String> gerarHeader() {
 		Vector<String> header = new Vector<String>();
+		header.add("ID");
 		header.add("NOME");
 		header.add("DESCRIÇÃO");
 		header.add("DATA DE CRIAÇÃO");
@@ -157,12 +163,16 @@ public class AbaPlugin extends AbaGenerica {
 		Vector<Object> linha;
 		for(Plugin plg : plugins) {
 			linha = new Vector<Object>();
+			linha.add(plg.getId());
 			linha.add(plg.getNome());
 			linha.add(plg.getDescricao());
 			linha.add(plg.getDataCriacaoToString()); 
 			dadosFinal.add(linha);
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
+		this.getTblResultado().getColumnModel().getColumn(0).setMinWidth(0);
+		this.getTblResultado().getColumnModel().getColumn(0).setMaxWidth(0);
+		this.getTblResultado().getColumnModel().getColumn(0).setWidth(0);
 	}
 
 	@Override

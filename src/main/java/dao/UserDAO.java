@@ -34,13 +34,13 @@ public class UserDAO implements Serializable {
 				throw new DBDataNotFoundException();
 			}
 			while(result.next()) {
-				usrs.add(new User(
-					result.getInt("id"),
-					result.getString("nomeCompleto"),
-					result.getString("login"),
-					result.getInt("status"),
-					result.getString("gerenciaAtual")
-				));
+				User usr = new User();
+				usr.setId(result.getInt("id"));
+				usr.setNome(result.getString("nomeCompleto"));
+				usr.setLogin(result.getString("login"));
+				usr.setStatus(result.getInt("status"));
+				usr.setGerenciaAtual(result.getString("gerenciaAtual"));
+				usrs.add(usr);
 			};
 		} catch (DBConnectException e) {
 			throw e;
