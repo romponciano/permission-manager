@@ -13,6 +13,8 @@ import exception.DBCreateException;
 import exception.DBConnectException;
 import exception.DBConsultException;
 import exception.DBDataNotFoundException;
+import exception.DBDeleteException;
+import exception.DBUpdateException;
 import model.User;
 
 public class UserDAO implements Serializable {
@@ -71,4 +73,45 @@ public class UserDAO implements Serializable {
 		    db.closeConnection();
 		}
 	}
+	
+	public void updateUser(User user) throws DBConnectException, DBUpdateException {
+		DatabaseConnection db = null;
+		PreparedStatement statment = null;
+		try {
+			db = new DatabaseConnection();
+			statment = db.getConnection().prepareStatement("UPDATE USUARIO SET login = ?, nomecompleto = ?, status = ?, gerenciaatual = ? WHERE ID = ?");
+			statment.setString(1, user.getLogin());
+			statment.setString(2,  user.getNome());
+			statment.setInt(3,  user.getStatus());
+			statment.setString(4, user.getGerenciaAtual());
+			statment.setInt(5, user.getId());
+			statment.executeUpdate();
+		} catch(SQLException e) {
+			throw new DBUpdateException(e.getMessage(), e.getCause());
+		} catch(DBConnectException e) {
+			throw e;
+		} finally {
+			try { statment.close(); } catch (Exception e) { /* ignorar */ }
+		    db.closeConnection();
+		}
+	}
+	
+	public void deleteUser(int userId) throws DBConnectException, DBDeleteException {
+		DatabaseConnection db = null;
+		PreparedStatement statment = null;
+		try {
+			db = new DatabaseConnection();
+			statment = db.getConnection().prepareStatement("DELETE FROM USUARIO WHERE id = ?");
+			statment.setInt(1, userId);
+			statment.executeUpdate();
+		} catch(SQLException e) {
+			throw new DBDeleteException(e.getMessage(), e.getCause());
+		} catch(DBConnectException e) {
+			throw e;
+		} finally {
+			try { statment.close(); } catch (Exception e) { /* ignorar */ }
+		    db.closeConnection();
+		}
+	}
 }
+    

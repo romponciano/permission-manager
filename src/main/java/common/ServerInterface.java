@@ -36,6 +36,62 @@ public interface ServerInterface extends Remote {
   void createPlugin(Plugin plg) throws RemoteException, ServerServiceException;
   
   /**
+   * Insere nova funcionalidade no sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void createFunctionality(Functionality func) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Deleta usuário do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void deleteUser(int userId) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Deleta plugin e suas funcionalidades do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void deletePlugin(int pluginId) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Deleta funcionalidade do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void deleteFunctionality(int funcId) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Atualiza usuário do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void updateUser(User user) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Atualiza plugin do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void updatePlugin(Plugin plugin) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Atualiza funcionalidade do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void updateFunctionality(Functionality func) throws RemoteException, ServerServiceException;
+  
+  /**
    * Obtém todos os usuários do sistema.
    * 
    * @return lista com os usuários

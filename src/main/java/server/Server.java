@@ -17,6 +17,8 @@ import exception.DBCreateException;
 import exception.DBConnectException;
 import exception.DBConsultException;
 import exception.DBDataNotFoundException;
+import exception.DBDeleteException;
+import exception.DBUpdateException;
 import exception.ServerServiceException;
 import model.Functionality;
 import model.Log;
@@ -41,8 +43,95 @@ public class Server implements ServerInterface {
 		}
 	}
 	
+	// ----------------------- deletes
 	@Override
-	public void createUser(User user) throws ServerServiceException {
+	public void deleteUser(int userId) throws RemoteException, ServerServiceException {
+		UserDAO userDAO = new UserDAO();
+		try {
+			userDAO.deleteUser(userId);
+		} catch (DBDeleteException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_DELETE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	@Override
+	public void deletePlugin(int pluginId) throws RemoteException, ServerServiceException {
+		PluginDAO pluginDAO = new PluginDAO();
+		try {
+			pluginDAO.deletePlugin(pluginId);
+		} catch (DBDeleteException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_DELETE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	@Override
+	public void deleteFunctionality(int funcId) throws RemoteException, ServerServiceException {
+		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		try {
+			funcDAO.deleteFunctionality(funcId);
+		} catch (DBDeleteException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_DELETE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	// ----------------------- updates
+	@Override
+	public void updateUser(User user) throws RemoteException, ServerServiceException {
+		UserDAO userDAO = new UserDAO();
+		try {
+			userDAO.updateUser(user);
+		} catch (DBUpdateException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_UPDATE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	@Override
+	public void updatePlugin(Plugin plugin) throws RemoteException, ServerServiceException {
+		PluginDAO pluginDAO = new PluginDAO();
+		try {
+			pluginDAO.updatePlugin(plugin);
+		} catch (DBUpdateException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_UPDATE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	@Override
+	public void updateFunctionality(Functionality func) throws RemoteException, ServerServiceException {
+		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		try {
+			funcDAO.updateFunctionality(func);
+		} catch (DBUpdateException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_UPDATE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	// ----------------------- creates
+	@Override
+	public void createUser(User user) throws RemoteException, ServerServiceException {
 		UserDAO userDAO = new UserDAO();
 		try {
 			userDAO.createUser(user);
@@ -56,7 +145,7 @@ public class Server implements ServerInterface {
 	}
 	
 	@Override
-	public void createPlugin(Plugin plg) throws ServerServiceException {
+	public void createPlugin(Plugin plg) throws RemoteException, ServerServiceException {
 		PluginDAO pluginDAO = new PluginDAO();
 		try {
 			pluginDAO.createPlugin(plg);
@@ -69,6 +158,21 @@ public class Server implements ServerInterface {
 		}
 	}
 	
+	@Override
+	public void createFunctionality(Functionality func) throws RemoteException, ServerServiceException {
+		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		try {
+			funcDAO.createFunctionality(func);
+		} catch (DBCreateException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CREATE);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		}
+	}
+	
+	// ----------------------- getAlls
 	@Override
 	public List<User> getUsers() throws RemoteException, ServerServiceException {
 		UserDAO userDAO = new UserDAO();
@@ -83,7 +187,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		} catch (DBDataNotFoundException e) {
 			logarException(TIPOS_LOG.INFO, e);
-			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+			//throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return users;
 	}
@@ -96,13 +200,13 @@ public class Server implements ServerInterface {
 			plugins = pluginDAO.getPlugins();
 		} catch (DBConsultException e) {
 			logarException(TIPOS_LOG.ERRO, e);
-			//throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		} catch (DBDataNotFoundException e) {
 			logarException(TIPOS_LOG.INFO, e);
-			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+			//throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return plugins;
 	}
@@ -121,7 +225,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		} catch (DBDataNotFoundException e) {
 			logarException(TIPOS_LOG.INFO, e);
-			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+			//throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return funcionalidades;
 	}
