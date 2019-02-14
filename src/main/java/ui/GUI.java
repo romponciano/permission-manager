@@ -20,12 +20,14 @@ public class GUI implements Serializable {
 	JTabbedPane abasContainer;
 	AbaGenerica abaUsuario;
 	AbaGenerica abaPlugin;
+	AbaGenerica abaFunc;
 	
 	public GUI() {
 		frame = new JFrame();
 		abasContainer = new JTabbedPane();
 		abaUsuario = new AbaUsuario(frame);
 		abaPlugin = new AbaPlugin(frame);
+		abaFunc = new AbaFuncionalidade(frame);
 	}
 	
 	/**
@@ -35,6 +37,7 @@ public class GUI implements Serializable {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		abasContainer.add(abaUsuario, ABAS.Usuário.toString());
 		abasContainer.add(abaPlugin, ABAS.Plugin.toString());
+		abasContainer.add(abaFunc, ABAS.Funcionalidade.toString());
 		frame.setContentPane(abasContainer);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
@@ -54,12 +57,14 @@ public class GUI implements Serializable {
 					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Plugin.toString()) && abaPlugin.getTblResultado().getRowCount() <= 0) {
 						abaPlugin.loadData();
 					}
-					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Funcionalidade.toString()) && abaPlugin.getTblResultado().getRowCount() <= 0) {
-						
+					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Funcionalidade.toString()) && abaFunc.getTblResultado().getRowCount() <= 0) {
+						abaFunc.loadData();
 					}
 				} 
 				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+				catch (RemoteException err) { 
+					exibirDialogError(Const.ERROR_REMOTE_EXCEPT); 
+					} 
 				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			};
 		});

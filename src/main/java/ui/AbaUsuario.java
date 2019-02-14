@@ -59,13 +59,14 @@ public class AbaUsuario extends AbaGenerica {
 		};
 		ActionListener saveClick = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
-					consequentemente, não representa um novo item, mas sim um update. */
-				if(getBtnNovo().isEnabled()) {
-					// update
-				} else {
-					try {
-						if(checkFieldsOnCreate()) {
+				try {
+					if(checkFieldsOnCreate()) {
+						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
+						consequentemente, não representa um novo item, mas sim um update. */
+						if(getBtnNovo().isEnabled()) {
+							 // update
+						/* se não, representa um create */
+						} else {
 							User usr = new User();
 							usr.setNome(txtNomeUsuario.getText());
 							usr.setLogin(txtLogin.getText());
@@ -75,17 +76,26 @@ public class AbaUsuario extends AbaGenerica {
 							loadData();
 							getBtnNovo().setEnabled(true);
 						};
-					}
-					catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
-					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+					};
 				}
+				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
+				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			}
 		};
 		initListeners(selectItemTable, saveClick);
 	}
 
+	@Override
+	public void setContextoCriar(boolean setar) {
+		super.setContextoCriar(setar);
+		txtNomeUsuario.setText("");
+		txtLogin.setText("");
+		txtStatus.setText("");
+		txtGerencia.setText("");
+	}
+	
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		setContextoEditar(false);
@@ -109,6 +119,12 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public void setContextoEditar(boolean setar) {
 		super.setContextoEditar(setar);
+		if(!setar) {
+			txtNomeUsuario.setText("");
+			txtLogin.setText("");
+			txtStatus.setText("");
+			txtGerencia.setText("");
+		}
 		txtNomeUsuario.setEditable(setar);
 		txtLogin.setEditable(setar);
 		txtStatus.setEditable(setar);
