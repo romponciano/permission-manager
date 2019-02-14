@@ -99,7 +99,26 @@ public class AbaPlugin extends AbaGenerica {
 				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			}
 		};
-		initListeners(selectItemList, saveClick);
+		ActionListener removeClick = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				int linhaSelecionada = getTblResultado().getSelectedRow();
+				if (linhaSelecionada > -1) {
+					String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
+					try {
+						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
+						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "plugin e todos os seus plugins").replaceFirst("//?", id);
+						if(exibirDialogConfirmation(msgConfirmacao)) {
+							Client.getServer().deletePlugin(Integer.parseInt(id));
+							loadData();
+						}
+					}
+					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+				};
+			}
+		};
+		initListeners(selectItemList, saveClick, removeClick);
 	}
 	
 	private void initPnlForm() {

@@ -51,13 +51,19 @@ public class GUI implements Serializable {
 				JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
 				int index = sourceTabbedPane.getSelectedIndex();
 				try {  
-					if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Usuário.toString()) && abaUsuario.getTblResultado().getRowCount() <= 0) {
+					/* && abaUsuario.getTblResultado().getRowCount() <= 0
+					 * foi removida a abordagem de não carregar caso já houvesse carga na tabela, pois
+					 * se um item é excluido, seus dependentes também. (
+					 * Por exemplo: como o caso de excluir um plugin e suas funcionalidades juntos. Então 
+					 * é preciso recarregar as funcs, pois foram alteradas com a remoção do plugin.
+					 */
+					if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Usuário.toString())) {
 						abaUsuario.loadData();
 					}
-					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Plugin.toString()) && abaPlugin.getTblResultado().getRowCount() <= 0) {
+					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Plugin.toString())) {
 						abaPlugin.loadData();
 					}
-					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Funcionalidade.toString()) && abaFunc.getTblResultado().getRowCount() <= 0) {
+					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Funcionalidade.toString())) {
 						abaFunc.loadData();
 					}
 				} 
@@ -80,9 +86,4 @@ public class GUI implements Serializable {
 	private void exibirDialogError(String msg) {
 		JOptionPane.showMessageDialog(frame, msg, "Error", JOptionPane.ERROR_MESSAGE);
 	}
-	
-		
-	
-	
-	
 }

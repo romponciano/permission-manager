@@ -73,9 +73,10 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	/**
 	 * Método para iniciar os listeners da aba
 	 * @param selectItemTable 
+	 * @param removeClick 
 	 * @param createNewElement 
 	 */
-	public void initListeners(ListSelectionListener selectItemTable, ActionListener saveClick) {
+	public void initListeners(ListSelectionListener selectItemTable, ActionListener saveClick, ActionListener removeClick) {
 		this.btnCancelar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) { setContextoEditar(false);}
 		});
@@ -84,6 +85,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		});
 		this.tblResultado.getSelectionModel().addListSelectionListener(selectItemTable);
 		this.btnSalvar.addActionListener(saveClick);
+		this.btnRemover.addActionListener(removeClick);
 	};
 	
 	/**
@@ -178,6 +180,19 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 */
 	public void exibirDialogError(String msg) {
 		JOptionPane.showMessageDialog(this.parentFrame, msg, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+	
+	/**
+	 * Método para exibir DialogBox de algum <b>erro</b>.
+	 * @param msg - mensagem a ser exibida no DialogBox
+	 */
+	public boolean exibirDialogConfirmation(String msg) {
+		int dialogButton = JOptionPane.YES_NO_OPTION;
+		int dialogResult = JOptionPane.showConfirmDialog(this.parentFrame, msg, "Warning", dialogButton);
+		if(dialogResult == JOptionPane.YES_OPTION){
+			return true;
+		}
+		return false;
 	}
 
 	public JComboBox<String> getCmbParametroConsulta() {

@@ -89,7 +89,26 @@ public class AbaUsuario extends AbaGenerica {
 				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			}
 		};
-		initListeners(selectItemTable, saveClick);
+		ActionListener removeClick = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				int linhaSelecionada = getTblResultado().getSelectedRow();
+				if (linhaSelecionada > -1) {
+					String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
+					try {
+						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
+						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "usuário").replaceFirst("//?", id);
+						if(exibirDialogConfirmation(msgConfirmacao)) {
+							Client.getServer().deleteUser(Integer.parseInt(id));
+							loadData();
+						}
+					}
+					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+				};
+			}
+		};
+		initListeners(selectItemTable, saveClick, removeClick);
 	}
 
 	@Override
