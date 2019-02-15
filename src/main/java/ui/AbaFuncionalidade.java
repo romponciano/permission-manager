@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +27,7 @@ import common.Const;
 import exception.ServerServiceException;
 import exception.UICheckFieldException;
 import model.Functionality;
+import model.Plugin;
 import net.miginfocom.swing.MigLayout;
 
 public class AbaFuncionalidade extends AbaGenerica {
@@ -33,10 +35,10 @@ public class AbaFuncionalidade extends AbaGenerica {
 	private static final long serialVersionUID = -8445952309777454337L;
 	
 	private JLabel lblNomePlugin = new JLabel("Plugin: ");
-	private JLabel lblNomeFunc = new JLabel("Funcionalidade: ");
+	private JLabel lblNomeFunc = new JLabel("Nome: ");
 	private JLabel lblDescricao = new JLabel("Descrição: ");
 	private JLabel lblDataCriacao = new JLabel("Data de criação: ");
-	private JTextField txtNomePlugin = new JTextField(15);
+	private ComboBoxWithItems cmbPlugin = new ComboBoxWithItems();
 	private JTextField txtNomeFunc = new JTextField(15);
 	private JTextField txtDescricao = new JTextField(15);
 
@@ -55,7 +57,10 @@ public class AbaFuncionalidade extends AbaGenerica {
 			public void valueChanged(ListSelectionEvent event) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
-					txtNomePlugin.setText(getTblResultado().getValueAt(linhaSelecionada, 1).toString());
+					// como pluginId é estrangeira e obrigatória, então não checar se é null
+					String stringUnica = getTblResultado().getValueAt(linhaSelecionada, 1).toString();
+					ComboBoxItem item = new ComboBoxItem(stringUnica);
+					cmbPlugin.setSelectedItemById(item.getId());
 					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
 					txtNomeFunc.setText(( campo != null ? campo.toString() : ""));
 					campo =  getTblResultado().getValueAt(linhaSelecionada, 3);
@@ -93,7 +98,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 				try {
 					if(checkFieldsOnCreate()) {
 						Functionality func = new Functionality();
-						func.setPluginId(Integer.parseInt(txtNomePlugin.getText()));
+						func.getPlugin().setId(cmbPlugin.getIdFromSelectedItem());
 						func.setNome(txtNomeFunc.getText());
 						func.setDescricao(txtDescricao.getText());
 						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
@@ -107,7 +112,6 @@ public class AbaFuncionalidade extends AbaGenerica {
 							setContextoEditar(false);
 						/* se não, representa um create */
 						} else {
-							// se quiser pegar do datePicker: (Date) datePicker.getModel().getValue()
 							func.setDataCriacaoFromDate(new Date());
 							Client.getServer().createFunctionality(func);
 							loadData();
@@ -128,7 +132,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 					String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
 					try {
 						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "funcionalidade").replaceFirst("//?", id);
+						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "funcionalidade id: " + id);
 						if(exibirDialogConfirmation(msgConfirmacao)) {
 							Client.getServer().deleteUser(Integer.parseInt(id));
 							loadData();
@@ -146,7 +150,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 	private void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("","[right][grow]",""));
 		pnlForm.add(lblNomePlugin);
-		pnlForm.add(txtNomePlugin, "wrap, growx");
+		pnlForm.add(cmbPlugin, "wrap, growx");
 		pnlForm.add(lblNomeFunc);
 		pnlForm.add(txtNomeFunc, "wrap, growx");
 		pnlForm.add(lblDescricao);
@@ -160,7 +164,6 @@ public class AbaFuncionalidade extends AbaGenerica {
 	@Override
 	public void setContextoCriar(boolean setar) {
 		super.setContextoCriar(setar);
-		txtNomePlugin.setText("");
 		txtNomeFunc.setText("");
 		txtDescricao.setText("");
 		setDataModelFromStringDate(Const.DATA_FORMAT.format(new Date()));
@@ -170,12 +173,11 @@ public class AbaFuncionalidade extends AbaGenerica {
 	public void setContextoEditar(boolean setar) {
 		super.setContextoEditar(setar);
 		if(!setar) {
-			txtNomePlugin.setText("");
 			txtNomeFunc.setText("");
 			txtDescricao.setText("");
 			dateModel.setSelected(false);
 		}
-		txtNomePlugin.setEditable(setar);
+		cmbPlugin.setEnabled(setar);
 		txtNomeFunc.setEditable(setar);
 		txtDescricao.setEditable(setar);
 	}
@@ -194,10 +196,10 @@ public class AbaFuncionalidade extends AbaGenerica {
 	public Vector<String> gerarHeader() {
 		Vector<String> header = new Vector<String>();
 		header.add("ID");
-		header.add("PLUGIN");
 		header.add("NOME");
 		header.add("DESCRIÇÃO");
 		header.add("DATA DE CRIAÇÃO");
+		header.add("PLUGIN");
 		return header;
 	}
 	
@@ -206,19 +208,18 @@ public class AbaFuncionalidade extends AbaGenerica {
 		setContextoEditar(false);
 		List<Functionality> funcs = Client.getServer().getFunctionalities();
 		popularTabelaResultado(funcs);
-		
+		List<String> opcoes = convertPluginListToStringList(Client.getServer().getPlugins());
+		cmbPlugin.popularFromStringList(opcoes);
 	}
 
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
-		String campo;
-		campo = this.txtNomePlugin.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
-		}
-		campo = this.txtNomeFunc.getText();
+		String campo = this.txtNomeFunc.getText();
 		if(campo == null || campo.length() <= 0) {
 			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+		}
+		if(this.cmbPlugin.getSelectedItem() == null) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
 		}
 		return true;
 	}	
@@ -243,16 +244,13 @@ public class AbaFuncionalidade extends AbaGenerica {
 		for(Functionality func : funcs) {
 			linha = new Vector<Object>();
 			linha.add(func.getId());
-			linha.add(func.getPluginId());
 			linha.add(func.getNome());
 			linha.add(func.getDescricao());
-			linha.add(func.getDataCriacaoToString()); 
+			linha.add(func.getDataCriacaoToString());
+			linha.add(func.getPlugin().toString());
 			dadosFinal.add(linha);
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
-		this.getTblResultado().getColumnModel().getColumn(0).setMinWidth(0);
-		this.getTblResultado().getColumnModel().getColumn(0).setMaxWidth(0);
-		this.getTblResultado().getColumnModel().getColumn(0).setWidth(0);
 	}
 	
 	private void setDataModelFromStringDate(String data) {
@@ -261,5 +259,11 @@ public class AbaFuncionalidade extends AbaGenerica {
 		String dia = data.substring(data.lastIndexOf("-")+1, data.length());
 		dateModel.setDate(Integer.valueOf(ano), Integer.valueOf(mes)-1, Integer.valueOf(dia));
 		dateModel.setSelected(true);
+	}
+	
+	private List<String> convertPluginListToStringList(List<Plugin> plugs) {
+		List<String> opcoes = new ArrayList<String>();
+		for(Plugin plg : plugs) opcoes.add(plg.toString());
+		return opcoes;
 	}
 }

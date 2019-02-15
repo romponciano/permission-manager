@@ -13,16 +13,12 @@ public class Functionality implements Serializable {
 	private int id;
 	private String nome;
 	private String descricao;
-	private int pluginId;
+	private Plugin plugin;
 	private Calendar dataCriacao;
 	
-	public Functionality(int id, String nome, String descricao, Calendar data) {
-		this.id = id;
-		this.nome = nome;
-		this.descricao = descricao;
-		this.dataCriacao = data;
+	public Functionality() {
+		this.plugin = new Plugin();
 	}
-	public Functionality() {	}
 	
 	public int getId() {
 		return id;
@@ -58,11 +54,13 @@ public class Functionality implements Serializable {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public int getPluginId() {
-		return pluginId;
+	public Plugin getPlugin() {
+		return plugin;
 	}
-	public void setPluginId(int pluginId) {
-		this.pluginId = pluginId;
+	public void setPlugin(Plugin plugin) {
+		this.plugin = plugin;
 	}
-	
+	public String getPluginIdWithName() {
+		return plugin.getId() + "-" + plugin.getNome(); 
+	}
 }

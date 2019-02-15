@@ -124,7 +124,7 @@ public class AbaPlugin extends AbaGenerica {
 					String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
 					try {
 						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "plugin e todos os seus plugins").replaceFirst("//?", id);
+						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "plugin id: " + id + "e suas funcionalidades");
 						if(exibirDialogConfirmation(msgConfirmacao)) {
 							Client.getServer().deletePlugin(Integer.parseInt(id));
 							loadData();
@@ -233,9 +233,6 @@ public class AbaPlugin extends AbaGenerica {
 			dadosFinal.add(linha);
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
-		this.getTblResultado().getColumnModel().getColumn(0).setMinWidth(0);
-		this.getTblResultado().getColumnModel().getColumn(0).setMaxWidth(0);
-		this.getTblResultado().getColumnModel().getColumn(0).setWidth(0);
 	}
 	
 	private void setDataModelFromStringDate(String data) {

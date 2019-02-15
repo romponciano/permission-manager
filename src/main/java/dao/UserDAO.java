@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import common.DatabaseConnection;
-import exception.DBCreateException;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.DBCreateException;
 import exception.DBDataNotFoundException;
 import exception.DBDeleteException;
 import exception.DBUpdateException;
@@ -29,17 +29,28 @@ public class UserDAO implements Serializable {
 		try {
 			db = new DatabaseConnection();
 			statment = db.getConnection().createStatement();
-			result = statment.executeQuery("SELECT * FROM USUARIO");
+			result = statment.executeQuery("SELECT" + 
+					"	u.id, " + 
+					"	u.nomeCompleto, " + 
+					"	u.login, " + 
+					"	u.gerenciaAtual, " + 
+					"	s.id AS \"statusid\", " + 
+					"	s.nome AS \"statusnome\" " + 
+					"FROM USUARIO u " + 
+					"INNER JOIN STATUS s ON u.STATUS = s.ID"
+			);
 			if(!result.isBeforeFirst()) {
 				throw new DBDataNotFoundException();
 			}
+			
 			while(result.next()) {
 				User usr = new User();
 				usr.setId(result.getInt("id"));
 				usr.setNome(result.getString("nomeCompleto"));
 				usr.setLogin(result.getString("login"));
-				usr.setStatus(result.getInt("status"));
 				usr.setGerenciaAtual(result.getString("gerenciaAtual"));
+				usr.getStatus().setId(result.getInt("statusid"));
+				usr.getStatus().setNome(result.getString("statusnome"));
 				usrs.add(usr);
 			};
 		} catch (DBConnectException e) {
@@ -61,7 +72,7 @@ public class UserDAO implements Serializable {
 			statment = db.getConnection().prepareStatement("INSERT INTO USUARIO (login, nomecompleto, status, gerenciaatual) VALUES (?, ?, ?, ?)");
 			statment.setString(1, user.getLogin());
 			statment.setString(2,  user.getNome());
-			statment.setInt(3,  user.getStatus());
+			statment.setInt(3,  user.getStatus().getId());
 			statment.setString(4, user.getGerenciaAtual());
 			statment.executeUpdate();
 		} catch(SQLException e) {
@@ -82,7 +93,7 @@ public class UserDAO implements Serializable {
 			statment = db.getConnection().prepareStatement("UPDATE USUARIO SET login = ?, nomecompleto = ?, status = ?, gerenciaatual = ? WHERE ID = ?");
 			statment.setString(1, user.getLogin());
 			statment.setString(2,  user.getNome());
-			statment.setInt(3,  user.getStatus());
+			statment.setInt(3,  user.getStatus().getId());
 			statment.setString(4, user.getGerenciaAtual());
 			statment.setInt(5, user.getId());
 			statment.executeUpdate();
@@ -122,7 +133,16 @@ public class UserDAO implements Serializable {
 		try {
 			db = new DatabaseConnection();
 			statement = db.getConnection().createStatement();
-			String query = "SELECT * FROM USUARIO WHERE " + atributo + " LIKE '%" + termo + "%'";
+			String query = "SELECT" + 
+					"	u.id, " + 
+					"	u.nomeCompleto, " + 
+					"	u.login, " + 
+					"	u.gerenciaAtual, " + 
+					"	s.id AS \"statusid\", " + 
+					"	s.nome AS \"statusnome\" " + 
+					"FROM USUARIO u " + 
+					"INNER JOIN STATUS s ON u.STATUS = s.ID " +
+					"WHERE " + atributo + " LIKE '%" + termo + "%'";
 			result = statement.executeQuery(query);
 			if(!result.isBeforeFirst()) {
 				throw new DBDataNotFoundException();
@@ -132,8 +152,9 @@ public class UserDAO implements Serializable {
 				usr.setId(result.getInt("id"));
 				usr.setNome(result.getString("nomeCompleto"));
 				usr.setLogin(result.getString("login"));
-				usr.setStatus(result.getInt("status"));
 				usr.setGerenciaAtual(result.getString("gerenciaAtual"));
+				usr.getStatus().setId(result.getInt("statusid"));
+				usr.getStatus().setNome(result.getString("statusnome"));
 				usrs.add(usr);
 			};
 		} catch (DBConnectException e) {

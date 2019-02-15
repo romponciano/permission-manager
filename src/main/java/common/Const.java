@@ -30,7 +30,7 @@ public final class Const implements Serializable {
 	public static final String INFO_EMPTY_FIELD = "O campo ? não pode ser vazio.";
 	public static final String INFO_BIG_FIELD = "O campo ? não pode ter mais de ? caracters";
 
-	public static final String WARN_CONFIRM_DELETE = "Você tem certeza que deseja excluir ? com id ? ?";
+	public static final String WARN_CONFIRM_DELETE = "Você tem certeza que deseja excluir ? ?";
 	
 	/**
 	   The caller references the constants using <tt>Consts.EMPTY_STRING</tt>, 

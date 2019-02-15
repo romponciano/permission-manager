@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -19,6 +20,7 @@ import client.Client;
 import common.Const;
 import exception.ServerServiceException;
 import exception.UICheckFieldException;
+import model.Status;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 
@@ -26,14 +28,14 @@ public class AbaUsuario extends AbaGenerica {
 
 	private static final long serialVersionUID = -8445952309777454337L;
 
-	private JLabel lblNomeUsuario = new JLabel("Nome: ");
-	private JLabel lblLogin = new JLabel("Login: ");
-	private JLabel lblStatus = new JLabel("Status: ");
-	private JLabel lblGerencia = new JLabel("Gerência Atual: ");
+	final private JLabel lblNomeUsuario = new JLabel("Nome: ");
+	final private JLabel lblLogin = new JLabel("Login: ");
+	final private JLabel lblStatus = new JLabel("Status: ");
+	final private JLabel lblGerencia = new JLabel("Gerência Atual: ");
 	final private JTextField txtNomeUsuario = new JTextField(15);
 	final private JTextField txtLogin = new JTextField(15);
-	final private JTextField txtStatus = new JTextField(15);
 	final private JTextField txtGerencia = new JTextField(15);
+	final private ComboBoxWithItems cmbStatus = new ComboBoxWithItems();
 
 	public AbaUsuario(JFrame parentFrame) {
 		super(parentFrame);
@@ -45,15 +47,17 @@ public class AbaUsuario extends AbaGenerica {
 			public void valueChanged(ListSelectionEvent event) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
+					setContextoEditar(true);
 					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
 					txtNomeUsuario.setText(( campo != null ? (String)campo : ""));
 					campo = getTblResultado().getValueAt(linhaSelecionada, 2);
 					txtLogin.setText(( campo != null ? (String)campo : ""));
-					campo = getTblResultado().getValueAt(linhaSelecionada, 3);
-					txtStatus.setText(( campo != null ? ((Integer)campo).toString() : ""));
 					campo = getTblResultado().getValueAt(linhaSelecionada, 4);
 					txtGerencia.setText(( campo != null ? (String)campo : ""));
-					setContextoEditar(true);
+					// como statusId é estrangeira e obrigatória, então não checar se é null
+					String stringUnica = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+					ComboBoxItem item = new ComboBoxItem(stringUnica);
+					cmbStatus.setSelectedItemById(item.getId());
 				};
 			}
 		};
@@ -83,7 +87,7 @@ public class AbaUsuario extends AbaGenerica {
 						usr.setNome(txtNomeUsuario.getText());
 						usr.setLogin(txtLogin.getText());
 						usr.setGerenciaAtual(txtGerencia.getText());
-						usr.setStatus(Integer.parseInt(txtStatus.getText()));
+						usr.getStatus().setId(cmbStatus.getIdFromSelectedItem());
 						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
 						consequentemente, não representa um novo item, mas sim um update. */
 						if(getBtnNovo().isEnabled()) {
@@ -114,7 +118,7 @@ public class AbaUsuario extends AbaGenerica {
 					String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
 					try {
 						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "usuário").replaceFirst("//?", id);
+						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "usuário id: " + id);
 						if(exibirDialogConfirmation(msgConfirmacao)) {
 							Client.getServer().deleteUser(Integer.parseInt(id));
 							loadData();
@@ -134,7 +138,6 @@ public class AbaUsuario extends AbaGenerica {
 		super.setContextoCriar(setar);
 		txtNomeUsuario.setText("");
 		txtLogin.setText("");
-		txtStatus.setText("");
 		txtGerencia.setText("");
 	}
 	
@@ -143,6 +146,8 @@ public class AbaUsuario extends AbaGenerica {
 		setContextoEditar(false);
 		List<User> users = Client.getServer().getUsers();
 		popularTabelaResultado(users);
+		List<String> opcoes = convertStatusListToStringList(Client.getServer().getStatus());
+		cmbStatus.popularFromStringList(opcoes);
 	}
 
 	private void initPnlForm() {
@@ -152,7 +157,7 @@ public class AbaUsuario extends AbaGenerica {
 		pnlForm.add(lblLogin);
 		pnlForm.add(txtLogin, "growx, wrap");
 		pnlForm.add(lblStatus);
-		pnlForm.add(txtStatus, "growx, wrap");
+		pnlForm.add(cmbStatus, "growx, wrap");
 		pnlForm.add(lblGerencia);
 		pnlForm.add(txtGerencia, "growx");
 		registerForm(pnlForm);
@@ -164,12 +169,11 @@ public class AbaUsuario extends AbaGenerica {
 		if(!setar) {
 			txtNomeUsuario.setText("");
 			txtLogin.setText("");
-			txtStatus.setText("");
 			txtGerencia.setText("");
 		}
 		txtNomeUsuario.setEditable(setar);
 		txtLogin.setEditable(setar);
-		txtStatus.setEditable(setar);
+		cmbStatus.setEditable(setar);
 		txtGerencia.setEditable(setar);
 	}
 
@@ -197,6 +201,9 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String campo;
+		if(this.cmbStatus.getSelectedItem() == null) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "status"));
+		}
 		campo = this.txtNomeUsuario.getText();
 		if(campo == null || campo.length() <= 0) {
 			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
@@ -233,10 +240,16 @@ public class AbaUsuario extends AbaGenerica {
 			linha.add(usr.getId());
 			linha.add(usr.getNome());
 			linha.add(usr.getLogin());
-			linha.add(usr.getStatus());
+			linha.add(usr.getStatus().toString());
 			linha.add(usr.getGerenciaAtual());
 			dadosFinal.add(linha);
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
+	}
+	
+	private List<String> convertStatusListToStringList(List<Status> stats) {
+		List<String> opcoes = new ArrayList<String>();
+		for(Status stat : stats) opcoes.add(stat.toString());
+		return opcoes;
 	}
 }

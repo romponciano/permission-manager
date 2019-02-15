@@ -29,17 +29,26 @@ public class FunctionalityDAO implements Serializable {
 		try {
 			db = new DatabaseConnection();
 			statment = db.getConnection().createStatement();
-			result = statment.executeQuery("SELECT * FROM FUNCIONALIDADE");
+			result = statment.executeQuery("SELECT " + 
+					"	f.id, " + 
+					"	f.nome, " + 
+					"	f.descricao, " +
+					"   f.dataCriacao, " +
+					"	f.pluginid, " + 
+					"	p.nome AS \"nomeplugin\" " + 
+					"FROM FUNCIONALIDADE f " + 
+					"INNER JOIN PLUGIN p ON f.PLUGINID = p.ID");
 			if(!result.isBeforeFirst()) {
 				throw new DBDataNotFoundException();
 			}
 			while(result.next()) {
 				Functionality func = new Functionality();
 				func.setId(result.getInt("id"));
-				func.setPluginId(result.getInt("pluginId"));
 				func.setNome(result.getString("nome"));
 				func.setDescricao(result.getString("descricao"));
 				func.setDataCriacaoFromDate(result.getDate("dataCriacao"));
+				func.getPlugin().setId(result.getInt("pluginid"));
+				func.getPlugin().setNome(result.getString("nomeplugin"));
 				funcs.add(func);
 			};
 		} catch (DBConnectException e) {
@@ -61,7 +70,7 @@ public class FunctionalityDAO implements Serializable {
 			statment = db.getConnection().prepareStatement("INSERT INTO FUNCIONALIDADE (nome, descricao, pluginId, dataCriacao) VALUES (?,  ?, ?, TO_DATE(?,'YYYY-MM-DD'))");
 			statment.setString(1, func.getNome());
 			statment.setString(2, func.getDescricao());
-			statment.setInt(3, func.getPluginId());
+			statment.setInt(3, func.getPlugin().getId());
 			statment.setString(4, func.getDataCriacaoToString());
 			statment.executeUpdate();
 		} catch(SQLException e) {
@@ -82,7 +91,7 @@ public class FunctionalityDAO implements Serializable {
 			statment = db.getConnection().prepareStatement("UPDATE FUNCIONALIDADE SET nome = ?, descricao = ?, pluginId = ? WHERE ID = ?");
 			statment.setString(1, func.getNome());
 			statment.setString(2,  func.getDescricao());
-			statment.setInt(3,  func.getPluginId());
+			statment.setInt(3,  func.getPlugin().getId());
 			statment.setInt(4, func.getId());
 			statment.executeUpdate();
 		} catch(SQLException e) {
@@ -121,7 +130,16 @@ public class FunctionalityDAO implements Serializable {
 		try {
 			db = new DatabaseConnection();
 			statement = db.getConnection().createStatement();
-			String query = "SELECT * FROM FUNCIONALIDADE WHERE " + atributo + " LIKE '%" + termo + "%'";
+			String query = "SELECT " + 
+			"	f.id, " + 
+			"	f.nome, " + 
+			"	f.descricao, " +
+			"   f.dataCriacao, " +
+			"	f.pluginid, " + 
+			"	p.nome AS \"nomeplugin\" " + 
+			"FROM FUNCIONALIDADE f " + 
+			"INNER JOIN PLUGIN p ON f.PLUGINID = p.ID " + 
+			"WHERE " + atributo + " LIKE '%" + termo + "%'";
 			result = statement.executeQuery(query);
 			if(!result.isBeforeFirst()) {
 				throw new DBDataNotFoundException();
@@ -129,10 +147,11 @@ public class FunctionalityDAO implements Serializable {
 			while(result.next()) {
 				Functionality func = new Functionality();
 				func.setId(result.getInt("id"));
-				func.setPluginId(result.getInt("pluginId"));
 				func.setNome(result.getString("nome"));
 				func.setDescricao(result.getString("descricao"));
 				func.setDataCriacaoFromDate(result.getDate("dataCriacao"));
+				func.getPlugin().setId(result.getInt("pluginId"));
+				func.getPlugin().setNome(result.getString("nomeplugin"));
 				funcs.add(func);
 			};
 		} catch (DBConnectException e) {

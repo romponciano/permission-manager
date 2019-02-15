@@ -8,18 +8,12 @@ public class User implements Serializable {
 	private Integer id;
 	private String nome;
 	private String login;
-	private Integer status;
+	private Status status;
 	private String gerenciaAtual;
-	
-	public User(Integer id, String nome, String login, Integer status, String gerenciaAtual) {
-		this.id = id;
-		this.nome = nome;
-		this.login = login;
-		this.status = status;
-		this.gerenciaAtual = gerenciaAtual;
-	}
 
-	public User() {	}
+	public User() {	
+		this.status = new Status();
+	}
 
 	public Integer getId() {
 		return id;
@@ -33,7 +27,7 @@ public class User implements Serializable {
 		return login;
 	}
 
-	public Integer getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 
@@ -49,7 +43,7 @@ public class User implements Serializable {
 		this.login = login;
 	}
 
-	public void setStatus(Integer status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 

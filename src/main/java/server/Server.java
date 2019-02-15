@@ -12,6 +12,7 @@ import common.ServerInterface;
 import dao.FunctionalityDAO;
 import dao.LogDAO;
 import dao.PluginDAO;
+import dao.StatusDAO;
 import dao.UserDAO;
 import exception.DBCreateException;
 import exception.DBConnectException;
@@ -24,6 +25,7 @@ import model.Functionality;
 import model.Log;
 import model.Log.TIPOS_LOG;
 import model.Plugin;
+import model.Status;
 import model.User;
 
 public class Server implements ServerInterface {
@@ -286,6 +288,25 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return funcionalidades;
+	}
+	
+	@Override
+	public List<Status> getStatus() throws RemoteException, ServerServiceException {
+		StatusDAO statusDAO = new StatusDAO();
+		List<Status> status = new ArrayList<Status>();
+		try {
+			status = statusDAO.getStatus();
+		} catch (DBConsultException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		} catch (DBDataNotFoundException e) {
+			logarException(TIPOS_LOG.INFO, e);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+		}
+		return status;
 	}
 	
 	private void logarException(TIPOS_LOG tipo, Exception e) {

@@ -7,6 +7,7 @@ import java.util.List;
 import exception.ServerServiceException;
 import model.Functionality;
 import model.Plugin;
+import model.Status;
 import model.User;
 
 /**
@@ -99,6 +100,15 @@ public interface ServerInterface extends Remote {
    * @throws ServerServiceException
    */
   List<User> getUsers() throws RemoteException, ServerServiceException;
+  
+  /**
+   * Obtém todos os status de usuários do sistema.
+   * 
+   * @return lista com os usuários
+   * @throws RemoteException .
+   * @throws ServerServiceException
+   */
+  List<Status> getStatus() throws RemoteException, ServerServiceException;
   
   /**
    * Obtém todos os plugins do sistema.
