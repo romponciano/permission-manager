@@ -82,7 +82,10 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 			public void actionPerformed(ActionEvent evt) { setContextoEditar(false);}
 		});
 		this.btnNovo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) { setContextoCriar(true); }
+			public void actionPerformed(ActionEvent evt) {
+				try { loadData(); } catch (RemoteException | ServerServiceException | NotBoundException e) { } // nesse caso não fazer nada
+				setContextoCriar(true); 
+			}
 		});
 		this.tblResultado.getSelectionModel().addListSelectionListener(selectItemTable);
 		this.btnSalvar.addActionListener(saveClick);

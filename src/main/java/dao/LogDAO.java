@@ -10,11 +10,21 @@ public class LogDAO implements Serializable {
 	
 	private static final long serialVersionUID = 2471323214818735602L;
 
+	private String DBUrl;
+	private String DBUser;
+	private String DBPass;
+	
+	public LogDAO(String url, String user, String pass) {
+		this.DBUrl = url;
+		this.DBUser = user;
+		this.DBPass = pass;
+	}
+	
 	public void createLog(Log log) {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection();
+			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
 			statment = db.getConnection().prepareStatement("INSERT INTO LOG (tipo, mensagem, causa) VALUES (?,?,?)");
 			statment.setString(1, log.getTipo());
 			statment.setString(2, log.getMessage());

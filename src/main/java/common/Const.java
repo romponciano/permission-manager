@@ -8,11 +8,14 @@ public final class Const implements Serializable {
 	
 	// JDBC driver name and database URL 
     public static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
-    public static final String DB_URL = "jdbc:oracle:thin:@localhost:32118/XE";  
+    public static final String DB_URL = "jdbc:oracle:thin:@localhost:32118/XE";
+    public static final String DB_TEST_URL = "jdbc:oracle:thin:@localhost:32119/XE"; 
     
     // Database credentials 
     public static final String USER = "ROMULOPONCIANO"; 
     public static final String PASS = "root";
+    public static final String USER_TEST = "ROMULOTEST"; 
+    public static final String PASS_TEST = "root";
     
     // formato de data para models e DB
     public static final SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd");

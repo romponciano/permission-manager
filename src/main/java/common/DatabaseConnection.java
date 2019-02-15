@@ -11,15 +11,21 @@ public class DatabaseConnection implements Serializable {
 	private static final long serialVersionUID = 6153988507264596623L;
 
     private Connection connection;
+    private String DBurl;
+    private String DBuser;
+    private String DBpass;
     
     /**
      * Ao criar uma instância desta classe, você esta 
      * tentando abrir uma NOVA conexão com o banco. 
      * @throws DBConnectException se falhar ao tentar conexão ou registro do driver
      */
-    public DatabaseConnection() throws DBConnectException {
+    public DatabaseConnection(String dburl, String dbuser, String dbpass) throws DBConnectException {
     	try {
     		Class.forName(Const.JDBC_DRIVER);
+    		this.DBurl = dburl;
+    		this.DBuser = dbuser;
+    		this.DBpass = dbpass;
         	this.getConnection();
     	} catch (Exception e) {
     		throw new DBConnectException(e.getMessage(), e.getCause());
@@ -33,7 +39,7 @@ public class DatabaseConnection implements Serializable {
     public Connection getConnection() throws DBConnectException {
     	if(this.connection == null) {
     		try {
-				this.connection = DriverManager.getConnection(Const.DB_URL, Const.USER, Const.PASS);
+				this.connection = DriverManager.getConnection(DBurl, DBuser, DBpass);
 			} catch (SQLException e) {
 				throw new DBConnectException(e.getMessage(), e.getCause());
 			}

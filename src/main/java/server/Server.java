@@ -14,9 +14,9 @@ import dao.LogDAO;
 import dao.PluginDAO;
 import dao.StatusDAO;
 import dao.UserDAO;
-import exception.DBCreateException;
 import exception.DBConnectException;
 import exception.DBConsultException;
+import exception.DBCreateException;
 import exception.DBDataNotFoundException;
 import exception.DBDeleteException;
 import exception.DBUpdateException;
@@ -45,10 +45,10 @@ public class Server implements ServerInterface {
 		}
 	}
 	
-	// ----------------------- searchs
+	// ----------------------- search
 	@Override
 	public List<User> searchUsers(String atributo, String termo) throws RemoteException, ServerServiceException {
-		UserDAO userDAO = new UserDAO();
+		UserDAO userDAO = new UserDAO(Const.DB_URL, Const.USER, Const.PASS);
 		List<User> usrs = new ArrayList<User>();
 		try {
 			usrs = userDAO.searchUser(atributo, termo);
@@ -67,7 +67,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public List<Plugin> searchPlugins(String atributo, String termo) throws RemoteException, ServerServiceException {
-		PluginDAO pluginDAO = new PluginDAO();
+		PluginDAO pluginDAO = new PluginDAO(Const.DB_URL, Const.USER, Const.PASS);
 		List<Plugin> plgs = new ArrayList<Plugin>();
 		try {
 			plgs = pluginDAO.searchPlugins(atributo, termo);
@@ -86,7 +86,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public List<Functionality> searchFunctionalities(String atributo, String termo) throws RemoteException, ServerServiceException {
-		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		FunctionalityDAO funcDAO = new FunctionalityDAO(Const.DB_URL, Const.USER, Const.PASS);
 		List<Functionality> funcs = new ArrayList<Functionality>();
 		try {
 			funcs = funcDAO.searchFunctionalities(atributo, termo);
@@ -106,7 +106,7 @@ public class Server implements ServerInterface {
 	// ----------------------- deletes
 	@Override
 	public void deleteUser(int userId) throws RemoteException, ServerServiceException {
-		UserDAO userDAO = new UserDAO();
+		UserDAO userDAO = new UserDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			userDAO.deleteUser(userId);
 		} catch (DBDeleteException e) {
@@ -120,7 +120,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public void deletePlugin(int pluginId) throws RemoteException, ServerServiceException {
-		PluginDAO pluginDAO = new PluginDAO();
+		PluginDAO pluginDAO = new PluginDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			pluginDAO.deletePlugin(pluginId);
 		} catch (DBDeleteException e) {
@@ -134,7 +134,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public void deleteFunctionality(int funcId) throws RemoteException, ServerServiceException {
-		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		FunctionalityDAO funcDAO = new FunctionalityDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			funcDAO.deleteFunctionality(funcId);
 		} catch (DBDeleteException e) {
@@ -149,7 +149,7 @@ public class Server implements ServerInterface {
 	// ----------------------- updates
 	@Override
 	public void updateUser(User user) throws RemoteException, ServerServiceException {
-		UserDAO userDAO = new UserDAO();
+		UserDAO userDAO = new UserDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			userDAO.updateUser(user);
 		} catch (DBUpdateException e) {
@@ -163,7 +163,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public void updatePlugin(Plugin plugin) throws RemoteException, ServerServiceException {
-		PluginDAO pluginDAO = new PluginDAO();
+		PluginDAO pluginDAO = new PluginDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			pluginDAO.updatePlugin(plugin);
 		} catch (DBUpdateException e) {
@@ -177,7 +177,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public void updateFunctionality(Functionality func) throws RemoteException, ServerServiceException {
-		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		FunctionalityDAO funcDAO = new FunctionalityDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			funcDAO.updateFunctionality(func);
 		} catch (DBUpdateException e) {
@@ -192,7 +192,7 @@ public class Server implements ServerInterface {
 	// ----------------------- creates
 	@Override
 	public void createUser(User user) throws RemoteException, ServerServiceException {
-		UserDAO userDAO = new UserDAO();
+		UserDAO userDAO = new UserDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			userDAO.createUser(user);
 		} catch (DBCreateException e) {
@@ -206,7 +206,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public void createPlugin(Plugin plg) throws RemoteException, ServerServiceException {
-		PluginDAO pluginDAO = new PluginDAO();
+		PluginDAO pluginDAO = new PluginDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			pluginDAO.createPlugin(plg);
 		} catch (DBCreateException e) {
@@ -220,7 +220,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public void createFunctionality(Functionality func) throws RemoteException, ServerServiceException {
-		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		FunctionalityDAO funcDAO = new FunctionalityDAO(Const.DB_URL, Const.USER, Const.PASS);
 		try {
 			funcDAO.createFunctionality(func);
 		} catch (DBCreateException e) {
@@ -232,10 +232,10 @@ public class Server implements ServerInterface {
 		}
 	}
 	
-	// ----------------------- getAlls
+	// ----------------------- getAll
 	@Override
 	public List<User> getUsers() throws RemoteException, ServerServiceException {
-		UserDAO userDAO = new UserDAO();
+		UserDAO userDAO = new UserDAO(Const.DB_URL, Const.USER, Const.PASS);
 		List<User> users = new ArrayList<User>();
 		try {
 			users = userDAO.getUsers();
@@ -254,7 +254,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public List<Plugin> getPlugins() throws RemoteException, ServerServiceException {
-		PluginDAO pluginDAO = new PluginDAO();
+		PluginDAO pluginDAO = new PluginDAO(Const.DB_URL, Const.USER, Const.PASS);
 		List<Plugin> plugins = new ArrayList<Plugin>();
 		try {
 			plugins = pluginDAO.getPlugins();
@@ -273,7 +273,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public List<Functionality> getFunctionalities() throws RemoteException, ServerServiceException {
-		FunctionalityDAO functionalityDAO = new FunctionalityDAO();
+		FunctionalityDAO functionalityDAO = new FunctionalityDAO(Const.DB_URL, Const.USER, Const.PASS);
 		List<Functionality> funcionalidades = new ArrayList<Functionality>();
 		try {
 			funcionalidades = functionalityDAO.getFunctionalities();
@@ -292,7 +292,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public List<Status> getStatus() throws RemoteException, ServerServiceException {
-		StatusDAO statusDAO = new StatusDAO();
+		StatusDAO statusDAO = new StatusDAO(Const.DB_URL, Const.USER, Const.PASS);
 		List<Status> status = new ArrayList<Status>();
 		try {
 			status = statusDAO.getStatus();
@@ -310,7 +310,7 @@ public class Server implements ServerInterface {
 	}
 	
 	private void logarException(TIPOS_LOG tipo, Exception e) {
-		LogDAO logDAO = new LogDAO();
+		LogDAO logDAO = new LogDAO(Const.DB_URL, Const.USER, Const.PASS);
 		Log log = new Log(tipo, e.getMessage());
 		if(e.getCause() != null) log.setCausa(e.getCause().toString());
 		logDAO.createLog(log);

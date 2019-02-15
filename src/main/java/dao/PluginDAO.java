@@ -21,26 +21,35 @@ public class PluginDAO implements Serializable {
 	
 	private static final long serialVersionUID = -5098749675099318542L;
 
+	private String DBUrl;
+	private String DBUser;
+	private String DBPass;
+	
+	public PluginDAO(String url, String user, String pass) {
+		this.DBUrl = url;
+		this.DBUser = user;
+		this.DBPass = pass;
+	}
+	
 	public List<Plugin> getPlugins() throws DBConsultException, DBConnectException, DBDataNotFoundException {
 		List<Plugin> plugins = new ArrayList<Plugin>();
 		DatabaseConnection db = null;
 		Statement statment = null;
 		ResultSet result = null;
 		try {
-			db = new DatabaseConnection();
+			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
 			statment = db.getConnection().createStatement();
 			result = statment.executeQuery("SELECT * FROM PLUGIN");
-			if(!result.isBeforeFirst()) {
-				throw new DBDataNotFoundException();
-			}
-			while(result.next()) {
-				Plugin plg = new Plugin();
-				plg.setId(result.getInt("id"));
-				plg.setNome(result.getString("nome"));
-				plg.setDescricao(result.getString("descricao"));
-				plg.setDataCriacaoFromDate(result.getDate("dataCriacao"));
-				plugins.add(plg);
-			};			
+			if(result.isBeforeFirst()) {
+				while(result.next()) {
+					Plugin plg = new Plugin();
+					plg.setId(result.getInt("id"));
+					plg.setNome(result.getString("nome"));
+					plg.setDescricao(result.getString("descricao"));
+					plg.setDataCriacaoFromDate(result.getDate("dataCriacao"));
+					plugins.add(plg);
+				};
+			}			
 		} catch (DBConnectException e) {
 			throw e;
 		} catch (SQLException e) {
@@ -56,7 +65,7 @@ public class PluginDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection();
+			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
 			statment = db.getConnection().prepareStatement("INSERT INTO PLUGIN (nome, descricao, dataCriacao) VALUES (?, ?, TO_DATE(?,'YYYY-MM-DD'))");
 			statment.setString(1, plugin.getNome());
 			statment.setString(2, plugin.getDescricao());
@@ -76,7 +85,7 @@ public class PluginDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection();
+			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
 			statment = db.getConnection().prepareStatement("UPDATE PLUGIN SET nome = ?, descricao = ? WHERE id = ?");
 			statment.setString(1, plugin.getNome());
 			statment.setString(2,  plugin.getDescricao());
@@ -96,7 +105,7 @@ public class PluginDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection();
+			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
 			statment = db.getConnection().prepareStatement("DELETE FROM FUNCIONALIDADE WHERE pluginId = ?");
 			statment.setInt(1, pluginId);
 			statment.executeUpdate();
@@ -119,7 +128,7 @@ public class PluginDAO implements Serializable {
 		Statement statement = null;
 		ResultSet result = null;
 		try {
-			db = new DatabaseConnection();
+			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
 			statement = db.getConnection().createStatement();
 			String query = "SELECT * FROM PLUGIN WHERE " + atributo + " LIKE '%" + termo + "%'";
 			result = statement.executeQuery(query);
