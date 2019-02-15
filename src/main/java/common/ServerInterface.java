@@ -118,6 +118,42 @@ public interface ServerInterface extends Remote {
    */
   List<Functionality> getFunctionalities() throws RemoteException, ServerServiceException;
 
+  /**
+   * Consulta usuários no sistema através do 
+   * atributo e termo passados.
+   * 
+   * @param atributo - atributo/coluna desejado para consulta
+   * @param termo - termo de consulta
+   * @return - todos os resultados encontrados na busca
+   * @throws RemoteException
+   * @throws ServerServiceException
+   */
+  List<User> searchUsers(String atributo, String termo) throws RemoteException, ServerServiceException;
+
+  /**
+   * Consulta plugins no sistema através do 
+   * atributo e termo passados.
+   * 
+   * @param atributo - atributo/coluna desejado para consulta
+   * @param termo - termo de consulta
+   * @return - todos os resultados encontrados na busca
+   * @throws RemoteException
+   * @throws ServerServiceException
+   */
+  List<Plugin> searchPlugins(String atributo, String termo) throws RemoteException, ServerServiceException;
+
+  /**
+   * Consulta funcionalidades no sistema através do 
+   * atributo e termo passados.
+   * 
+   * @param atributo - atributo/coluna desejado para consulta
+   * @param termo - termo de consulta
+   * @return - todos os resultados encontrados na busca
+   * @throws RemoteException
+   * @throws ServerServiceException
+   */
+  List<Functionality> searchFunctionalities(String atributo, String termo) throws RemoteException, ServerServiceException;
+
   
 
 }

@@ -35,9 +35,9 @@ public class GUI implements Serializable {
 	 */
 	public void init() {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		abasContainer.add(abaUsuario, ABAS.Usuário.toString());
-		abasContainer.add(abaPlugin, ABAS.Plugin.toString());
-		abasContainer.add(abaFunc, ABAS.Funcionalidade.toString());
+		abasContainer.add(abaUsuario, UIEnums.ABAS.Usuário.toString());
+		abasContainer.add(abaPlugin, UIEnums.ABAS.Plugin.toString());
+		abasContainer.add(abaFunc, UIEnums.ABAS.Funcionalidade.toString());
 		frame.setContentPane(abasContainer);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
@@ -57,13 +57,13 @@ public class GUI implements Serializable {
 					 * Por exemplo: como o caso de excluir um plugin e suas funcionalidades juntos. Então 
 					 * é preciso recarregar as funcs, pois foram alteradas com a remoção do plugin.
 					 */
-					if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Usuário.toString())) {
+					if(sourceTabbedPane.getTitleAt(index).equals(UIEnums.ABAS.Usuário.toString())) {
 						abaUsuario.loadData();
 					}
-					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Plugin.toString())) {
+					else if(sourceTabbedPane.getTitleAt(index).equals(UIEnums.ABAS.Plugin.toString())) {
 						abaPlugin.loadData();
 					}
-					else if(sourceTabbedPane.getTitleAt(index).equals(ABAS.Funcionalidade.toString())) {
+					else if(sourceTabbedPane.getTitleAt(index).equals(UIEnums.ABAS.Funcionalidade.toString())) {
 						abaFunc.loadData();
 					}
 				} 

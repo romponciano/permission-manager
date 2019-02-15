@@ -43,6 +43,64 @@ public class Server implements ServerInterface {
 		}
 	}
 	
+	// ----------------------- searchs
+	@Override
+	public List<User> searchUsers(String atributo, String termo) throws RemoteException, ServerServiceException {
+		UserDAO userDAO = new UserDAO();
+		List<User> usrs = new ArrayList<User>();
+		try {
+			usrs = userDAO.searchUser(atributo, termo);
+		} catch (DBDataNotFoundException e) {
+			logarException(TIPOS_LOG.INFO, e);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+		} catch (DBConsultException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		} 
+		return usrs;
+	}
+	
+	@Override
+	public List<Plugin> searchPlugins(String atributo, String termo) throws RemoteException, ServerServiceException {
+		PluginDAO pluginDAO = new PluginDAO();
+		List<Plugin> plgs = new ArrayList<Plugin>();
+		try {
+			plgs = pluginDAO.searchPlugins(atributo, termo);
+		} catch (DBDataNotFoundException e) {
+			logarException(TIPOS_LOG.INFO, e);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+		} catch (DBConsultException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		} 
+		return plgs;
+	}
+	
+	@Override
+	public List<Functionality> searchFunctionalities(String atributo, String termo) throws RemoteException, ServerServiceException {
+		FunctionalityDAO funcDAO = new FunctionalityDAO();
+		List<Functionality> funcs = new ArrayList<Functionality>();
+		try {
+			funcs = funcDAO.searchFunctionalities(atributo, termo);
+		} catch (DBDataNotFoundException e) {
+			logarException(TIPOS_LOG.INFO, e);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+		} catch (DBConsultException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+		} catch (DBConnectException e) {
+			logarException(TIPOS_LOG.ERRO, e);
+			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
+		} 
+		return funcs;
+	}
+	
 	// ----------------------- deletes
 	@Override
 	public void deleteUser(int userId) throws RemoteException, ServerServiceException {
@@ -181,13 +239,13 @@ public class Server implements ServerInterface {
 			users = userDAO.getUsers();
 		} catch (DBConsultException e) {
 			logarException(TIPOS_LOG.ERRO, e);
-			//throw new ServerServiceException(Const.ERROR_DB_CONSULT);
+			throw new ServerServiceException(Const.ERROR_DB_CONSULT);
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		} catch (DBDataNotFoundException e) {
 			logarException(TIPOS_LOG.INFO, e);
-			//throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return users;
 	}
@@ -206,7 +264,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		} catch (DBDataNotFoundException e) {
 			logarException(TIPOS_LOG.INFO, e);
-			//throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return plugins;
 	}
@@ -225,7 +283,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		} catch (DBDataNotFoundException e) {
 			logarException(TIPOS_LOG.INFO, e);
-			//throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
+			throw new ServerServiceException(Const.INFO_DATA_NOT_FOUND);
 		}
 		return funcionalidades;
 	}

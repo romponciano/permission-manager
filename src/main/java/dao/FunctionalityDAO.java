@@ -112,4 +112,37 @@ public class FunctionalityDAO implements Serializable {
 		    db.closeConnection();
 		}
 	}
+	
+	public List<Functionality> searchFunctionalities(String atributo, String termo) throws DBConnectException, DBConsultException, DBDataNotFoundException {
+		List<Functionality> funcs = new ArrayList<Functionality>();
+		DatabaseConnection db = null;
+		Statement statement = null;
+		ResultSet result = null;
+		try {
+			db = new DatabaseConnection();
+			statement = db.getConnection().createStatement();
+			String query = "SELECT * FROM FUNCIONALIDADE WHERE " + atributo + " LIKE '%" + termo + "%'";
+			result = statement.executeQuery(query);
+			if(!result.isBeforeFirst()) {
+				throw new DBDataNotFoundException();
+			}
+			while(result.next()) {
+				Functionality func = new Functionality();
+				func.setId(result.getInt("id"));
+				func.setPluginId(result.getInt("pluginId"));
+				func.setNome(result.getString("nome"));
+				func.setDescricao(result.getString("descricao"));
+				func.setDataCriacaoFromDate(result.getDate("dataCriacao"));
+				funcs.add(func);
+			};
+		} catch (DBConnectException e) {
+			throw e;
+		} catch (SQLException e) {
+			throw new DBConsultException(e.getMessage(), e.getCause());
+		} finally {
+		    try { result.close(); } catch (Exception e) { /* ignorar */ }
+		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
+		}
+		return funcs;
+	}
 }

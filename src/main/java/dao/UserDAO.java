@@ -113,5 +113,38 @@ public class UserDAO implements Serializable {
 		    db.closeConnection();
 		}
 	}
+	
+	public List<User> searchUser(String atributo, String termo) throws DBConnectException, DBConsultException, DBDataNotFoundException {
+		List<User> usrs = new ArrayList<User>();
+		DatabaseConnection db = null;
+		Statement statement = null;
+		ResultSet result = null;
+		try {
+			db = new DatabaseConnection();
+			statement = db.getConnection().createStatement();
+			String query = "SELECT * FROM USUARIO WHERE " + atributo + " LIKE '%" + termo + "%'";
+			result = statement.executeQuery(query);
+			if(!result.isBeforeFirst()) {
+				throw new DBDataNotFoundException();
+			}
+			while(result.next()) {
+				User usr = new User();
+				usr.setId(result.getInt("id"));
+				usr.setNome(result.getString("nomeCompleto"));
+				usr.setLogin(result.getString("login"));
+				usr.setStatus(result.getInt("status"));
+				usr.setGerenciaAtual(result.getString("gerenciaAtual"));
+				usrs.add(usr);
+			};
+		} catch (DBConnectException e) {
+			throw e;
+		} catch (SQLException e) {
+			throw new DBConsultException(e.getMessage(), e.getCause());
+		} finally {
+		    try { result.close(); } catch (Exception e) { /* ignorar */ }
+		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
+		}
+		return usrs;
+	}
 }
     

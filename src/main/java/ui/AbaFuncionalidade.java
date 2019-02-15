@@ -70,6 +70,24 @@ public class AbaFuncionalidade extends AbaGenerica {
 				};
 			}
 		};
+		ActionListener searchClick = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				try {
+					String termo = getTxtStringBusca().getText();
+					if(termo != null && termo.length() > 0) {
+						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
+						atributo = converComboChoiceToDBAtributte(atributo);
+						List<Functionality> funs = Client.getServer().searchFunctionalities(atributo, termo);
+						popularTabelaResultado(funs);
+					} else {
+						loadData();
+					}
+				}
+				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+			}
+		};
 		ActionListener saveClick = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				try {
@@ -122,7 +140,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 				};
 			}
 		};
-		initListeners(selectItemList, saveClick, removeClick);
+		initListeners(selectItemList, saveClick, removeClick, searchClick);
 	}
 	
 	private void initPnlForm() {
@@ -165,10 +183,10 @@ public class AbaFuncionalidade extends AbaGenerica {
 	@Override
 	public Vector<String> createItemsCmbConsulta() {
 		Vector<String> out = new Vector<String>();
-		out.add(FILTROS_FUNCIONALIDADE.Plugin.toString());
-		out.add(FILTROS_FUNCIONALIDADE.Nome.toString());
-		out.add(FILTROS_FUNCIONALIDADE.Descrição.toString());
-		out.add(FILTROS_FUNCIONALIDADE.Data.toString());
+		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString());
+		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString());
+		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString());
+		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString());
 		return out;
 	}
 	
@@ -181,6 +199,37 @@ public class AbaFuncionalidade extends AbaGenerica {
 		header.add("DESCRIÇÃO");
 		header.add("DATA DE CRIAÇÃO");
 		return header;
+	}
+	
+	@Override
+	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
+		setContextoEditar(false);
+		List<Functionality> funcs = Client.getServer().getFunctionalities();
+		popularTabelaResultado(funcs);
+		
+	}
+
+	@Override
+	public boolean checkFieldsOnCreate() throws UICheckFieldException {
+		String campo;
+		campo = this.txtNomePlugin.getText();
+		if(campo == null || campo.length() <= 0) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
+		}
+		campo = this.txtNomeFunc.getText();
+		if(campo == null || campo.length() <= 0) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+		}
+		return true;
+	}	
+	
+	@Override
+	public String converComboChoiceToDBAtributte(String cmbChoice) {
+		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Nome.getValue();
+		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Descrição.getValue();
+		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Data.getValue();
+		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Plugin.getValue();
+		return "";
 	}
 	
 	/**
@@ -205,28 +254,6 @@ public class AbaFuncionalidade extends AbaGenerica {
 		this.getTblResultado().getColumnModel().getColumn(0).setMaxWidth(0);
 		this.getTblResultado().getColumnModel().getColumn(0).setWidth(0);
 	}
-
-	@Override
-	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		setContextoEditar(false);
-		List<Functionality> funcs = Client.getServer().getFunctionalities();
-		popularTabelaResultado(funcs);
-		
-	}
-
-	@Override
-	public boolean checkFieldsOnCreate() throws UICheckFieldException {
-		String campo;
-		campo = this.txtNomePlugin.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
-		}
-		campo = this.txtNomeFunc.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
-		}
-		return true;
-	}	
 	
 	private void setDataModelFromStringDate(String data) {
 		String ano = data.substring(0, data.indexOf("-"));

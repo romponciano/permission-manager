@@ -74,9 +74,10 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 * Método para iniciar os listeners da aba
 	 * @param selectItemTable 
 	 * @param removeClick 
+	 * @param searchClick 
 	 * @param createNewElement 
 	 */
-	public void initListeners(ListSelectionListener selectItemTable, ActionListener saveClick, ActionListener removeClick) {
+	public void initListeners(ListSelectionListener selectItemTable, ActionListener saveClick, ActionListener removeClick, ActionListener searchClick) {
 		this.btnCancelar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) { setContextoEditar(false);}
 		});
@@ -86,6 +87,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		this.tblResultado.getSelectionModel().addListSelectionListener(selectItemTable);
 		this.btnSalvar.addActionListener(saveClick);
 		this.btnRemover.addActionListener(removeClick);
+		this.btnBuscar.addActionListener(searchClick);
 	};
 	
 	/**
@@ -194,6 +196,14 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		}
 		return false;
 	}
+	
+	/**
+	 * Método para converter escolha de busca da combobox
+	 * para atributo que será utilizado na consulta ao banco.
+	 * @param cmbChoice - escolha do usuário 
+	 * @return - String do atributo utilizado no banco
+	 */
+	public abstract String converComboChoiceToDBAtributte(String cmbChoice);
 
 	public JComboBox<String> getCmbParametroConsulta() {
 		return cmbParametroConsulta;
@@ -217,5 +227,9 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	
 	public JButton getBtnNovo() {
 		return btnNovo;
+	}
+	
+	public JTextField getTxtStringBusca() {
+		return txtStringBusca;
 	}
 }

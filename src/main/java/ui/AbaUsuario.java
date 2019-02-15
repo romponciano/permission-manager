@@ -57,6 +57,24 @@ public class AbaUsuario extends AbaGenerica {
 				};
 			}
 		};
+		ActionListener searchClick = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				try {
+					String termo = getTxtStringBusca().getText();
+					if(termo != null && termo.length() > 0) {
+						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
+						atributo = converComboChoiceToDBAtributte(atributo);
+						List<User> usrs = Client.getServer().searchUsers(atributo, termo);
+						popularTabelaResultado(usrs);
+					} else {
+						loadData();
+					}
+				}
+				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+			}
+		};
 		ActionListener saveClick = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				try {
@@ -108,7 +126,7 @@ public class AbaUsuario extends AbaGenerica {
 				};
 			}
 		};
-		initListeners(selectItemTable, saveClick, removeClick);
+		initListeners(selectItemTable, saveClick, removeClick, searchClick);
 	}
 
 	@Override
@@ -158,10 +176,10 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public Vector<String> createItemsCmbConsulta() {
 		Vector<String> out = new Vector<String>();
-		out.add(FILTROS_USUARIO.Nome.toString());
-		out.add(FILTROS_USUARIO.Login.toString());
-		out.add(FILTROS_USUARIO.Status.toString());
-		out.add(FILTROS_USUARIO.Gerência.toString());
+		out.add(UIEnums.FILTROS_USUARIO.Nome.toString());
+		out.add(UIEnums.FILTROS_USUARIO.Login.toString());
+		out.add(UIEnums.FILTROS_USUARIO.Status.toString());
+		out.add(UIEnums.FILTROS_USUARIO.Gerência.toString());
 		return out;
 	}
 
@@ -176,6 +194,32 @@ public class AbaUsuario extends AbaGenerica {
 		return header;
 	}
 
+	@Override
+	public boolean checkFieldsOnCreate() throws UICheckFieldException {
+		String campo;
+		campo = this.txtNomeUsuario.getText();
+		if(campo == null || campo.length() <= 0) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+		}
+		campo = this.txtLogin.getText();
+		if(campo == null || campo.length() <= 0) {
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "login"));
+		}
+		if(campo.length() > 4) {
+			throw new UICheckFieldException(Const.INFO_BIG_FIELD.replaceFirst("\\?", "login").replaceFirst("\\?", "4"));
+		}
+		return true;
+	}
+	
+	@Override
+	public String converComboChoiceToDBAtributte(String cmbChoice) {
+		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Nome.toString())) return UIEnums.FILTROS_USUARIO.Nome.getValue();
+		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Login.toString())) return UIEnums.FILTROS_USUARIO.Login.getValue();
+		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Status.toString())) return UIEnums.FILTROS_USUARIO.Status.getValue();
+		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Gerência.toString())) return UIEnums.FILTROS_USUARIO.Gerência.getValue();
+		return "";
+	}
+	
 	/**
 	 * Método para popular tabela de resultados de busca com lista de usuários
 	 * @param users - Lista contendo os usuários a serem apresentados na tabela
@@ -194,22 +238,5 @@ public class AbaUsuario extends AbaGenerica {
 			dadosFinal.add(linha);
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
-	}
-
-	@Override
-	public boolean checkFieldsOnCreate() throws UICheckFieldException {
-		String campo;
-		campo = this.txtNomeUsuario.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
-		}
-		campo = this.txtLogin.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "login"));
-		}
-		if(campo.length() > 4) {
-			throw new UICheckFieldException(Const.INFO_BIG_FIELD.replaceFirst("\\?", "login").replaceFirst("\\?", "4"));
-		}
-		return true;
 	}
 }

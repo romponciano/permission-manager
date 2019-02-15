@@ -112,4 +112,36 @@ public class PluginDAO implements Serializable {
 		    db.closeConnection();
 		}
 	}
+	
+	public List<Plugin> searchPlugins(String atributo, String termo) throws DBConnectException, DBConsultException, DBDataNotFoundException {
+		List<Plugin> plgs = new ArrayList<Plugin>();
+		DatabaseConnection db = null;
+		Statement statement = null;
+		ResultSet result = null;
+		try {
+			db = new DatabaseConnection();
+			statement = db.getConnection().createStatement();
+			String query = "SELECT * FROM PLUGIN WHERE " + atributo + " LIKE '%" + termo + "%'";
+			result = statement.executeQuery(query);
+			if(!result.isBeforeFirst()) {
+				throw new DBDataNotFoundException();
+			}
+			while(result.next()) {
+				Plugin plg = new Plugin();
+				plg.setId(result.getInt("id"));
+				plg.setNome(result.getString("nome"));
+				plg.setDescricao(result.getString("descricao"));
+				plg.setDataCriacaoFromDate(result.getDate("dataCriacao"));
+				plgs.add(plg);
+			};
+		} catch (DBConnectException e) {
+			throw e;
+		} catch (SQLException e) {
+			throw new DBConsultException(e.getMessage(), e.getCause());
+		} finally {
+		    try { result.close(); } catch (Exception e) { /* ignorar */ }
+		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
+		}
+		return plgs;
+	}
 }
