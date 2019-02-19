@@ -15,23 +15,27 @@ public class DatabaseConnection implements Serializable {
     private String DBuser;
     private String DBpass;
     
-    /**
-     * Ao criar uma instância desta classe, você esta 
-     * tentando abrir uma NOVA conexão com o banco. 
-     * @throws DBConnectException se falhar ao tentar conexão ou registro do driver
-     */
+    public DatabaseConnection() throws DBConnectException {
+    	try {
+    		Class.forName(Const.JDBC_DRIVER);
+    		this.DBurl = Const.DB_URL;
+    		this.DBuser = Const.USER;
+    		this.DBpass = Const.PASS;
+    	} catch (Exception e) {
+    		throw new DBConnectException(e.getMessage(), e.getCause());
+    	}
+    };
+    
     public DatabaseConnection(String dburl, String dbuser, String dbpass) throws DBConnectException {
     	try {
     		Class.forName(Const.JDBC_DRIVER);
     		this.DBurl = dburl;
     		this.DBuser = dbuser;
     		this.DBpass = dbpass;
-        	this.getConnection();
     	} catch (Exception e) {
     		throw new DBConnectException(e.getMessage(), e.getCause());
     	}
     };
-    
     /**
      * pegar conexão da instância conectada ou criar nova conexão, se não existir 
      * @throws DBConnectException se falhar ao tentar conexão ou registro do driver
@@ -56,5 +60,4 @@ public class DatabaseConnection implements Serializable {
     		this.connection = null; 
     	} catch (Exception e) { /* ignorar */ }
     }
-    
 }

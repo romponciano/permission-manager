@@ -34,8 +34,18 @@ public class UIEnums {
 	    public String getValue() { return this.value; }
 	}
 	
+	public enum FILTROS_PERFIL {
+		Nome("nome"),
+		Descrição("descricao"),
+		Data("dataCriacao");
+		
+		private final String value;
+	    FILTROS_PERFIL(String value) { this.value = value; }
+	    public String getValue() { return this.value; }
+	}
+	
 	public enum ABAS {
-		Usuário, Plugin, Funcionalidade
+		Usuário, Plugin, Funcionalidade, Perfil
 	}
 
 }

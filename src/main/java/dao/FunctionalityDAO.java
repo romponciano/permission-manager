@@ -20,16 +20,6 @@ import model.Functionality;
 public class FunctionalityDAO implements Serializable {
 	
 	private static final long serialVersionUID = 2933870645847680620L;
-
-	private String DBUrl;
-	private String DBUser;
-	private String DBPass;
-	
-	public FunctionalityDAO(String url, String user, String pass) {
-		this.DBUrl = url;
-		this.DBUser = user;
-		this.DBPass = pass;
-	}
 	
 	public List<Functionality> getFunctionalities() throws DBConsultException, DBConnectException, DBDataNotFoundException {
 		List<Functionality> funcs = new ArrayList<Functionality>();
@@ -37,7 +27,7 @@ public class FunctionalityDAO implements Serializable {
 		Statement statment = null;
 		ResultSet result = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().createStatement();
 			result = statment.executeQuery("SELECT " + 
 					"	f.id, " + 
@@ -75,7 +65,7 @@ public class FunctionalityDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().prepareStatement("INSERT INTO FUNCIONALIDADE (nome, descricao, pluginId, dataCriacao) VALUES (?,  ?, ?, TO_DATE(?,'YYYY-MM-DD'))");
 			statment.setString(1, func.getNome());
 			statment.setString(2, func.getDescricao());
@@ -96,7 +86,7 @@ public class FunctionalityDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().prepareStatement("UPDATE FUNCIONALIDADE SET nome = ?, descricao = ?, pluginId = ? WHERE ID = ?");
 			statment.setString(1, func.getNome());
 			statment.setString(2,  func.getDescricao());
@@ -117,7 +107,7 @@ public class FunctionalityDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().prepareStatement("DELETE FROM FUNCIONALIDADE WHERE id = ?");
 			statment.setInt(1, funcId);
 			statment.executeUpdate();
@@ -137,7 +127,7 @@ public class FunctionalityDAO implements Serializable {
 		Statement statement = null;
 		ResultSet result = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statement = db.getConnection().createStatement();
 			String query = "SELECT " + 
 			"	f.id, " + 

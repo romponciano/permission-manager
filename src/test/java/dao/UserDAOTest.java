@@ -3,16 +3,25 @@ package dao;
 import org.junit.Before;
 import org.junit.Test;
 
-import common.Const;
 import exception.DBConnectException;
+import exception.DBCreateException;
+import model.User;
 
 public class UserDAOTest {
 
 	UserDAO userDAO;
 	
 	@Before
-	public void setup() throws DBConnectException {
-		userDAO = new UserDAO(Const.DB_TEST_URL, Const.USER_TEST, Const.PASS_TEST);
+	public void setup() {
+		userDAO = new UserDAO();
+	}
+	
+	@Test
+	public void createUser() throws DBConnectException, DBCreateException {
+		User user = new User();
+		user.setLogin("test");
+		user.setNome("Usuario teste");
+		userDAO.createUser(user);
 	}
 	
 	@Test

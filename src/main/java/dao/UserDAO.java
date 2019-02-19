@@ -21,23 +21,13 @@ public class UserDAO implements Serializable {
 	
 	private static final long serialVersionUID = -1503189464001292373L;
 	
-	private String DBUrl;
-	private String DBUser;
-	private String DBPass;
-	
-	public UserDAO(String url, String user, String pass) {
-		this.DBUrl = url;
-		this.DBUser = user;
-		this.DBPass = pass;
-	}
-
 	public List<User> getUsers() throws DBConsultException, DBConnectException, DBDataNotFoundException {
 		List<User> usrs = new ArrayList<User>();
 		DatabaseConnection db = null;
 		Statement statment = null;
 		ResultSet result = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().createStatement();
 			result = statment.executeQuery("SELECT" + 
 					"	u.id, " + 
@@ -76,7 +66,7 @@ public class UserDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().prepareStatement("INSERT INTO USUARIO (login, nomecompleto, status, gerenciaatual) VALUES (?, ?, ?, ?)");
 			statment.setString(1, user.getLogin());
 			statment.setString(2,  user.getNome());
@@ -97,7 +87,7 @@ public class UserDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().prepareStatement("UPDATE USUARIO SET login = ?, nomecompleto = ?, status = ?, gerenciaatual = ? WHERE ID = ?");
 			statment.setString(1, user.getLogin());
 			statment.setString(2,  user.getNome());
@@ -119,7 +109,7 @@ public class UserDAO implements Serializable {
 		DatabaseConnection db = null;
 		PreparedStatement statment = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().prepareStatement("DELETE FROM USUARIO WHERE id = ?");
 			statment.setInt(1, userId);
 			statment.executeUpdate();
@@ -139,7 +129,7 @@ public class UserDAO implements Serializable {
 		Statement statement = null;
 		ResultSet result = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statement = db.getConnection().createStatement();
 			String query = "SELECT" + 
 					"	u.id, " + 

@@ -6,6 +6,8 @@ import java.util.List;
 
 import exception.ServerServiceException;
 import model.Functionality;
+import model.Perfil;
+import model.Permission;
 import model.Plugin;
 import model.Status;
 import model.User;
@@ -164,6 +166,83 @@ public interface ServerInterface extends Remote {
    */
   List<Functionality> searchFunctionalities(String atributo, String termo) throws RemoteException, ServerServiceException;
 
+  /**
+   * Obtém todos os perfis do sistema.
+   * 
+   * @return lista com os perfis
+   * @throws RemoteException .
+   * @throws ServerServiceException
+   */
+  List<Perfil> getPerfils() throws RemoteException, ServerServiceException;
+
+  /**
+   * Insere novo perfil no sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  Perfil createPerfil(Perfil perfil) throws RemoteException, ServerServiceException;
   
+  /**
+   * Deleta perfil do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void deletePerfil(int perfilId) throws RemoteException, ServerServiceException;
+
+  /**
+   * Atualiza perfil do sistema.
+   * 
+   * @throws ServerServiceException 
+   * @throws RemoteException
+   */
+  void updatePerfil(Perfil perfil) throws RemoteException, ServerServiceException;
+
+  /**
+   * Consulta perfis no sistema através do 
+   * atributo e termo passados.
+   * 
+   * @param atributo - atributo/coluna desejado para consulta
+   * @param termo - termo de consulta
+   * @return - todos os resultados encontrados na busca
+   * @throws RemoteException
+   * @throws ServerServiceException
+   */
+  List<Perfil> searchPerfils(String atributo, String termo) throws RemoteException, ServerServiceException;
+
+  /**
+   * Obtém todas as permissões do sistema.
+   * 
+   * @return lista com os perfis
+   * @throws RemoteException .
+   * @throws ServerServiceException
+   */
+  List<Permission> getPermissions() throws RemoteException, ServerServiceException;
+
+  /**
+   * Obtém todas as permissões de um determinado perfil.
+   * @param perfilId - id do perfil desejado
+   * @return - todas as permissões do perfilId
+   * @throws RemoteException
+   * @throws ServerServiceException
+   */
+  List<Permission> searchPermissionsByPerfilId(int perfilId) throws RemoteException, ServerServiceException;
+
+  /**
+   * Cria uma nova permissão
+   * @param permission - permissão a ser criada
+   * @throws RemoteException
+   * @throws ServerServiceException
+   */
+  void createPermission(Permission permission) throws RemoteException, ServerServiceException;
+  
+  /**
+   * Deleta todas as permissões associadas a um perfil (necessário antes de deletar perfil)
+   * @param perfilId - id do perfil desejado 
+   * @throws RemoteException
+   * @throws ServerServiceException
+   */
+  void deletePermissionsByPerfilId(int perfilId) throws RemoteException, ServerServiceException;
 
 }

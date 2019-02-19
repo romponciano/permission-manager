@@ -58,6 +58,7 @@ public class AbaUsuario extends AbaGenerica {
 					String stringUnica = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
 					ComboBoxItem item = new ComboBoxItem(stringUnica);
 					cmbStatus.setSelectedItemById(item.getId());
+					setContextoEditar(true);
 				};
 			}
 		};
@@ -73,6 +74,8 @@ public class AbaUsuario extends AbaGenerica {
 					} else {
 						loadData();
 					}
+					setContextoEditar(false);
+					getBtnNovo().setEnabled(true);
 				}
 				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -88,21 +91,20 @@ public class AbaUsuario extends AbaGenerica {
 						usr.setLogin(txtLogin.getText());
 						usr.setGerenciaAtual(txtGerencia.getText());
 						usr.getStatus().setId(cmbStatus.getIdFromSelectedItem());
-						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
-						consequentemente, não representa um novo item, mas sim um update. */
-						if(getBtnNovo().isEnabled()) {
+						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
+						 * 	não representa um novo item, mas sim um update. */
+						if(getBtnRemover().isEnabled()) {
 							int linhaSelecionada = getTblResultado().getSelectedRow();
 							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
 							usr.setId(Integer.parseInt(id));
 							Client.getServer().updateUser(usr);
-							loadData();
-							setContextoEditar(false);
 						/* se não, representa um create */
 						} else {
 							Client.getServer().createUser(usr);
-							loadData();
-							getBtnNovo().setEnabled(true);
 						};
+						loadData();
+						setContextoEditar(false);
+						getBtnNovo().setEnabled(true);
 					};
 				}
 				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
@@ -123,6 +125,8 @@ public class AbaUsuario extends AbaGenerica {
 							Client.getServer().deleteUser(Integer.parseInt(id));
 							loadData();
 						}
+						setContextoEditar(false);
+						getBtnNovo().setEnabled(true);
 					}
 					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -136,6 +140,7 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public void setContextoCriar(boolean setar) {
 		super.setContextoCriar(setar);
+		setContextoEditar(true);
 		txtNomeUsuario.setText("");
 		txtLogin.setText("");
 		txtGerencia.setText("");

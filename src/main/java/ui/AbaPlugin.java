@@ -79,6 +79,8 @@ public class AbaPlugin extends AbaGenerica {
 					} else {
 						loadData();
 					}
+					setContextoEditar(false);
+					getBtnNovo().setEnabled(true);
 				}
 				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -92,23 +94,22 @@ public class AbaPlugin extends AbaGenerica {
 						Plugin plg = new Plugin();
 						plg.setNome(txtNomePlugin.getText());
 						plg.setDescricao(txtDescricao.getText());
-						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
-						consequentemente, não representa um novo item, mas sim um update. */
-						if(getBtnNovo().isEnabled()) {
+						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
+						 * 	não representa um novo item, mas sim um update. */
+						if(getBtnRemover().isEnabled()) {
 							int linhaSelecionada = getTblResultado().getSelectedRow();
 							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
 							plg.setId(Integer.parseInt(id));
 							Client.getServer().updatePlugin(plg);
-							loadData();
-							setContextoEditar(false);
 						/* se não, representa um create */
 						} else {
 							// se quiser pegar do datePicker: (Date) datePicker.getModel().getValue()
 							plg.setDataCriacaoFromDate(new Date());
 							Client.getServer().createPlugin(plg);
-							loadData();
-							getBtnNovo().setEnabled(true);
 						};
+						loadData();
+						setContextoEditar(false);
+						getBtnNovo().setEnabled(true);
 					};
 				}
 				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
@@ -129,6 +130,8 @@ public class AbaPlugin extends AbaGenerica {
 							Client.getServer().deletePlugin(Integer.parseInt(id));
 							loadData();
 						}
+						setContextoEditar(false);
+						getBtnNovo().setEnabled(true);
 					}
 					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -157,6 +160,8 @@ public class AbaPlugin extends AbaGenerica {
 		txtNomePlugin.setText("");
 		txtDescricao.setText("");
 		setDataModelFromStringDate(Const.DATA_FORMAT.format(new Date()));
+		txtNomePlugin.setEditable(setar);
+		txtDescricao.setEditable(setar);
 	}
 	
 	@Override
@@ -165,7 +170,6 @@ public class AbaPlugin extends AbaGenerica {
 		if(!setar) {
 			txtNomePlugin.setText("");
 			txtDescricao.setText("");
-			dateModel.setSelected(false);
 		}
 		txtNomePlugin.setEditable(setar);
 		txtDescricao.setEditable(setar);

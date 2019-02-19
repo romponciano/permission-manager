@@ -58,14 +58,14 @@ public class AbaFuncionalidade extends AbaGenerica {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
 					// como pluginId é estrangeira e obrigatória, então não checar se é null
-					String stringUnica = getTblResultado().getValueAt(linhaSelecionada, 1).toString();
+					String stringUnica = getTblResultado().getValueAt(linhaSelecionada, 4).toString();
 					ComboBoxItem item = new ComboBoxItem(stringUnica);
 					cmbPlugin.setSelectedItemById(item.getId());
-					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
 					txtNomeFunc.setText(( campo != null ? campo.toString() : ""));
-					campo =  getTblResultado().getValueAt(linhaSelecionada, 3);
+					campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
 					txtDescricao.setText(( campo != null ? campo.toString() : ""));
-					String data = getTblResultado().getValueAt(linhaSelecionada, 4).toString();
+					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
 					if(!data.equals("")) {
 						setDataModelFromStringDate(data);
 					} else {
@@ -87,6 +87,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 					} else {
 						loadData();
 					}
+					setContextoEditar(false);
 				}
 				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -101,22 +102,20 @@ public class AbaFuncionalidade extends AbaGenerica {
 						func.getPlugin().setId(cmbPlugin.getIdFromSelectedItem());
 						func.setNome(txtNomeFunc.getText());
 						func.setDescricao(txtDescricao.getText());
-						/* 	se o botão 'novo' estiver habilitado, então é pq não foi clickado e,
-						consequentemente, não representa um novo item, mas sim um update. */
-						if(getBtnNovo().isEnabled()) {
+						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
+						 * 	não representa um novo item, mas sim um update. */
+						if(getBtnRemover().isEnabled()) {
 							int linhaSelecionada = getTblResultado().getSelectedRow();
 							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
 							func.setId(Integer.parseInt(id));
 							Client.getServer().updateFunctionality(func);
-							loadData();
-							setContextoEditar(false);
 						/* se não, representa um create */
 						} else {
 							func.setDataCriacaoFromDate(new Date());
 							Client.getServer().createFunctionality(func);
-							loadData();
-							getBtnNovo().setEnabled(true);
 						};
+						loadData();
+						setContextoEditar(false);
 					};
 				}
 				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
@@ -137,6 +136,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 							Client.getServer().deleteUser(Integer.parseInt(id));
 							loadData();
 						}
+						setContextoEditar(false);
 					}
 					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -157,6 +157,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 		pnlForm.add(txtDescricao, "wrap, growx");
 		pnlForm.add(lblDataCriacao);
 		datePicker.getComponent(1).setEnabled(false); // setar datePicker disabled
+		
 		pnlForm.add(datePicker, "wrap, growx");
 		registerForm(pnlForm);
 	}
@@ -164,9 +165,13 @@ public class AbaFuncionalidade extends AbaGenerica {
 	@Override
 	public void setContextoCriar(boolean setar) {
 		super.setContextoCriar(setar);
+		cmbPlugin.setEnabled(setar);
 		txtNomeFunc.setText("");
 		txtDescricao.setText("");
 		setDataModelFromStringDate(Const.DATA_FORMAT.format(new Date()));
+		cmbPlugin.setEnabled(setar);
+		txtNomeFunc.setEditable(setar);
+		txtDescricao.setEditable(setar);
 	}
 	
 	@Override
@@ -175,7 +180,6 @@ public class AbaFuncionalidade extends AbaGenerica {
 		if(!setar) {
 			txtNomeFunc.setText("");
 			txtDescricao.setText("");
-			dateModel.setSelected(false);
 		}
 		cmbPlugin.setEnabled(setar);
 		txtNomeFunc.setEditable(setar);

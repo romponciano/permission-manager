@@ -55,8 +55,10 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		this.tblResultado = new JTable();
 		this.tblResultado.setAutoCreateRowSorter(true);
 		this.tblResultadoScroll = new JScrollPane(tblResultado);
+		
+		getBtnNovo().setEnabled(true); // sempre ativo
 
-		setLayout(new MigLayout("debug 1", "[grow 70][grow 30]", "[][grow][]"));
+		setLayout(new MigLayout("", "[grow 70][grow 30]", "[][grow][]"));
 		add(createSearchPanel(), "growx, wrap");
 		add(tblResultadoScroll, "grow, spany");
 		add(formPanel, "grow, wrap");
@@ -79,12 +81,13 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 */
 	public void initListeners(ListSelectionListener selectItemTable, ActionListener saveClick, ActionListener removeClick, ActionListener searchClick) {
 		this.btnCancelar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) { setContextoEditar(false);}
+			public void actionPerformed(ActionEvent evt) { setContextoEditar(false);  }
 		});
 		this.btnNovo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				try { loadData(); } catch (RemoteException | ServerServiceException | NotBoundException e) { } // nesse caso não fazer nada
 				setContextoCriar(true); 
+				btnRemover.setEnabled(false);
 			}
 		});
 		this.tblResultado.getSelectionModel().addListSelectionListener(selectItemTable);
@@ -110,24 +113,23 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	public abstract Vector<String> gerarHeader();
 
 	/**
-	 * Método para ativar (true) ou não (false) contexto de edição e criação
-	 * @param setar - bool desejado para setar os campos
+	 * Método para ativer os botões do modo edição: salvar e cancelar
+	 * e desativar os outros
 	 */
 	public void setContextoEditar(boolean setar) {
-		btnRemover.setEnabled(setar);
-		btnSalvar.setEnabled(setar);
-		btnCancelar.setEnabled(setar);
-		btnNovo.setEnabled(true);
+		this.btnSalvar.setEnabled(setar);
+		this.btnCancelar.setEnabled(setar);
+		this.btnRemover.setEnabled(setar);
 	};
 	
 	/**
-	 * Método para ativer (true) ou não (false) contexto de criação de dados
-	 * @param setar - bool desejado para setar os campos
+	 * Método para ativer os botões do modo criação: salvar e cancelar
+	 * e desativar os outros
 	 */
 	public void setContextoCriar(boolean setar) {
-		setContextoEditar(setar);
+		this.btnSalvar.setEnabled(setar);
+		this.btnCancelar.setEnabled(setar);
 		this.btnRemover.setEnabled(!setar);
-		this.btnNovo.setEnabled(!setar);
 	}
 
 	/**

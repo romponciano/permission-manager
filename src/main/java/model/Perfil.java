@@ -1,30 +1,32 @@
 package model;
 
-import java.io.Serializable;
 import java.util.Date;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
+
 import common.Const;
 
-public class Plugin implements Serializable {
-		
-	private static final long serialVersionUID = 1676130038866855993L;
+public class Perfil implements Serializable {
+	private static final long serialVersionUID = -2136312367285871901L;
 	
 	private int id;
 	private String nome;
 	private String descricao;
 	private Calendar dataCriacao;
+	private List<Permission> permissoes;
 	
-	public Plugin(int id, String nome, String descricao, Calendar data) {
-		this.id = id;
-		this.nome = nome;
-		this.descricao = descricao;
-		this.dataCriacao = data;
+	public Perfil() { 
+		permissoes = new ArrayList<Permission>();
 	}
-	public Plugin() {	}
 	
 	public int getId() {
 		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
 	}
 	public String getNome() {
 		return nome;
@@ -54,12 +56,13 @@ public class Plugin implements Serializable {
 			this.dataCriacao.setTime(data);
 		}
 	}
-	public void setId(int id) {
-		this.id = id;
+
+	public List<Permission> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<Permission> permissoes) {
+		this.permissoes = permissoes;
 	}
 	
-	@Override
-	public String toString() {
-		return id + "-" + nome;
-	}
 }

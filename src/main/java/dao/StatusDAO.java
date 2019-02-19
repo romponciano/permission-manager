@@ -17,23 +17,13 @@ public class StatusDAO implements Serializable {
 	
 	private static final long serialVersionUID = -1503189464001292373L;
 
-	private String DBUrl;
-	private String DBUser;
-	private String DBPass;
-	
-	public StatusDAO(String url, String user, String pass) {
-		this.DBUrl = url;
-		this.DBUser = user;
-		this.DBPass = pass;
-	}
-	
 	public List<Status> getStatus() throws DBConsultException, DBConnectException, DBDataNotFoundException {
 		List<Status> stats = new ArrayList<Status>();
 		DatabaseConnection db = null;
 		Statement statment = null;
 		ResultSet result = null;
 		try {
-			db = new DatabaseConnection(DBUrl, DBUser, DBPass);
+			db = new DatabaseConnection();
 			statment = db.getConnection().createStatement();
 			result = statment.executeQuery("SELECT * FROM STATUS");
 			if(result.isBeforeFirst()) {

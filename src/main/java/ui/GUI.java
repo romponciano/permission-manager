@@ -21,6 +21,7 @@ public class GUI implements Serializable {
 	AbaGenerica abaUsuario;
 	AbaGenerica abaPlugin;
 	AbaGenerica abaFunc;
+	AbaGenerica abaPerfil;
 	
 	public GUI() {
 		frame = new JFrame();
@@ -28,6 +29,7 @@ public class GUI implements Serializable {
 		abaUsuario = new AbaUsuario(frame);
 		abaPlugin = new AbaPlugin(frame);
 		abaFunc = new AbaFuncionalidade(frame);
+		abaPerfil = new AbaPerfil(frame);
 	}
 	
 	/**
@@ -38,6 +40,7 @@ public class GUI implements Serializable {
 		abasContainer.add(abaUsuario, UIEnums.ABAS.Usuário.toString());
 		abasContainer.add(abaPlugin, UIEnums.ABAS.Plugin.toString());
 		abasContainer.add(abaFunc, UIEnums.ABAS.Funcionalidade.toString());
+		abasContainer.add(abaPerfil, UIEnums.ABAS.Perfil.toString());
 		frame.setContentPane(abasContainer);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
@@ -51,9 +54,8 @@ public class GUI implements Serializable {
 				JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
 				int index = sourceTabbedPane.getSelectedIndex();
 				try {  
-					/* && abaUsuario.getTblResultado().getRowCount() <= 0
-					 * foi removida a abordagem de não carregar caso já houvesse carga na tabela, pois
-					 * se um item é excluido, seus dependentes também. (
+					/* foi removida a abordagem de não carregar caso já houvesse carga na tabela, pois
+					 * se um item é excluido ou alterado as tabelas não seriam recarregadas em outras maqs. 
 					 * Por exemplo: como o caso de excluir um plugin e suas funcionalidades juntos. Então 
 					 * é preciso recarregar as funcs, pois foram alteradas com a remoção do plugin.
 					 */
@@ -66,11 +68,12 @@ public class GUI implements Serializable {
 					else if(sourceTabbedPane.getTitleAt(index).equals(UIEnums.ABAS.Funcionalidade.toString())) {
 						abaFunc.loadData();
 					}
+					else if(sourceTabbedPane.getTitleAt(index).equals(UIEnums.ABAS.Perfil.toString())) {
+						abaPerfil.loadData();
+					}
 				} 
 				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { 
-					exibirDialogError(Const.ERROR_REMOTE_EXCEPT); 
-					} 
+				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
 				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			};
 		});
