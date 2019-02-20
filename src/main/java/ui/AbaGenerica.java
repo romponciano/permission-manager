@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -18,8 +19,11 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionListener;
 
+import org.jdatepicker.impl.UtilDateModel;
+
 import exception.ServerServiceException;
 import exception.UICheckFieldException;
+import model.BusinessEntity;
 import net.miginfocom.swing.MigLayout;
 
 public abstract class AbaGenerica extends JPanel implements Serializable {
@@ -110,7 +114,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 * resultados da busca.
 	 * @return - retorna um Vector<String> com o nome de cada coluna
 	 */
-	public abstract Vector<String> gerarHeader();
+	public abstract Vector<String> gerarHeaderTabelaResultado();
 
 	/**
 	 * Método para ativer os botões do modo edição: salvar e cancelar
@@ -173,6 +177,12 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		return searchPanel;
 	}
 	
+	public void setJTableColumnInsivible(JTable table, int columnIdx) {
+		table.getColumnModel().getColumn(columnIdx).setMinWidth(0);
+		table.getColumnModel().getColumn(columnIdx).setMaxWidth(0);
+		table.getColumnModel().getColumn(columnIdx).setWidth(0);
+	}
+	
 	/**
 	 * Método para exibir DialogBox de algum <b>erro</b>.
 	 * @param msg - mensagem a ser exibida no DialogBox
@@ -203,12 +213,37 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	}
 	
 	/**
+	 * Método usado para setar uma String de data YYYY-MM-DD em um dateModel 
+	 * @param dateModel - dataModel a ser setado
+	 * @param data - String de data YYYY-MM-DD
+	 */
+	public void setDataModelFromStringDate(UtilDateModel dateModel, String data) {
+		String ano = data.substring(0, data.indexOf("-"));
+		String mes = data.substring(data.indexOf("-")+1, data.lastIndexOf("-"));
+		String dia = data.substring(data.lastIndexOf("-")+1, data.length());
+		dateModel.setDate(Integer.valueOf(ano), Integer.valueOf(mes)-1, Integer.valueOf(dia));
+		dateModel.setSelected(true);
+	}
+	
+	/**
 	 * Método para converter escolha de busca da combobox
 	 * para atributo que será utilizado na consulta ao banco.
 	 * @param cmbChoice - escolha do usuário 
 	 * @return - String do atributo utilizado no banco
 	 */
 	public abstract String converComboChoiceToDBAtributte(String cmbChoice);
+	
+	/**
+	 * Método para popular tabela de resultados de busca com lista de usuários
+	 * @param users - Lista contendo os usuários a serem apresentados na tabela
+	 * @param tipo  - tipo para gerar Header da tabela
+	 */
+	public abstract void popularTabelaResultado(List<? extends BusinessEntity> objs);
+	
+	/**
+	 * Método para iniciar painel de formulário de cada aba
+	 */
+	public abstract void initPnlForm();
 
 	public JComboBox<String> getCmbParametroConsulta() {
 		return cmbParametroConsulta;

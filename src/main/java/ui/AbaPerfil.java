@@ -27,9 +27,9 @@ import client.Client;
 import common.Const;
 import exception.ServerServiceException;
 import exception.UICheckFieldException;
+import model.BusinessEntity;
 import model.Functionality;
 import model.Perfil;
-import model.Permission;
 import net.miginfocom.swing.MigLayout;
 
 public class AbaPerfil extends AbaGenerica {
@@ -41,19 +41,15 @@ public class AbaPerfil extends AbaGenerica {
 	private JLabel lblDataCriacao = new JLabel("Data de criação: ");
 	private JTextField txtNomePerfil = new JTextField(15);
 	private JTextField txtDescricao = new JTextField(15);
-
 	private UtilDateModel dateModel = new UtilDateModel();
 	private Properties dateProperties = new Properties();
 	private JDatePanelImpl datePanel = new JDatePanelImpl(dateModel, dateProperties);
 	private JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-	
 	private TableWithCheckBox tblFuncs = new TableWithCheckBox();
 	private JScrollPane tblFuncsScroll;
 	
 	public AbaPerfil(JFrame parentFrame) {
 		super(parentFrame);
-		tblFuncs.setAutoCreateRowSorter(true);
-		this.tblFuncsScroll = new JScrollPane(tblFuncs);
 		initPnlForm();
 		setContextoEditar(false);
 				
@@ -68,7 +64,7 @@ public class AbaPerfil extends AbaGenerica {
 					txtDescricao.setText(( campo != null ? campo.toString() : ""));
 					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
 					if(!data.equals("")) {
-						setDataModelFromStringDate(data);
+						setDataModelFromStringDate(dateModel, data);
 					} else {
 						dateModel.setSelected(false);
 					}
@@ -83,8 +79,8 @@ public class AbaPerfil extends AbaGenerica {
 					if(termo != null && termo.length() > 0) {
 						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
 						atributo = converComboChoiceToDBAtributte(atributo);
-						List<Perfil> funs = Client.getServer().searchPerfils(atributo, termo);
-						popularTabelaResultado(funs);
+						List<? extends BusinessEntity> perfs = Client.getServer().searchPerfis(atributo, termo);
+						popularTabelaResultado(perfs);
 					} else {
 						loadData();
 					}
@@ -98,26 +94,20 @@ public class AbaPerfil extends AbaGenerica {
 			public void actionPerformed(ActionEvent evt) {
 				try {
 					if(checkFieldsOnCreate()) {
-						Perfil perf = new Perfil();
-						perf.setNome(txtNomePerfil.getText());
-						perf.setDescricao(txtDescricao.getText());
+						String name = txtNomePerfil.getText();
+						String desc = txtDescricao.getText();
+						Perfil perf = new Perfil(null, name, desc, null);
+						perf.setPermissoes(criarPermissoesConcedidas());
 						/* 	se o botão 'remover' estiver habilitado, então é pq não 
 						 * 	não representa um novo item, mas sim um update. */
 						if(getBtnRemover().isEnabled()) {
 							int linhaSelecionada = getTblResultado().getSelectedRow();
-							int perfilId = Integer.parseInt(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-							/* 	essa abordagem de apagar todas as permissões do perfil e depois criar as permissões concedidas
-							*	foi adotada pois é isso que acontece na prática. Atualizar permissões é remover e/ou add, então
-							*	basta remover todas as permissões que o perfil tinha e criar todas que estão marcadas no momento. */
-							Client.getServer().deletePermissionsByPerfilId(perfilId);
-							salvarPermissoesConcedidas(perfilId);
-							perf.setId(perfilId);
+							perf.setId(Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString()));
 							Client.getServer().updatePerfil(perf);
 						/* se não, representa um create */
-						} else {							
-							perf.setDataCriacaoFromDate(new Date());
-							perf = Client.getServer().createPerfil(perf);
-							salvarPermissoesConcedidas(perf.getId());
+						} else {			
+							perf.setDataCriacao(new Date());
+							Client.getServer().createPerfil(perf);
 						};
 						loadData();
 						setContextoEditar(false);
@@ -135,12 +125,11 @@ public class AbaPerfil extends AbaGenerica {
 			public void actionPerformed(ActionEvent evt) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
-					int perfilId = Integer.parseInt(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+					Long perfilId = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
 					try {
 						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
 						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "perfionalidade id: " + perfilId);
 						if(exibirDialogConfirmation(msgConfirmacao)) {
-							Client.getServer().deletePermissionsByPerfilId(perfilId);
 							Client.getServer().deletePerfil(perfilId);
 							loadData();
 						}
@@ -161,35 +150,16 @@ public class AbaPerfil extends AbaGenerica {
 	 * @throws ServerServiceException
 	 * @throws NotBoundException
 	 */
-	private void salvarPermissoesConcedidas(int perfilId) throws RemoteException, ServerServiceException, NotBoundException {
+	private List<Functionality> criarPermissoesConcedidas() {
+		List<Functionality> out = new ArrayList<Functionality>();
 		for(int i=0; i < tblFuncs.getRowCount(); i++) {
 			Boolean valor = Boolean.valueOf(tblFuncs.getValueAt(i, 5).toString());
 			if(valor) {
-				Permission p = new Permission();
-				p.getFunc().setId(Integer.parseInt(tblFuncs.getValueAt(i, 0).toString()));
-				p.getPerfil().setId(perfilId);
-				Client.getServer().createPermission(p);
+				Long id = Long.parseLong(tblFuncs.getValueAt(i, 0).toString());
+				out.add(new Functionality(id, null, null, null));
 			}
 		}
-	}
-	
-	/**
-	 * Método para popular tabela de resultados de busca com lista de perfs
-	 * @param perfs - Lista contendo os perfs a serem apresentados na tabela
-	 * @param tipo - tipo para gerar Header da tabela
-	 */
-	private void popularTabelaResultado(List<Perfil> perfs) {
-		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
-		Vector<Object> linha;
-		for(Perfil perf : perfs) {
-			linha = new Vector<Object>();
-			linha.add(perf.getId());
-			linha.add(perf.getNome());
-			linha.add(perf.getDescricao());
-			linha.add(perf.getDataCriacaoToString());
-			dadosFinal.add(linha);
-		};
-		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
+		return out;
 	}
 	
 	/**
@@ -197,20 +167,21 @@ public class AbaPerfil extends AbaGenerica {
 	 * @param perfs - Lista contendo as permissões a serem apresentados na tabela
 	 * @param tipo - tipo para gerar Header da tabela
 	 */
-	private void popularTabelaPermissoes(List<Permission> perms, List<Functionality> allFuncs) {
+	private void popularTabelaPermissoes(List<Functionality> permsConcedidas, List<Functionality> allFuncs) {
 		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
 		Vector<Object> linha;
 		for(Functionality func : allFuncs) {
 			linha = new Vector<Object>();
 			linha.add(func.getId());
-			linha.add(func.getNome());
-			linha.add(func.getDescricao());
+			linha.add(func.getName());
+			linha.add(func.getDescription());
 			linha.add(func.getDataCriacaoToString());
 			linha.add(func.getPlugin().toString());
-			linha.add(hasPermission(func.getId(), perms));
+			linha.add(hasPermission(func.getId(), permsConcedidas));
 			dadosFinal.add(linha);
 		};
 		this.tblFuncs.setModel(new DefaultTableModel(dadosFinal, gerarHeaderPermissao()));
+		this.setJTableColumnInsivible(tblFuncs, 0);
 	}
 	
 	/**
@@ -219,9 +190,9 @@ public class AbaPerfil extends AbaGenerica {
 	 * @param allFuncsWithPermission - lista com as permissões concedidas
 	 * @return true se funcionalidade for permitida, false caso contrário
 	 */
-	private boolean hasPermission(int funcId, List<Permission> allFuncsWithPermission) {
-		for(Permission perm : allFuncsWithPermission) {
-			if(funcId == perm.getFunc().getId()) return true;
+	private boolean hasPermission(Long funcId, List<Functionality> allFuncsWithPermission) {
+		for(Functionality perm : allFuncsWithPermission) {
+			if(funcId.equals(perm.getId())) return true;
 		}
 		return false;
 	}
@@ -243,34 +214,21 @@ public class AbaPerfil extends AbaGenerica {
 	
 	/**
 	 * Método para setar tabela de permissões quando for para editar um perfil
-	 * @param setar - true irá ativar edição da tabela
+	 * @param setar - irá definir se é para editar perms existentes (true) ou se é um novo perfil (false)
 	 * @param perfilId - id do perfil selecionado (só necessário se setar == true) ou null
 	 */
-	private void setEditarTblPermissoes(boolean setar, Integer perfilId) {
+	private void setEditarTblPermissoes(boolean setar, Long perfilId) {
 		List<Functionality> allFuncs = new ArrayList<Functionality>();
-		List<Permission> perms = new ArrayList<Permission>();
+		List<Functionality> perms = new ArrayList<Functionality>();
 		try {
 			allFuncs = Client.getServer().getFunctionalities();
-			if(setar) {
-				perms = Client.getServer().searchPermissionsByPerfilId(perfilId);
-			}
+			if(setar) perms = Client.getServer().searchPermissionsByPerfilId(perfilId);
 		} catch (Exception err) { }
 		finally { popularTabelaPermissoes(perms, allFuncs); }
 	}
 	
-	/**
-	 * Método para setar data em model a partir de uma string
-	 * @param data - data em formato string YYYY-MM-DD
-	 */
-	private void setDataModelFromStringDate(String data) {
-		String ano = data.substring(0, data.indexOf("-"));
-		String mes = data.substring(data.indexOf("-")+1, data.lastIndexOf("-"));
-		String dia = data.substring(data.lastIndexOf("-")+1, data.length());
-		dateModel.setDate(Integer.valueOf(ano), Integer.valueOf(mes)-1, Integer.valueOf(dia));
-		dateModel.setSelected(true);
-	}
-	
-	private void initPnlForm() {
+	@Override
+	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("","[right][grow]",""));
 		pnlForm.add(lblNomePerfil);
 		pnlForm.add(txtNomePerfil, "wrap, growx");
@@ -279,6 +237,8 @@ public class AbaPerfil extends AbaGenerica {
 		pnlForm.add(lblDataCriacao);
 		datePicker.getComponent(1).setEnabled(false); // setar datePicker disabled
 		pnlForm.add(datePicker, "wrap, growx");
+		tblFuncs.setAutoCreateRowSorter(true);
+		this.tblFuncsScroll = new JScrollPane(tblFuncs);
 		pnlForm.add(tblFuncsScroll, "wrap, spanx, growx");
 		registerForm(pnlForm);
 	}
@@ -288,7 +248,7 @@ public class AbaPerfil extends AbaGenerica {
 		super.setContextoCriar(setar);
 		txtNomePerfil.setText("");
 		txtDescricao.setText("");
-		setDataModelFromStringDate(Const.DATA_FORMAT.format(new Date()));
+		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
 		setEditarTblPermissoes(false, null);
 		txtNomePerfil.setEditable(setar);
 		txtDescricao.setEditable(setar);
@@ -304,8 +264,8 @@ public class AbaPerfil extends AbaGenerica {
 			dateModel.setSelected(false);
 			setEditarTblPermissoes(false, null);
 		} else {
-			String perfilId = this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString();
-			setEditarTblPermissoes(true, Integer.parseInt(perfilId));
+			Long perfilId = Long.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
+			setEditarTblPermissoes(true, perfilId);
 		}
 		txtNomePerfil.setEditable(setar);
 		txtDescricao.setEditable(setar);
@@ -322,7 +282,7 @@ public class AbaPerfil extends AbaGenerica {
 	}
 	
 	@Override
-	public Vector<String> gerarHeader() {
+	public Vector<String> gerarHeaderTabelaResultado() {
 		Vector<String> header = new Vector<String>();
 		header.add("ID");
 		header.add("NOME");
@@ -334,7 +294,7 @@ public class AbaPerfil extends AbaGenerica {
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		setContextoEditar(false);
-		List<Perfil> perfs = Client.getServer().getPerfils();
+		List<? extends BusinessEntity> perfs = Client.getServer().getPerfis();
 		popularTabelaResultado(perfs);
 	}
 
@@ -345,7 +305,23 @@ public class AbaPerfil extends AbaGenerica {
 			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
 		}
 		return true;
-	}	
+	}
+	
+	@Override
+	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
+		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
+		for(Object obj : objs) {
+			Perfil perf = (Perfil)obj;
+			Vector<Object> linha = new Vector<Object>();
+			linha.add(perf.getId());
+			linha.add(perf.getName());
+			linha.add(perf.getDescription());
+			linha.add(perf.getDataCriacaoToString());
+			dadosFinal.add(linha);
+		};
+		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
+		setJTableColumnInsivible(this.getTblResultado(), 0);
+	}
 	
 	@Override
 	public String converComboChoiceToDBAtributte(String cmbChoice) {

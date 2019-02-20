@@ -8,9 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -20,6 +25,8 @@ import client.Client;
 import common.Const;
 import exception.ServerServiceException;
 import exception.UICheckFieldException;
+import model.BusinessEntity;
+import model.Perfil;
 import model.Status;
 import model.User;
 import net.miginfocom.swing.MigLayout;
@@ -36,6 +43,11 @@ public class AbaUsuario extends AbaGenerica {
 	final private JTextField txtLogin = new JTextField(15);
 	final private JTextField txtGerencia = new JTextField(15);
 	final private ComboBoxWithItems cmbStatus = new ComboBoxWithItems();
+	final private ComboBoxWithItems cmbPerfis = new ComboBoxWithItems();
+	final private JButton btnAddPerfil = new JButton("+");
+	final private JButton btnRemoverPerfil = new JButton("-");
+	final private JList<BusinessEntity> lstPerfis = new JList<BusinessEntity>();
+	final private DefaultListModel<BusinessEntity> modelPerfilList = new DefaultListModel<BusinessEntity>();
 
 	public AbaUsuario(JFrame parentFrame) {
 		super(parentFrame);
@@ -55,9 +67,8 @@ public class AbaUsuario extends AbaGenerica {
 					campo = getTblResultado().getValueAt(linhaSelecionada, 4);
 					txtGerencia.setText(( campo != null ? (String)campo : ""));
 					// como statusId é estrangeira e obrigatória, então não checar se é null
-					String stringUnica = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
-					ComboBoxItem item = new ComboBoxItem(stringUnica);
-					cmbStatus.setSelectedItemById(item.getId());
+					BusinessEntity statusSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 3);
+					cmbStatus.setSelectedItemById(statusSelecionado.getId());
 					setContextoEditar(true);
 				};
 			}
@@ -69,7 +80,7 @@ public class AbaUsuario extends AbaGenerica {
 					if(termo != null && termo.length() > 0) {
 						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
 						atributo = converComboChoiceToDBAtributte(atributo);
-						List<User> usrs = Client.getServer().searchUsers(atributo, termo);
+						List<? extends BusinessEntity> usrs = Client.getServer().searchUsers(atributo, termo);
 						popularTabelaResultado(usrs);
 					} else {
 						loadData();
@@ -86,17 +97,18 @@ public class AbaUsuario extends AbaGenerica {
 			public void actionPerformed(ActionEvent evt) {
 				try {
 					if(checkFieldsOnCreate()) {
-						User usr = new User();
-						usr.setNome(txtNomeUsuario.getText());
+						String name = txtNomeUsuario.getText();
+						User usr = new User(null, name);
 						usr.setLogin(txtLogin.getText());
 						usr.setGerenciaAtual(txtGerencia.getText());
-						usr.getStatus().setId(cmbStatus.getIdFromSelectedItem());
+						Long statusId = cmbStatus.getIdFromSelectedItem();
+						usr.setStatus(new Status(statusId, null));
+						usr.setPerfis(getPerfisFromList());
 						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
 						 * 	não representa um novo item, mas sim um update. */
 						if(getBtnRemover().isEnabled()) {
 							int linhaSelecionada = getTblResultado().getSelectedRow();
-							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
-							usr.setId(Integer.parseInt(id));
+							usr.setId(Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString()));
 							Client.getServer().updateUser(usr);
 						/* se não, representa um create */
 						} else {
@@ -117,12 +129,12 @@ public class AbaUsuario extends AbaGenerica {
 			public void actionPerformed(ActionEvent evt) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
-					String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
+					Long userId = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
 					try {
 						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "usuário id: " + id);
+						msgConfirmacao = msgConfirmacao.replace("?1", "usuário id: " + userId);
 						if(exibirDialogConfirmation(msgConfirmacao)) {
-							Client.getServer().deleteUser(Integer.parseInt(id));
+							Client.getServer().deleteUser(userId);
 							loadData();
 						}
 						setContextoEditar(false);
@@ -135,6 +147,57 @@ public class AbaUsuario extends AbaGenerica {
 			}
 		};
 		initListeners(selectItemTable, saveClick, removeClick, searchClick);
+		
+		// listeners de botões exclusivos da aba usuário
+		btnAddPerfil.addActionListener(new ActionListener() { 
+			public void actionPerformed(ActionEvent evt) { 
+				BusinessEntity itemSelecionado = cmbPerfis.getSelectedComboBoxItem();
+				if(modelPerfilList.contains(itemSelecionado)) exibirDialogError("Este perfil já esta lista.");
+				else modelPerfilList.addElement(itemSelecionado); 
+			} 
+		});
+		btnRemoverPerfil.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) { 
+				modelPerfilList.removeElementAt(lstPerfis.getSelectedIndex());
+				btnRemoverPerfil.setEnabled(false);
+			}
+		});
+		lstPerfis.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) { btnRemoverPerfil.setEnabled(true);	}
+		});
+	}
+
+	private JPanel createProfilePanel() {
+		JPanel lay = new JPanel(new MigLayout("", "[][][]", ""));
+		lay.setBorder(BorderFactory.createTitledBorder("Perfis do Usuário"));
+		lay.add(cmbPerfis, "growx");
+		lay.add(btnAddPerfil, "push, al right");
+		lay.add(btnRemoverPerfil, "wrap");
+		lay.add(new JScrollPane(lstPerfis), "spanx, growx, h min:100%");
+		return lay;
+	}
+	
+	private List<Perfil> getPerfisFromList() {
+		List<Perfil> out = new ArrayList<Perfil>();
+		for(int i=0; i < lstPerfis.getModel().getSize(); i++) {
+			BusinessEntity be = lstPerfis.getModel().getElementAt(i);
+			out.add((Perfil)be);
+		}
+		return out;
+	}
+	
+	private void setEditarLstPerfis(boolean setar, Long userId) {
+		List<Perfil> perfisUsr = new ArrayList<Perfil>();
+		try {
+			if(setar) perfisUsr = Client.getServer().searchUserProfilesByUserId(userId);
+		} catch (Exception err) { }
+		finally { popularLstUserProfile(perfisUsr); }
+	}
+	
+	private void popularLstUserProfile(List<Perfil> perfisUsr) {
+		modelPerfilList.removeAllElements();
+		for(Perfil perf : perfisUsr) modelPerfilList.addElement(perf);
+		lstPerfis.setModel(modelPerfilList);
 	}
 
 	@Override
@@ -149,13 +212,15 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		setContextoEditar(false);
-		List<User> users = Client.getServer().getUsers();
-		popularTabelaResultado(users);
-		List<String> opcoes = convertStatusListToStringList(Client.getServer().getStatus());
-		cmbStatus.popularFromStringList(opcoes);
+		popularTabelaResultado(Client.getServer().getUsers());
+		cmbStatus.popularFromBusinessEntity(Client.getServer().getStatus());
+		cmbPerfis.popularFromBusinessEntity(Client.getServer().getPerfis());
+		modelPerfilList.removeAllElements();
+		lstPerfis.setModel(modelPerfilList);
 	}
-
-	private void initPnlForm() {
+	
+	@Override
+	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("", "[right][grow]", ""));
 		pnlForm.add(lblNomeUsuario);
 		pnlForm.add(txtNomeUsuario, "growx, wrap");
@@ -164,7 +229,8 @@ public class AbaUsuario extends AbaGenerica {
 		pnlForm.add(lblStatus);
 		pnlForm.add(cmbStatus, "growx, wrap");
 		pnlForm.add(lblGerencia);
-		pnlForm.add(txtGerencia, "growx");
+		pnlForm.add(txtGerencia, "growx, wrap");
+		pnlForm.add(createProfilePanel(), "spanx, grow, h min:100%");
 		registerForm(pnlForm);
 	}
 
@@ -175,11 +241,19 @@ public class AbaUsuario extends AbaGenerica {
 			txtNomeUsuario.setText("");
 			txtLogin.setText("");
 			txtGerencia.setText("");
+			setEditarLstPerfis(false, null);
+		} else {
+			Long userId = Long.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
+			setEditarLstPerfis(true, userId);
 		}
 		txtNomeUsuario.setEditable(setar);
 		txtLogin.setEditable(setar);
-		cmbStatus.setEditable(setar);
+		cmbStatus.setEnabled(setar);
+		cmbPerfis.setEnabled(setar);
 		txtGerencia.setEditable(setar);
+		lstPerfis.setEnabled(setar);
+		btnAddPerfil.setEnabled(setar);
+		btnRemoverPerfil.setEnabled(false);
 	}
 
 	@Override
@@ -193,7 +267,7 @@ public class AbaUsuario extends AbaGenerica {
 	}
 
 	@Override
-	public Vector<String> gerarHeader() {
+	public Vector<String> gerarHeaderTabelaResultado() {
 		Vector<String> header = new Vector<String>();
 		header.add("ID");
 		header.add("NOME");
@@ -232,29 +306,20 @@ public class AbaUsuario extends AbaGenerica {
 		return "";
 	}
 	
-	/**
-	 * Método para popular tabela de resultados de busca com lista de usuários
-	 * @param users - Lista contendo os usuários a serem apresentados na tabela
-	 * @param tipo  - tipo para gerar Header da tabela
-	 */
-	public void popularTabelaResultado(List<User> users) {
+	@Override
+	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
 		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
-		Vector<Object> linha;
-		for (User usr : users) {
-			linha = new Vector<Object>();
+		for (Object obj : objs) {
+			Vector<Object> linha = new Vector<Object>();
+			User usr = (User)obj;
 			linha.add(usr.getId());
-			linha.add(usr.getNome());
+			linha.add(usr.getName());
 			linha.add(usr.getLogin());
-			linha.add(usr.getStatus().toString());
+			linha.add(usr.getStatus());
 			linha.add(usr.getGerenciaAtual());
 			dadosFinal.add(linha);
 		};
-		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
-	}
-	
-	private List<String> convertStatusListToStringList(List<Status> stats) {
-		List<String> opcoes = new ArrayList<String>();
-		for(Status stat : stats) opcoes.add(stat.toString());
-		return opcoes;
+		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
+		setJTableColumnInsivible(this.getTblResultado(), 0);
 	}
 }

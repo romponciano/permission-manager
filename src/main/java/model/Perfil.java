@@ -1,67 +1,38 @@
 package model;
 
-import java.util.Date;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.List;
 
 import common.Const;
 
-public class Perfil implements Serializable {
+public class Perfil extends BusinessEntity {
 	private static final long serialVersionUID = -2136312367285871901L;
 	
-	private int id;
-	private String nome;
-	private String descricao;
-	private Calendar dataCriacao;
-	private List<Permission> permissoes;
+	private Date dataCriacao;
+	private List<Functionality> permissoes;
 	
-	public Perfil() { 
-		permissoes = new ArrayList<Permission>();
+	public Perfil(Long id, String name, String description, Date dataCriacao) { 
+		super(id, name, description);
+		this.dataCriacao = dataCriacao;
+		permissoes = new ArrayList<Functionality>();
 	}
 	
-	public int getId() {
-		return id;
-	}
-	public void setId(int id) {
-		this.id = id;
-	}
-	public String getNome() {
-		return nome;
-	}
-	public String getDescricao() {
-		return descricao;
-	}
-	public Calendar getDataCriacao() {
+	public Date getDataCriacao() {
 		return dataCriacao;
 	}
 	public String getDataCriacaoToString() {
 		if(dataCriacao == null) return "";
-		return Const.DATA_FORMAT.format(dataCriacao.getTime());
+		return Const.DATA_FORMAT.format(dataCriacao);
 	}
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-	public void setDescricao(String descricao) {
-		this.descricao = descricao;
-	}
-	public void setDataCriacao(Calendar data) {
+	public void setDataCriacao(Date data) {
 		this.dataCriacao = data;
 	}
-	public void setDataCriacaoFromDate(Date data) {
-		if(data != null) {
-			this.dataCriacao = new GregorianCalendar();
-			this.dataCriacao.setTime(data);
-		}
-	}
-
-	public List<Permission> getPermissoes() {
+	
+	public List<Functionality> getPermissoes() {
 		return permissoes;
 	}
-
-	public void setPermissoes(List<Permission> permissoes) {
+	public void setPermissoes(List<Functionality> permissoes) {
 		this.permissoes = permissoes;
 	}
 	

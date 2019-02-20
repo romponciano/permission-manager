@@ -1,58 +1,29 @@
 package model;
 
 import java.util.Date;
-import java.io.Serializable;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import common.Const;
 
-public class Functionality implements Serializable {
-	private static final long serialVersionUID = -2136312367285871901L;
+public class Functionality extends BusinessEntity {
 	
-	private int id;
-	private String nome;
-	private String descricao;
+	private static final long serialVersionUID = -6487065132272259938L;
+	
+	private Date dataCriacao;
 	private Plugin plugin;
-	private Calendar dataCriacao;
 	
-	public Functionality() {
-		this.plugin = new Plugin();
+	public Functionality(Long id, String nome, String descricao, Date data) {
+		super(id, nome, descricao);
+		this.dataCriacao = data;
 	}
-	
-	public int getId() {
-		return id;
-	}
-	public String getNome() {
-		return nome;
-	}
-	public String getDescricao() {
-		return descricao;
-	}
-	public Calendar getDataCriacao() {
+	public Date getDataCriacao() {
 		return dataCriacao;
 	}
 	public String getDataCriacaoToString() {
 		if(dataCriacao == null) return "";
-		return Const.DATA_FORMAT.format(dataCriacao.getTime());
+		return Const.DATA_FORMAT.format(dataCriacao);
 	}
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-	public void setDescricao(String descricao) {
-		this.descricao = descricao;
-	}
-	public void setDataCriacao(Calendar data) {
+	public void setDataCriacao(Date data) {
 		this.dataCriacao = data;
-	}
-	public void setDataCriacaoFromDate(Date data) {
-		if(data != null) {
-			this.dataCriacao = new GregorianCalendar();
-			this.dataCriacao.setTime(data);
-		}
-	}
-	public void setId(int id) {
-		this.id = id;
 	}
 	public Plugin getPlugin() {
 		return plugin;
@@ -60,7 +31,5 @@ public class Functionality implements Serializable {
 	public void setPlugin(Plugin plugin) {
 		this.plugin = plugin;
 	}
-	public String getPluginIdWithName() {
-		return plugin.getId() + "-" + plugin.getNome(); 
-	}
+	
 }

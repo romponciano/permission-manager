@@ -1,167 +1,87 @@
 package dao;
 
-import java.io.Serializable;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.DatabaseConnection;
 import exception.DBConnectException;
 import exception.DBConsultException;
 import exception.DBCreateException;
-import exception.DBDataNotFoundException;
 import exception.DBDeleteException;
 import exception.DBUpdateException;
+import model.Status;
 import model.User;
 
-public class UserDAO implements Serializable {
+public class UserDAO extends GenericDAO {
 	
 	private static final long serialVersionUID = -1503189464001292373L;
 	
-	public List<User> getUsers() throws DBConsultException, DBConnectException, DBDataNotFoundException {
+	@Override
+	public List<Object> populateListOfSelectSQL(ResultSet result) throws SQLException {
 		List<User> usrs = new ArrayList<User>();
-		DatabaseConnection db = null;
-		Statement statment = null;
-		ResultSet result = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().createStatement();
-			result = statment.executeQuery("SELECT" + 
-					"	u.id, " + 
-					"	u.nomeCompleto, " + 
-					"	u.login, " + 
-					"	u.gerenciaAtual, " + 
-					"	s.id AS \"statusid\", " + 
-					"	s.nome AS \"statusnome\" " + 
-					"FROM USUARIO u " + 
-					"INNER JOIN STATUS s ON u.STATUS = s.ID"
-			);
-			if(result.isBeforeFirst()) {
-				while(result.next()) {
-					User usr = new User();
-					usr.setId(result.getInt("id"));
-					usr.setNome(result.getString("nomeCompleto"));
-					usr.setLogin(result.getString("login"));
-					usr.setGerenciaAtual(result.getString("gerenciaAtual"));
-					usr.getStatus().setId(result.getInt("statusid"));
-					usr.getStatus().setNome(result.getString("statusnome"));
-					usrs.add(usr);
-				};
-			}
-		} catch (DBConnectException e) {
-			throw e;
-		} catch (SQLException e) {
-			throw new DBConsultException(e.getMessage(), e.getCause());
-		} finally {
-		    try { result.close(); } catch (Exception e) { /* ignorar */ }
-		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
-		}
-		return usrs;
+		while(result.next()) {
+			Long id = result.getLong("id");
+			String name = result.getString("nomeCompleto");
+			User usr = new User(id, name);
+			usr.setLogin(result.getString("login"));
+			usr.setGerenciaAtual(result.getString("gerenciaAtual"));
+			usr.setStatus(new Status(result.getLong("statusid"), result.getString("statusnome")));
+			usrs.add(usr);
+		};
+		return new ArrayList<Object>(usrs);
 	}
 	
-	public void createUser(User user) throws DBConnectException, DBCreateException {
-		DatabaseConnection db = null;
-		PreparedStatement statment = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().prepareStatement("INSERT INTO USUARIO (login, nomecompleto, status, gerenciaatual) VALUES (?, ?, ?, ?)");
-			statment.setString(1, user.getLogin());
-			statment.setString(2,  user.getNome());
-			statment.setInt(3,  user.getStatus().getId());
-			statment.setString(4, user.getGerenciaAtual());
-			statment.executeUpdate();
-		} catch(SQLException e) {
-			throw new DBCreateException(e.getMessage(), e.getCause());
-		} catch(DBConnectException e) {
-			throw e;
-		} finally {
-			try { statment.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
+	public List<User> getUsers() throws DBConsultException, DBConnectException {
+		List<Object> objs = runSelectSQL("SELECT "
+				+ "u.id, u.nomeCompleto, u.login, u.gerenciaAtual, s.id AS \"statusid\", s.nome AS \"statusnome\" "
+				+ "FROM USUARIO u INNER JOIN STATUS s ON u.STATUS = s.ID");
+		return objectListToUserList(objs);
 	}
 	
-	public void updateUser(User user) throws DBConnectException, DBUpdateException {
-		DatabaseConnection db = null;
-		PreparedStatement statment = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().prepareStatement("UPDATE USUARIO SET login = ?, nomecompleto = ?, status = ?, gerenciaatual = ? WHERE ID = ?");
-			statment.setString(1, user.getLogin());
-			statment.setString(2,  user.getNome());
-			statment.setInt(3,  user.getStatus().getId());
-			statment.setString(4, user.getGerenciaAtual());
-			statment.setInt(5, user.getId());
-			statment.executeUpdate();
-		} catch(SQLException e) {
-			throw new DBUpdateException(e.getMessage(), e.getCause());
-		} catch(DBConnectException e) {
-			throw e;
-		} finally {
-			try { statment.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
+	public List<User> searchUsers(String atributo, String termo) throws DBConnectException, DBConsultException {
+		String sql = "SELECT "
+				+ "u.id, u.nomeCompleto, u.login, u.gerenciaAtual, s.id AS \"statusid\", s.nome AS \"statusnome\" " 
+				+ "FROM USUARIO u INNER JOIN STATUS s ON u.STATUS = s.ID WHERE ?1 LIKE '%?2%'";
+		sql = sql.replace("?1", atributo);
+		sql = sql.replace("?2", termo);
+		List<Object> objs = runSelectSQL(sql);
+		return objectListToUserList(objs);
 	}
 	
-	public void deleteUser(int userId) throws DBConnectException, DBDeleteException {
-		DatabaseConnection db = null;
-		PreparedStatement statment = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().prepareStatement("DELETE FROM USUARIO WHERE id = ?");
-			statment.setInt(1, userId);
-			statment.executeUpdate();
-		} catch(SQLException e) {
-			throw new DBDeleteException(e.getMessage(), e.getCause());
-		} catch(DBConnectException e) {
-			throw e;
-		} finally {
-			try { statment.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
+	public User createUser(User usr) throws DBConnectException, DBCreateException {
+		String sql = "BEGIN INSERT INTO USUARIO (login, nomeCompleto, status, gerenciaatual) VALUES ('?1','?2', ?3, '?4') RETURNING ID INTO :x; END;";
+		sql = sql.replace("?1", usr.getLogin());
+		sql = sql.replace("?2", usr.getName());
+		sql = sql.replace("?3", usr.getStatus().getId().toString());
+		sql = sql.replace("?4", usr.getGerenciaAtual());
+		try { usr.setId(runOracleCallableStatement(sql)); } 
+		catch(SQLException e) { throw new DBCreateException(e.getMessage(), e.getCause()); }
+		return usr;
 	}
 	
-	public List<User> searchUser(String atributo, String termo) throws DBConnectException, DBConsultException, DBDataNotFoundException {
+	public void updateUser(User usr) throws DBConnectException, DBUpdateException {
+		String sql = "UPDATE USUARIO SET login = '?1', nomecompleto = '?2', status = ?3, gerenciaatual = '?4' WHERE ID = ?5";
+		sql = sql.replace("?1", usr.getLogin());
+		sql = sql.replace("?2", usr.getName());
+		sql = sql.replace("?3", usr.getStatus().getId().toString());
+		sql = sql.replace("?4", usr.getGerenciaAtual());
+		sql = sql.replace("?5", usr.getId().toString());
+		try { runCreateUpdateDeleteSQL(sql); } 
+		catch(SQLException e) { throw new DBUpdateException(e.getMessage(), e.getCause()); }
+	}
+	
+	public void deleteUser(Long usrId) throws DBConnectException, DBDeleteException {
+		String sql = "DELETE FROM USUARIO WHERE id = ?1";
+		sql = sql.replace("?1", usrId.toString());
+		try { runCreateUpdateDeleteSQL(sql); } 
+		catch(SQLException e) { throw new DBDeleteException(e.getMessage(), e.getCause()); }
+	}
+	
+	private List<User> objectListToUserList(List<Object> objs) {
 		List<User> usrs = new ArrayList<User>();
-		DatabaseConnection db = null;
-		Statement statement = null;
-		ResultSet result = null;
-		try {
-			db = new DatabaseConnection();
-			statement = db.getConnection().createStatement();
-			String query = "SELECT" + 
-					"	u.id, " + 
-					"	u.nomeCompleto, " + 
-					"	u.login, " + 
-					"	u.gerenciaAtual, " + 
-					"	s.id AS \"statusid\", " + 
-					"	s.nome AS \"statusnome\" " + 
-					"FROM USUARIO u " + 
-					"INNER JOIN STATUS s ON u.STATUS = s.ID " +
-					"WHERE " + atributo + " LIKE '%" + termo + "%'";
-			result = statement.executeQuery(query);
-			if(!result.isBeforeFirst()) {
-				throw new DBDataNotFoundException();
-			}
-			while(result.next()) {
-				User usr = new User();
-				usr.setId(result.getInt("id"));
-				usr.setNome(result.getString("nomeCompleto"));
-				usr.setLogin(result.getString("login"));
-				usr.setGerenciaAtual(result.getString("gerenciaAtual"));
-				usr.getStatus().setId(result.getInt("statusid"));
-				usr.getStatus().setNome(result.getString("statusnome"));
-				usrs.add(usr);
-			};
-		} catch (DBConnectException e) {
-			throw e;
-		} catch (SQLException e) {
-			throw new DBConsultException(e.getMessage(), e.getCause());
-		} finally {
-		    try { result.close(); } catch (Exception e) { /* ignorar */ }
-		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
+		for(Object obj : objs) {
+			usrs.add((User)obj);
 		}
 		return usrs;
 	}

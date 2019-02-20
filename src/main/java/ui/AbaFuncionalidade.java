@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +25,7 @@ import client.Client;
 import common.Const;
 import exception.ServerServiceException;
 import exception.UICheckFieldException;
+import model.BusinessEntity;
 import model.Functionality;
 import model.Plugin;
 import net.miginfocom.swing.MigLayout;
@@ -58,16 +58,15 @@ public class AbaFuncionalidade extends AbaGenerica {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
 				if (linhaSelecionada > -1) {
 					// como pluginId é estrangeira e obrigatória, então não checar se é null
-					String stringUnica = getTblResultado().getValueAt(linhaSelecionada, 4).toString();
-					ComboBoxItem item = new ComboBoxItem(stringUnica);
-					cmbPlugin.setSelectedItemById(item.getId());
+					BusinessEntity pluginSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 4);
+					cmbPlugin.setSelectedItemById(pluginSelecionado.getId());
 					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
 					txtNomeFunc.setText(( campo != null ? campo.toString() : ""));
 					campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
 					txtDescricao.setText(( campo != null ? campo.toString() : ""));
 					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
 					if(!data.equals("")) {
-						setDataModelFromStringDate(data);
+						setDataModelFromStringDate(dateModel, data);
 					} else {
 						dateModel.setSelected(false);
 					}
@@ -82,8 +81,8 @@ public class AbaFuncionalidade extends AbaGenerica {
 					if(termo != null && termo.length() > 0) {
 						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
 						atributo = converComboChoiceToDBAtributte(atributo);
-						List<Functionality> funs = Client.getServer().searchFunctionalities(atributo, termo);
-						popularTabelaResultado(funs);
+						List<? extends BusinessEntity> funcs = Client.getServer().searchFunctionalities(atributo, termo);
+						popularTabelaResultado(funcs);
 					} else {
 						loadData();
 					}
@@ -98,20 +97,21 @@ public class AbaFuncionalidade extends AbaGenerica {
 			public void actionPerformed(ActionEvent evt) {
 				try {
 					if(checkFieldsOnCreate()) {
-						Functionality func = new Functionality();
-						func.getPlugin().setId(cmbPlugin.getIdFromSelectedItem());
-						func.setNome(txtNomeFunc.getText());
-						func.setDescricao(txtDescricao.getText());
+						Long pluginId = cmbPlugin.getIdFromSelectedItem();
+						String name = txtNomeFunc.getText();
+						String desc = txtDescricao.getText();
+						Functionality func = new Functionality(null, name, desc, null);
+						func.setPlugin(new Plugin(pluginId, null, null, null));
 						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
 						 * 	não representa um novo item, mas sim um update. */
 						if(getBtnRemover().isEnabled()) {
 							int linhaSelecionada = getTblResultado().getSelectedRow();
 							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
-							func.setId(Integer.parseInt(id));
+							func.setId(Long.parseLong(id));
 							Client.getServer().updateFunctionality(func);
 						/* se não, representa um create */
 						} else {
-							func.setDataCriacaoFromDate(new Date());
+							func.setDataCriacao(new Date());
 							Client.getServer().createFunctionality(func);
 						};
 						loadData();
@@ -133,7 +133,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
 						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "funcionalidade id: " + id);
 						if(exibirDialogConfirmation(msgConfirmacao)) {
-							Client.getServer().deleteUser(Integer.parseInt(id));
+							Client.getServer().deleteUser(Long.parseLong(id));
 							loadData();
 						}
 						setContextoEditar(false);
@@ -147,7 +147,8 @@ public class AbaFuncionalidade extends AbaGenerica {
 		initListeners(selectItemList, saveClick, removeClick, searchClick);
 	}
 	
-	private void initPnlForm() {
+	@Override
+	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("","[right][grow]",""));
 		pnlForm.add(lblNomePlugin);
 		pnlForm.add(cmbPlugin, "wrap, growx");
@@ -168,7 +169,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 		cmbPlugin.setEnabled(setar);
 		txtNomeFunc.setText("");
 		txtDescricao.setText("");
-		setDataModelFromStringDate(Const.DATA_FORMAT.format(new Date()));
+		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
 		cmbPlugin.setEnabled(setar);
 		txtNomeFunc.setEditable(setar);
 		txtDescricao.setEditable(setar);
@@ -197,7 +198,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 	}
 	
 	@Override
-	public Vector<String> gerarHeader() {
+	public Vector<String> gerarHeaderTabelaResultado() {
 		Vector<String> header = new Vector<String>();
 		header.add("ID");
 		header.add("NOME");
@@ -210,10 +211,10 @@ public class AbaFuncionalidade extends AbaGenerica {
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		setContextoEditar(false);
-		List<Functionality> funcs = Client.getServer().getFunctionalities();
+		List<? extends BusinessEntity> funcs = Client.getServer().getFunctionalities();
 		popularTabelaResultado(funcs);
-		List<String> opcoes = convertPluginListToStringList(Client.getServer().getPlugins());
-		cmbPlugin.popularFromStringList(opcoes);
+		List<? extends BusinessEntity> opcoes = Client.getServer().getPlugins();
+		cmbPlugin.popularFromBusinessEntity(opcoes);
 	}
 
 	@Override
@@ -237,37 +238,20 @@ public class AbaFuncionalidade extends AbaGenerica {
 		return "";
 	}
 	
-	/**
-	 * Método para popular tabela de resultados de busca com lista de funcs
-	 * @param funcs - Lista contendo os funcs a serem apresentados na tabela
-	 * @param tipo - tipo para gerar Header da tabela
-	 */
-	public void popularTabelaResultado(List<Functionality> funcs) {
+	@Override
+	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
 		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
-		Vector<Object> linha;
-		for(Functionality func : funcs) {
-			linha = new Vector<Object>();
+		for(Object obj: objs) {
+			Functionality func = (Functionality)obj;
+			Vector<Object> linha = new Vector<Object>();
 			linha.add(func.getId());
-			linha.add(func.getNome());
-			linha.add(func.getDescricao());
+			linha.add(func.getName());
+			linha.add(func.getDescription());
 			linha.add(func.getDataCriacaoToString());
-			linha.add(func.getPlugin().toString());
+			linha.add(func.getPlugin());
 			dadosFinal.add(linha);
 		};
-		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeader()));
-	}
-	
-	private void setDataModelFromStringDate(String data) {
-		String ano = data.substring(0, data.indexOf("-"));
-		String mes = data.substring(data.indexOf("-")+1, data.lastIndexOf("-"));
-		String dia = data.substring(data.lastIndexOf("-")+1, data.length());
-		dateModel.setDate(Integer.valueOf(ano), Integer.valueOf(mes)-1, Integer.valueOf(dia));
-		dateModel.setSelected(true);
-	}
-	
-	private List<String> convertPluginListToStringList(List<Plugin> plugs) {
-		List<String> opcoes = new ArrayList<String>();
-		for(Plugin plg : plugs) opcoes.add(plg.toString());
-		return opcoes;
+		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
+		setJTableColumnInsivible(this.getTblResultado(), 0);
 	}
 }

@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import exception.DBConnectException;
 import exception.DBCreateException;
-import model.User;
 
 public class UserDAOTest {
 
@@ -18,10 +17,7 @@ public class UserDAOTest {
 	
 	@Test
 	public void createUser() throws DBConnectException, DBCreateException {
-		User user = new User();
-		user.setLogin("test");
-		user.setNome("Usuario teste");
-		userDAO.createUser(user);
+		
 	}
 	
 	@Test

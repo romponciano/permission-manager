@@ -1,189 +1,77 @@
 package dao;
 
-import java.io.Serializable;
-import java.sql.PreparedStatement;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.DatabaseConnection;
 import exception.DBConnectException;
 import exception.DBConsultException;
 import exception.DBCreateException;
-import exception.DBDataNotFoundException;
 import exception.DBDeleteException;
-import exception.DBUpdateException;
-import model.Permission;
+import model.Functionality;
+import model.Plugin;
 
-public class PermissionDAO implements Serializable {
+public class PermissionDAO extends GenericDAO {
 
-	private static final long serialVersionUID = 9219401712537769994L;
-	
-	public List<Permission> getPermissions() throws DBConsultException, DBConnectException, DBDataNotFoundException {
-		List<Permission> permissaos = new ArrayList<Permission>();
-		DatabaseConnection db = null;
-		Statement statment = null;
-		ResultSet result = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().createStatement();
-			result = statment.executeQuery("SELECT * FROM PERMISSAO");
-			if(result.isBeforeFirst()) {
-				while(result.next()) {
-					Permission permissao = new Permission();
-					permissao.setId(result.getInt("id"));
-					permissao.getPerfil().setId(result.getInt("perfilId"));
-					permissao.getFunc().setId(result.getInt("funcId"));
-					permissaos.add(permissao);
-				};
-			}			
-		} catch (DBConnectException e) {
-			throw e;
-		} catch (SQLException e) {
-			throw new DBConsultException(e.getMessage(), e.getCause());
-		} finally {
-		    try { result.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
-		return permissaos;
+	private static final long serialVersionUID = -2349876772332391843L;
+
+	@Override
+	public List<Object> populateListOfSelectSQL(ResultSet result) throws SQLException {
+		List<Functionality> funcs = new ArrayList<Functionality>();
+		while(result.next()) {
+			Long id = result.getLong("id");
+			String name = result.getString("nome");
+			String desc = result.getString("descricao");
+			Date dataCriacao = result.getDate("dataCriacao");
+			Long pluginId = result.getLong("pluginid");
+			String pluginNome = result.getString("nomeplugin");
+			Functionality func = new Functionality(id, name, desc, dataCriacao);
+			func.setPlugin(new Plugin(pluginId, pluginNome, null, null));
+			funcs.add(func);
+		};
+		return new ArrayList<Object>(funcs);
 	}
 	
-	public void createPermission(Permission permissao) throws DBConnectException, DBCreateException {
-		DatabaseConnection db = null;
-		PreparedStatement statment = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().prepareStatement("INSERT INTO PERMISSAO (perfilId, funcId) VALUES (?, ?)");
-			statment.setInt(1, permissao.getPerfil().getId());
-			statment.setInt(2, permissao.getFunc().getId());
-			statment.executeUpdate();
-		} catch(SQLException e) {
-			throw new DBCreateException(e.getMessage(), e.getCause());
-		} catch(DBConnectException e) {
-			throw e;
-		} finally {
-			try { statment.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
+	public void deletePermissionsByPerfilId(Long perfilId) throws DBConnectException, DBDeleteException {
+		String sql = "DELETE FROM PERMISSAO WHERE perfilId = ?1";
+		sql = sql.replace("?1", perfilId.toString());
+		try { runCreateUpdateDeleteSQL(sql); }
+		catch(SQLException e) { throw new DBDeleteException(e.getMessage(), e.getCause()); }
 	}
 	
-	public void updatePermission(Permission permissao) throws DBConnectException, DBUpdateException {
-		DatabaseConnection db = null;
-		PreparedStatement statment = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().prepareStatement("UPDATE PERMISSAO SET nome = ?, descricao = ? WHERE id = ?");
-			statment.setInt(1, permissao.getPerfil().getId());
-			statment.setInt(2, permissao.getFunc().getId());
-			statment.setInt(3, permissao.getId());
-			statment.executeUpdate();
-		} catch(SQLException e) {
-			throw new DBUpdateException(e.getMessage(), e.getCause());
-		} catch(DBConnectException e) {
-			throw e;
-		} finally {
-			try { statment.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
+	public void deletePermissionsByFunctionalityId(Long funcId) throws DBConnectException, DBDeleteException {
+		String sql = "DELETE FROM PERMISSAO WHERE FUNCID = ?1";
+		sql = sql.replace("?1", funcId.toString());
+		try { runCreateUpdateDeleteSQL(sql); }
+		catch(SQLException e) { throw new DBDeleteException(e.getMessage(), e.getCause()); }
 	}
 	
-	public void deletePermission(int permissaoId) throws DBConnectException, DBDeleteException {
-		DatabaseConnection db = null;
-		PreparedStatement statment = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().prepareStatement("DELETE FROM PERMISSAO WHERE id = ?");
-			statment.setInt(1, permissaoId);
-			statment.executeUpdate();
-		} catch(SQLException e) {
-			throw new DBDeleteException(e.getMessage(), e.getCause());
-		} catch(DBConnectException e) {
-			throw e;
-		} finally {
-			try { statment.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
+	public void createPermission(Long perfilId, Long funcId) throws DBCreateException, DBConnectException {
+		String sql = "INSERT INTO PERMISSAO (PERFILID, FUNCID) VALUES (?1, ?2)";
+		sql = sql.replace("?1", perfilId.toString());
+		sql = sql.replace("?2", funcId.toString());
+		try { runCreateUpdateDeleteSQL(sql); }
+		catch(SQLException e) { throw new DBCreateException(e.getMessage(), e.getCause()); }
 	}
 	
-	public void deletePermissionByPerfilId(int perfilId) throws DBConnectException, DBDeleteException {
-		DatabaseConnection db = null;
-		PreparedStatement statment = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().prepareStatement("DELETE FROM PERMISSAO WHERE perfilId = ?");
-			statment.setInt(1, perfilId);
-			statment.executeUpdate();
-		} catch(SQLException e) {
-			throw new DBDeleteException(e.getMessage(), e.getCause());
-		} catch(DBConnectException e) {
-			throw e;
-		} finally {
-			try { statment.close(); } catch (Exception e) { /* ignorar */ }
-		    db.closeConnection();
-		}
-	}
-	
-	public List<Permission> searchPermissions(String atributo, String termo) throws DBConnectException, DBConsultException, DBDataNotFoundException {
-		List<Permission> perfs = new ArrayList<Permission>();
-		DatabaseConnection db = null;
-		Statement statement = null;
-		ResultSet result = null;
-		try {
-			db = new DatabaseConnection();
-			statement = db.getConnection().createStatement();
-			String query = "SELECT * FROM PERMISSAO WHERE " + atributo + " LIKE '%" + termo + "%'";
-			result = statement.executeQuery(query);
-			if(!result.isBeforeFirst()) {
-				throw new DBDataNotFoundException();
-			}
-			while(result.next()) {
-				Permission permissao = new Permission();
-				permissao.setId(result.getInt("id"));
-				permissao.getPerfil().setId(result.getInt("perfilId"));
-				permissao.getFunc().setId(result.getInt("funcId"));
-				perfs.add(permissao);
-			};
-		} catch (DBConnectException e) {
-			throw e;
-		} catch (SQLException e) {
-			throw new DBConsultException(e.getMessage(), e.getCause());
-		} finally {
-		    try { result.close(); } catch (Exception e) { /* ignorar */ }
-		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
-		}
-		return perfs;
+	public List<Functionality> getPermissionsByPerfilId(Long perfilId) throws DBConsultException, DBConnectException {
+		String sql = "SELECT " 
+				+ "f.id, f.nome, f.descricao, f.dataCriacao, f.pluginid, p.nome AS \"nomeplugin\" " 
+				+ "FROM FUNCIONALIDADE f "
+				+ "INNER JOIN PLUGIN p ON f.PLUGINID = p.ID " 
+				+ "INNER JOIN PERMISSAO per ON f.ID = per.FUNCID WHERE per.PERFILID = ?1";
+		sql = sql.replace("?1", perfilId.toString());
+		List<Object> objs = runSelectSQL(sql);
+		return objectListToFunctionalityList(objs);
 	}
 
-	public List<Permission> searchPermissionsByPerfilId(int perfilId) throws DBConnectException, DBConsultException, DBDataNotFoundException {
-		List<Permission> perfs = new ArrayList<Permission>();
-		DatabaseConnection db = null;
-		Statement statement = null;
-		ResultSet result = null;
-		try {
-			db = new DatabaseConnection();
-			statement = db.getConnection().createStatement();
-			String query = "SELECT * FROM PERMISSAO WHERE perfilId = " + perfilId;
-			result = statement.executeQuery(query);
-			if(!result.isBeforeFirst()) {
-				throw new DBDataNotFoundException();
-			}
-			while(result.next()) {
-				Permission permissao = new Permission();
-				permissao.setId(result.getInt("id"));
-				permissao.getPerfil().setId(result.getInt("perfilId"));
-				permissao.getFunc().setId(result.getInt("funcId"));
-				perfs.add(permissao);
-			};
-		} catch (DBConnectException e) {
-			throw e;
-		} catch (SQLException e) {
-			throw new DBConsultException(e.getMessage(), e.getCause());
-		} finally {
-		    try { result.close(); } catch (Exception e) { /* ignorar */ }
-		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
+	private List<Functionality> objectListToFunctionalityList(List<Object> objs) {
+		List<Functionality> plugins = new ArrayList<Functionality>();
+		for(Object obj : objs) {
+			plugins.add((Functionality)obj);
 		}
-		return perfs;
+		return plugins;
 	}
 }

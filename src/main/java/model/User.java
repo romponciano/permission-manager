@@ -1,26 +1,18 @@
 package model;
 
-import java.io.Serializable;
+import java.util.List;
 
-public class User implements Serializable {
+public class User extends BusinessEntity {
+	
 	private static final long serialVersionUID = -311656302967427533L;
 	
-	private Integer id;
-	private String nome;
 	private String login;
 	private Status status;
 	private String gerenciaAtual;
+	private List<Perfil> perfis;
 
-	public User() {	
-		this.status = new Status();
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public String getNome() {
-		return nome;
+	public User(Long id, String name) {	
+		super(id, name, null);
 	}
 
 	public String getLogin() {
@@ -34,9 +26,9 @@ public class User implements Serializable {
 	public String getGerenciaAtual() {
 		return gerenciaAtual;
 	}
-
-	public void setNome(String nome) {
-		this.nome = nome;
+	
+	public List<Perfil> getPerfis() {
+		return perfis;
 	}
 
 	public void setLogin(String login) {
@@ -51,10 +43,9 @@ public class User implements Serializable {
 		this.gerenciaAtual = gerenciaAtual;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setPerfis(List<Perfil> perfis) {
+		this.perfis = perfis;
 	}
-	
 	
 	
 }

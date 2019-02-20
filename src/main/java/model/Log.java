@@ -12,10 +12,11 @@ public class Log implements Serializable {
 	private String causa;
 	
 	public static enum TIPOS_LOG {
-			SUCESSO,
+			CREATE,
 			ERRO,
 			INFO,
-			DANGER
+			UPDATE,
+			DELETE
 	}
 
 	public int getId() {

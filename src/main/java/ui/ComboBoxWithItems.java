@@ -1,19 +1,23 @@
 package ui;
 
+import java.awt.Color;
 import java.io.Serializable;
 import java.util.List;
 
 import javax.swing.JComboBox;
 
-public class ComboBoxWithItems extends JComboBox<ComboBoxItem> implements Serializable {
+import model.BusinessEntity;
+
+public class ComboBoxWithItems extends JComboBox<BusinessEntity> implements Serializable {
 	
 	private static final long serialVersionUID = -6497993382058846123L;
 
-    public ComboBoxWithItems() { }
+    public ComboBoxWithItems() { 
+    	this.setBackground(Color.WHITE);
+    }
     
-    private ComboBoxItem getSelectedComboBoxItem() {
-    	ComboBoxItem item = (ComboBoxItem) this.getSelectedItem();
-    	return item;
+    public BusinessEntity getSelectedComboBoxItem() {
+    	return (BusinessEntity) this.getSelectedItem();
     }
     
     /**
@@ -21,10 +25,10 @@ public class ComboBoxWithItems extends JComboBox<ComboBoxItem> implements Serial
 	 * @param cmb - combobox com a lista dos items
 	 * @param id - id do item a ser selecionado
 	 */
-    public void setSelectedItemById(int id) {
+    public void setSelectedItemById(Long id) {
     	for(int i=0; i < this.getItemCount(); i++) {
-			int tempId = this.getItemAt(i).getId();
-			if(tempId == id) this.setSelectedIndex(i);
+			Long tempId = this.getItemAt(i).getId();
+			if(tempId.equals(id)) this.setSelectedIndex(i);
 		}
     }
     
@@ -33,10 +37,11 @@ public class ComboBoxWithItems extends JComboBox<ComboBoxItem> implements Serial
 	 * @param JComboBox<String> - combobox que terá a lista add
 	 * @param List<String> - lista com os valores a serem add
 	 */
-	public void popularFromStringList(List<String> valores) {
+	public void popularFromBusinessEntity(List<? extends BusinessEntity> valores) {
 		this.removeAllItems();
-		for(int i=0; i < valores.size(); i++) {
-			this.insertItemAt(new ComboBoxItem(valores.get(i)), i);
+		int index = 0;
+		for (BusinessEntity valor : valores) {
+			insertItemAt(valor, index++);
 		}
 	}
 	
@@ -47,7 +52,7 @@ public class ComboBoxWithItems extends JComboBox<ComboBoxItem> implements Serial
 	 * @param item - String com valor do item selecionado
 	 * @return id no bd do item selecionado
 	 */
-	public int getIdFromSelectedItem() {
+	public Long getIdFromSelectedItem() {
 		return getSelectedComboBoxItem().getId();
 	}
 }

@@ -1,46 +1,38 @@
 package dao;
 
-import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.DatabaseConnection;
 import exception.DBConnectException;
 import exception.DBConsultException;
-import exception.DBDataNotFoundException;
 import model.Status;
 
-public class StatusDAO implements Serializable {
+public class StatusDAO extends GenericDAO {
 	
 	private static final long serialVersionUID = -1503189464001292373L;
 
-	public List<Status> getStatus() throws DBConsultException, DBConnectException, DBDataNotFoundException {
+	@Override
+	public List<Object> populateListOfSelectSQL(ResultSet result) throws SQLException {
 		List<Status> stats = new ArrayList<Status>();
-		DatabaseConnection db = null;
-		Statement statment = null;
-		ResultSet result = null;
-		try {
-			db = new DatabaseConnection();
-			statment = db.getConnection().createStatement();
-			result = statment.executeQuery("SELECT * FROM STATUS");
-			if(result.isBeforeFirst()) {
-				while(result.next()) {
-					Status stat = new Status();
-					stat.setId(result.getInt("id"));
-					stat.setNome(result.getString("nome"));
-					stats.add(stat);
-				};
-			}
-		} catch (DBConnectException e) {
-			throw e;
-		} catch (SQLException e) {
-			throw new DBConsultException(e.getMessage(), e.getCause());
-		} finally {
-		    try { result.close(); } catch (Exception e) { /* ignorar */ }
-		    try { db.closeConnection(); } catch (Exception e) { /* ignorar */ } 
+		while(result.next()) {
+			Long id = result.getLong("id");
+			String name = result.getString("nome");
+			stats.add(new Status(id, name));
+		};
+		return new ArrayList<Object>(stats);
+	}
+	
+	public List<Status> getStatus() throws DBConsultException, DBConnectException {
+		List<Object> objs = runSelectSQL("SELECT * FROM STATUS");
+		return objectListToStatusList(objs);
+	}
+	
+	private List<Status> objectListToStatusList(List<Object> objs) {
+		List<Status> stats = new ArrayList<Status>();
+		for(Object obj : objs) {
+			stats.add((Status)obj);
 		}
 		return stats;
 	}
