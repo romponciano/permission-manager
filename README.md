@@ -49,11 +49,11 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 1. JDK 8 161 (https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
-'''
+```
 java version "1.8.0_161"
 Java(TM) SE Runtime Environment (build 1.8.0_161-b12)
 Java HotSpot(TM) 64-Bit Server VM (build 25.161-b12, mixed mode)
-'''
+```
 
 2. Apache Maven 3.5.0 (https://maven.apache.org/docs/3.5.0/release-notes.html)
 
