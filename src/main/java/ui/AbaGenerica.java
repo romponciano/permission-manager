@@ -5,6 +5,8 @@ import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
@@ -17,13 +19,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.jdatepicker.impl.UtilDateModel;
 
+import client.Client;
+import common.Const;
 import exception.ServerServiceException;
 import exception.UICheckFieldException;
 import model.BusinessEntity;
+import model.Functionality;
 import net.miginfocom.swing.MigLayout;
 
 public abstract class AbaGenerica extends JPanel implements Serializable {
@@ -41,6 +47,8 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	private JButton btnCancelar;
 	private JButton btnRemover;
 	private JButton btnNovo;
+	
+	private List<Functionality> cacheTodasFuncionalidadesBanco;
 	
 	protected JFrame parentFrame;
 	
@@ -67,6 +75,10 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		add(tblResultadoScroll, "grow, spany");
 		add(formPanel, "grow, wrap");
 		add(createControlPanel(), "skip 1, growx");
+		
+		cacheTodasFuncionalidadesBanco = new ArrayList<Functionality>();
+		
+		initListeners();
 	}
 	
 	/**
@@ -83,10 +95,12 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 * @param searchClick 
 	 * @param createNewElement 
 	 */
-	public void initListeners(ListSelectionListener selectItemTable, ActionListener saveClick, ActionListener removeClick, ActionListener searchClick) {
+	public void initListeners() {
+		// listener do botão para cancelar edição/criação e resetar os campos preenchidos
 		this.btnCancelar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) { setContextoEditar(false);  }
 		});
+		// listener do botão para criar novo cadastro de item. Este listener só limpa os campos para iniciar preenchimento do usuário
 		this.btnNovo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				try { loadData(); } catch (RemoteException | ServerServiceException | NotBoundException e) { } // nesse caso não fazer nada
@@ -94,12 +108,144 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 				btnRemover.setEnabled(false);
 			}
 		});
-		this.tblResultado.getSelectionModel().addListSelectionListener(selectItemTable);
-		this.btnSalvar.addActionListener(saveClick);
-		this.btnRemover.addActionListener(removeClick);
-		this.btnBuscar.addActionListener(searchClick);
+		// listener da tabela de resultado para preencher campos do form ao selecionar um item da tabela
+		this.tblResultado.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent event) {
+				int linhaSelecionada = getTblResultado().getSelectedRow();
+				if (linhaSelecionada > -1) {
+					setContextoEditar(true);
+					setFormEdicao(linhaSelecionada);
+					setContextoEditar(true);
+				};
+			}
+		});
+		// listener do botão para salvar criação de um novo dado OU update de um dado existente
+		this.btnSalvar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				try {
+					if(checkFieldsOnCreate()) {
+						BusinessEntity objToSave = createObjToBeSaved(); 
+						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
+						 * 	não representa um novo item, mas sim um update. */
+						if(getBtnRemover().isEnabled()) {
+							int linhaSelecionada = getTblResultado().getSelectedRow();
+							objToSave.setId(Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString()));
+							objToSave.setDataUltimaModificacao(new Date());
+							realizarUpdate(objToSave);
+						/* se não, representa um create */
+						} else {
+							objToSave.setDataCriacao(new Date());
+							realizarCreate(objToSave);
+						};
+						loadData();
+						setContextoEditar(false);
+						getBtnNovo().setEnabled(true);
+					};
+				}
+				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
+				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+			}
+		});
+		this.btnRemover.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				int linhaSelecionada = getTblResultado().getSelectedRow();
+				if (linhaSelecionada > -1) {
+					Long id = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+					try {
+						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
+						msgConfirmacao = msgConfirmacao.replace("?1", "id: " + id);
+						if(exibirDialogConfirmation(msgConfirmacao)) {
+							realizarDelete(id);
+							loadData();
+						}
+						setContextoEditar(false);
+						getBtnNovo().setEnabled(true);
+					}
+					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+				};
+			}
+		});
+		this.btnBuscar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				try {
+					String termo = getTxtStringBusca().getText();
+					if(termo != null && termo.length() > 0) {
+						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
+						atributo = converComboChoiceToDBAtributte(atributo);
+						List<? extends BusinessEntity> resultadoConsulta = realizarBusca(atributo, termo);
+						popularTabelaResultado(resultadoConsulta);
+					} else {
+						loadData();
+					}
+					setContextoEditar(false);
+					getBtnNovo().setEnabled(true);
+				}
+				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+			}
+		});
 	};
 	
+	/**
+	 * Método para setar valores nos campos do form de edição
+	 * @param linhaSelecionada - linha da tabela que foi selecionada para edição
+	 */
+	public abstract void setFormEdicao(int linhaSelecionada);
+
+	/**
+	 * Método para realizar o create, onde cada aba chama o seu create do server. 
+	 * Neste método o objeto é convertido para sua classe específica
+	 * @param objToSave - obj genérico que extendeu BusinessEntity e que representa o obj a ser salvo no bd
+	 * @throws RemoteException
+	 * @throws ServerServiceException
+	 * @throws NotBoundException
+	 */
+	public abstract void realizarCreate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException;
+
+	/**
+	 * Método para realizar o update, onde cada aba chama o seu update do server. 
+	 * Neste método o objeto é convertido para sua classe específica
+	 * @param objToSave - obj genérico que extendeu BusinessEntity e que representa o obj a ser salvo no bd
+	 * @throws RemoteException
+	 * @throws ServerServiceException
+	 * @throws NotBoundException
+	 */
+	public abstract void realizarUpdate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException;
+
+	/**
+	 * Método para pegar os campos de cada form e transformar em um objeto da classe a ser trabalhada.
+	 * @return - um objeto BusinessEntity (de onde todos os modelos são extendidos), porém com os 
+	 * campos específicos de cada classe. 
+	 */
+	public abstract BusinessEntity createObjToBeSaved();
+
+	/**
+	 * Método para realizar o delete, onde cada aba chama o seu delete do server. 
+	 * Neste método o objeto é convertido para sua classe específica
+	 * @param id - id no banco do objeto a ser deleteado
+	 * @throws RemoteException
+	 * @throws ServerServiceException
+	 * @throws NotBoundException
+	 */
+	public abstract void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException;
+
+	/**
+	 * Método para realizar a busca, onde cada aba chama o seu search do server. 
+	 * Neste método o objeto é convertido para sua classe específica
+	 * @param atributo - atributo selecionado na combobox de consulta
+	 * @param termo - termo a ser procurado daquele atributo. Ex: atributo LIKE termo 
+	 * @return - Lista contendo os valores encontrados da classe que realizou a busca
+	 * @throws RemoteException
+	 * @throws ServerServiceException
+	 * @throws NotBoundException
+	 */
+	public abstract List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException;
+
 	/**
 	 * Método para carregar todos os itens de um determinado elemento
 	 * na tabela.
@@ -271,5 +417,25 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	
 	public JTextField getTxtStringBusca() {
 		return txtStringBusca;
+	}
+	
+	public List<Functionality> getCacheTodasFuncBanco() {
+		return this.cacheTodasFuncionalidadesBanco;
+	}
+	
+	public void setCacheTodasFuncBanco(List<Functionality> funcs) {
+		this.cacheTodasFuncionalidadesBanco = funcs;
+	}
+	
+	public void checkCacheTodasFuncBancoEmpty() {
+		if(getCacheTodasFuncBanco().isEmpty()) {
+			try { setCacheTodasFuncBanco(Client.getServer().getFunctionalities()); } 
+			catch (RemoteException | ServerServiceException | NotBoundException e) { }
+		}
+	}
+	
+	public void atualizarCacheTodasFuncBanco() {
+		try { cacheTodasFuncionalidadesBanco = Client.getServer().getFunctionalities(); } 
+		catch (RemoteException | ServerServiceException | NotBoundException e) { }
 	}
 }

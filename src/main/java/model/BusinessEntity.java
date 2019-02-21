@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public abstract class BusinessEntity implements Serializable {
 
@@ -9,6 +10,8 @@ public abstract class BusinessEntity implements Serializable {
 	private Long id;
 	private String name;
 	private String description;
+	private Date dataCriacao;
+	private Date dataUltimaModificacao;
 	
 	public BusinessEntity(Long id, String name, String description) {
 		super();
@@ -44,6 +47,22 @@ public abstract class BusinessEntity implements Serializable {
 	
 	public void setDescription(String desc) {
 		this.description = desc;
+	}
+
+	public Date getDataUltimaModificacao() {
+		return dataUltimaModificacao;
+	}
+
+	public void setDataUltimaModificacao(Date dataUltimaModificacao) {
+		this.dataUltimaModificacao = dataUltimaModificacao;
+	}
+
+	public Date getDataCriacao() {
+		return dataCriacao;
+	}
+
+	public void setDataCriacao(Date dataCriacao) {
+		this.dataCriacao = dataCriacao;
 	}
 	
 }

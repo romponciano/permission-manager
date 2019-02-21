@@ -1,7 +1,5 @@
 package ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -15,8 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.jdatepicker.impl.JDatePanelImpl;
@@ -50,97 +46,9 @@ public class AbaPerfil extends AbaGenerica {
 	
 	public AbaPerfil(JFrame parentFrame) {
 		super(parentFrame);
+		
 		initPnlForm();
 		setContextoEditar(false);
-				
-		// iniciando listeners
-		ListSelectionListener selectItemList = new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent event) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
-					txtNomePerfil.setText(( campo != null ? campo.toString() : ""));
-					campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
-					txtDescricao.setText(( campo != null ? campo.toString() : ""));
-					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
-					if(!data.equals("")) {
-						setDataModelFromStringDate(dateModel, data);
-					} else {
-						dateModel.setSelected(false);
-					}
-					setContextoEditar(true);
-				};
-			}
-		};
-		ActionListener searchClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					String termo = getTxtStringBusca().getText();
-					if(termo != null && termo.length() > 0) {
-						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
-						atributo = converComboChoiceToDBAtributte(atributo);
-						List<? extends BusinessEntity> perfs = Client.getServer().searchPerfis(atributo, termo);
-						popularTabelaResultado(perfs);
-					} else {
-						loadData();
-					}
-				}
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-		};
-		ActionListener saveClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					if(checkFieldsOnCreate()) {
-						String name = txtNomePerfil.getText();
-						String desc = txtDescricao.getText();
-						Perfil perf = new Perfil(null, name, desc, null);
-						perf.setPermissoes(criarPermissoesConcedidas());
-						/* 	se o botão 'remover' estiver habilitado, então é pq não 
-						 * 	não representa um novo item, mas sim um update. */
-						if(getBtnRemover().isEnabled()) {
-							int linhaSelecionada = getTblResultado().getSelectedRow();
-							perf.setId(Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString()));
-							Client.getServer().updatePerfil(perf);
-						/* se não, representa um create */
-						} else {			
-							perf.setDataCriacao(new Date());
-							Client.getServer().createPerfil(perf);
-						};
-						loadData();
-						setContextoEditar(false);
-					};
-				}
-				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-
-			
-		};
-		ActionListener removeClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					Long perfilId = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-					try {
-						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "perfionalidade id: " + perfilId);
-						if(exibirDialogConfirmation(msgConfirmacao)) {
-							Client.getServer().deletePerfil(perfilId);
-							loadData();
-						}
-					}
-					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-				};
-			}
-		};
-		initListeners(selectItemList, saveClick, removeClick, searchClick);
 	}
 	
 	/**
@@ -167,10 +75,11 @@ public class AbaPerfil extends AbaGenerica {
 	 * @param perfs - Lista contendo as permissões a serem apresentados na tabela
 	 * @param tipo - tipo para gerar Header da tabela
 	 */
-	private void popularTabelaPermissoes(List<Functionality> permsConcedidas, List<Functionality> allFuncs) {
+	private void popularTabelaPermissoes(List<Functionality> permsConcedidas) {
 		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
 		Vector<Object> linha;
-		for(Functionality func : allFuncs) {
+		checkCacheTodasFuncBancoEmpty();
+		for(Functionality func : getCacheTodasFuncBanco()) {
 			linha = new Vector<Object>();
 			linha.add(func.getId());
 			linha.add(func.getName());
@@ -218,13 +127,12 @@ public class AbaPerfil extends AbaGenerica {
 	 * @param perfilId - id do perfil selecionado (só necessário se setar == true) ou null
 	 */
 	private void setEditarTblPermissoes(boolean setar, Long perfilId) {
-		List<Functionality> allFuncs = new ArrayList<Functionality>();
 		List<Functionality> perms = new ArrayList<Functionality>();
-		try {
-			allFuncs = Client.getServer().getFunctionalities();
+		try { 
+			checkCacheTodasFuncBancoEmpty();
 			if(setar) perms = Client.getServer().searchPermissionsByPerfilId(perfilId);
 		} catch (Exception err) { }
-		finally { popularTabelaPermissoes(perms, allFuncs); }
+		finally { popularTabelaPermissoes(perms); }
 	}
 	
 	@Override
@@ -294,6 +202,7 @@ public class AbaPerfil extends AbaGenerica {
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		setContextoEditar(false);
+		atualizarCacheTodasFuncBanco();
 		List<? extends BusinessEntity> perfs = Client.getServer().getPerfis();
 		popularTabelaResultado(perfs);
 	}
@@ -329,5 +238,45 @@ public class AbaPerfil extends AbaGenerica {
 		if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Descrição.toString())) return UIEnums.FILTROS_PERFIL.Descrição.getValue();
 		if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Data.toString())) return UIEnums.FILTROS_PERFIL.Data.getValue();
 		return "";
+	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().searchPerfis(atributo, termo);
+	}
+
+	@Override
+	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().deletePerfil(id);
+	}
+	
+	@Override
+	public void realizarCreate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().createPerfil((Perfil)objToSave);
+	}
+
+	@Override
+	public void realizarUpdate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().updatePerfil((Perfil)objToSave);
+	}
+
+	@Override
+	public BusinessEntity createObjToBeSaved() {
+		String name = txtNomePerfil.getText();
+		String desc = txtDescricao.getText();
+		Perfil perf = new Perfil(null, name, desc, null);
+		perf.setPermissoes(criarPermissoesConcedidas());
+		return perf;
+	}
+
+	@Override
+	public void setFormEdicao(int linhaSelecionada) {
+		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+		txtNomePerfil.setText(( campo != null ? campo.toString() : ""));
+		campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+		txtDescricao.setText(( campo != null ? campo.toString() : ""));
+		String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+		if(!data.equals("")) setDataModelFromStringDate(dateModel, data);
+		else dateModel.setSelected(false);
 	}
 }

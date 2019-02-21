@@ -1,7 +1,5 @@
 package ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Date;
@@ -13,8 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.jdatepicker.impl.JDatePanelImpl;
@@ -48,97 +44,6 @@ public class AbaPlugin extends AbaGenerica {
 		super(parentFrame);
 		initPnlForm();
 		setContextoEditar(false);
-		
-		// iniciando listeners
-		ListSelectionListener selectItemList = new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent event) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
-					txtNomePlugin.setText(( campo != null ? campo.toString() : ""));
-					campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
-					txtDescricao.setText(( campo != null ? campo.toString() : ""));
-					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
-					if(!data.equals("")) {
-						setDataModelFromStringDate(dateModel, data);
-					} else {
-						dateModel.setSelected(false);
-					}
-					setContextoEditar(true);
-				};
-			}
-		};
-		ActionListener searchClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					String termo = getTxtStringBusca().getText();
-					if(termo != null && termo.length() > 0) {
-						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
-						atributo = converComboChoiceToDBAtributte(atributo);
-						List<? extends BusinessEntity> plgs = Client.getServer().searchPlugins(atributo, termo);
-						popularTabelaResultado(plgs);
-					} else {
-						loadData();
-					}
-					setContextoEditar(false);
-					getBtnNovo().setEnabled(true);
-				}
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-		};
-		ActionListener saveClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					if(checkFieldsOnCreate()) {
-						String name = txtNomePlugin.getText();
-						String desc = txtDescricao.getText();
-						Plugin plg = new Plugin(null, name, desc, null);
-						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
-						 * 	não representa um novo item, mas sim um update. */
-						if(getBtnRemover().isEnabled()) {
-							int linhaSelecionada = getTblResultado().getSelectedRow();
-							plg.setId(Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString()));
-							Client.getServer().updatePlugin(plg);
-						/* se não, representa um create */
-						} else {
-							plg.setDataCriacao(new Date());
-							Client.getServer().createPlugin(plg);
-						};
-						loadData();
-						setContextoEditar(false);
-						getBtnNovo().setEnabled(true);
-					};
-				}
-				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-		};
-		ActionListener removeClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					Long pluginId = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-					try {
-						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replace("?1", "plugin id: ").replace("?2", pluginId.toString().concat(" e suas funcionalidades"));
-						if(exibirDialogConfirmation(msgConfirmacao)) {
-							Client.getServer().deletePlugin(pluginId);
-							loadData();
-						}
-						setContextoEditar(false);
-						getBtnNovo().setEnabled(true);
-					}
-					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-				};
-			}
-		};
-		initListeners(selectItemList, saveClick, removeClick, searchClick);
 	}
 	
 	@Override
@@ -234,5 +139,44 @@ public class AbaPlugin extends AbaGenerica {
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
 		setJTableColumnInsivible(this.getTblResultado(), 0);
+	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().searchPlugins(atributo, termo);
+	}
+
+	@Override
+	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().deletePlugin(id);
+	}
+	
+	@Override
+	public void realizarCreate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().createPlugin((Plugin)objToSave);
+	}
+
+	@Override
+	public void realizarUpdate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().updatePlugin((Plugin)objToSave);
+	}
+
+	@Override
+	public BusinessEntity createObjToBeSaved() {
+		String name = txtNomePlugin.getText();
+		String desc = txtDescricao.getText();
+		Plugin plg = new Plugin(null, name, desc, null);
+		return plg;
+	}
+
+	@Override
+	public void setFormEdicao(int linhaSelecionada) {
+		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+		txtNomePlugin.setText(( campo != null ? campo.toString() : ""));
+		campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+		txtDescricao.setText(( campo != null ? campo.toString() : ""));
+		String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+		if(!data.equals("")) setDataModelFromStringDate(dateModel, data);
+		else dateModel.setSelected(false); 
 	}
 }

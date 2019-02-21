@@ -54,101 +54,7 @@ public class AbaUsuario extends AbaGenerica {
 		initPnlForm();
 		setContextoEditar(false);
 		
-		// iniciando listeners
-		ListSelectionListener selectItemTable = new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent event) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					setContextoEditar(true);
-					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
-					txtNomeUsuario.setText(( campo != null ? (String)campo : ""));
-					campo = getTblResultado().getValueAt(linhaSelecionada, 2);
-					txtLogin.setText(( campo != null ? (String)campo : ""));
-					campo = getTblResultado().getValueAt(linhaSelecionada, 4);
-					txtGerencia.setText(( campo != null ? (String)campo : ""));
-					// como statusId é estrangeira e obrigatória, então não checar se é null
-					BusinessEntity statusSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 3);
-					cmbStatus.setSelectedItemById(statusSelecionado.getId());
-					setContextoEditar(true);
-				};
-			}
-		};
-		ActionListener searchClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					String termo = getTxtStringBusca().getText();
-					if(termo != null && termo.length() > 0) {
-						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
-						atributo = converComboChoiceToDBAtributte(atributo);
-						List<? extends BusinessEntity> usrs = Client.getServer().searchUsers(atributo, termo);
-						popularTabelaResultado(usrs);
-					} else {
-						loadData();
-					}
-					setContextoEditar(false);
-					getBtnNovo().setEnabled(true);
-				}
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-		};
-		ActionListener saveClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					if(checkFieldsOnCreate()) {
-						String name = txtNomeUsuario.getText();
-						User usr = new User(null, name);
-						usr.setLogin(txtLogin.getText());
-						usr.setGerenciaAtual(txtGerencia.getText());
-						Long statusId = cmbStatus.getIdFromSelectedItem();
-						usr.setStatus(new Status(statusId, null));
-						usr.setPerfis(getPerfisFromList());
-						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
-						 * 	não representa um novo item, mas sim um update. */
-						if(getBtnRemover().isEnabled()) {
-							int linhaSelecionada = getTblResultado().getSelectedRow();
-							usr.setId(Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString()));
-							Client.getServer().updateUser(usr);
-						/* se não, representa um create */
-						} else {
-							Client.getServer().createUser(usr);
-						};
-						loadData();
-						setContextoEditar(false);
-						getBtnNovo().setEnabled(true);
-					};
-				}
-				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-		};
-		ActionListener removeClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					Long userId = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-					try {
-						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replace("?1", "usuário id: " + userId);
-						if(exibirDialogConfirmation(msgConfirmacao)) {
-							Client.getServer().deleteUser(userId);
-							loadData();
-						}
-						setContextoEditar(false);
-						getBtnNovo().setEnabled(true);
-					}
-					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-				};
-			}
-		};
-		initListeners(selectItemTable, saveClick, removeClick, searchClick);
-		
-		// listeners de botões exclusivos da aba usuário
+		// listeners dos componentes exclusivos da aba usuário
 		btnAddPerfil.addActionListener(new ActionListener() { 
 			public void actionPerformed(ActionEvent evt) { 
 				BusinessEntity itemSelecionado = cmbPerfis.getSelectedComboBoxItem();
@@ -199,7 +105,7 @@ public class AbaUsuario extends AbaGenerica {
 		for(Perfil perf : perfisUsr) modelPerfilList.addElement(perf);
 		lstPerfis.setModel(modelPerfilList);
 	}
-
+	
 	@Override
 	public void setContextoCriar(boolean setar) {
 		super.setContextoCriar(setar);
@@ -321,5 +227,50 @@ public class AbaUsuario extends AbaGenerica {
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
 		setJTableColumnInsivible(this.getTblResultado(), 0);
+	}
+	
+	@Override
+	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().searchUsers(atributo, termo);
+	}
+
+	@Override
+	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().deleteUser(id);
+	}
+	
+	@Override
+	public void realizarCreate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().createUser((User)objToSave);
+	}
+
+	@Override
+	public void realizarUpdate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().updateUser((User)objToSave);
+	}
+
+	@Override
+	public BusinessEntity createObjToBeSaved() {
+		String name = txtNomeUsuario.getText();
+		User usr = new User(null, name);
+		usr.setLogin(txtLogin.getText());
+		usr.setGerenciaAtual(txtGerencia.getText());
+		Long statusId = cmbStatus.getIdFromSelectedItem();
+		usr.setStatus(new Status(statusId, null));
+		usr.setPerfis(getPerfisFromList());
+		return usr;
+	}
+
+	@Override
+	public void setFormEdicao(int linhaSelecionada) {
+		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+		txtNomeUsuario.setText(( campo != null ? (String)campo : ""));
+		campo = getTblResultado().getValueAt(linhaSelecionada, 2);
+		txtLogin.setText(( campo != null ? (String)campo : ""));
+		campo = getTblResultado().getValueAt(linhaSelecionada, 4);
+		txtGerencia.setText(( campo != null ? (String)campo : ""));
+		// como statusId é estrangeira e obrigatória, então não precisa checar se é null
+		BusinessEntity statusSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 3);
+		cmbStatus.setSelectedItemById(statusSelecionado.getId());
 	}
 }

@@ -1,7 +1,5 @@
 package ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Date;
@@ -13,8 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.jdatepicker.impl.JDatePanelImpl;
@@ -51,100 +47,6 @@ public class AbaFuncionalidade extends AbaGenerica {
 		super(parentFrame);
 		initPnlForm();
 		setContextoEditar(false);
-				
-		// iniciando listeners
-		ListSelectionListener selectItemList = new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent event) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					// como pluginId é estrangeira e obrigatória, então não checar se é null
-					BusinessEntity pluginSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 4);
-					cmbPlugin.setSelectedItemById(pluginSelecionado.getId());
-					Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
-					txtNomeFunc.setText(( campo != null ? campo.toString() : ""));
-					campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
-					txtDescricao.setText(( campo != null ? campo.toString() : ""));
-					String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
-					if(!data.equals("")) {
-						setDataModelFromStringDate(dateModel, data);
-					} else {
-						dateModel.setSelected(false);
-					}
-					setContextoEditar(true);
-				};
-			}
-		};
-		ActionListener searchClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					String termo = getTxtStringBusca().getText();
-					if(termo != null && termo.length() > 0) {
-						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
-						atributo = converComboChoiceToDBAtributte(atributo);
-						List<? extends BusinessEntity> funcs = Client.getServer().searchFunctionalities(atributo, termo);
-						popularTabelaResultado(funcs);
-					} else {
-						loadData();
-					}
-					setContextoEditar(false);
-				}
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-		};
-		ActionListener saveClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					if(checkFieldsOnCreate()) {
-						Long pluginId = cmbPlugin.getIdFromSelectedItem();
-						String name = txtNomeFunc.getText();
-						String desc = txtDescricao.getText();
-						Functionality func = new Functionality(null, name, desc, null);
-						func.setPlugin(new Plugin(pluginId, null, null, null));
-						/* 	se o botão 'rmeover' estiver habilitado, então é pq não 
-						 * 	não representa um novo item, mas sim um update. */
-						if(getBtnRemover().isEnabled()) {
-							int linhaSelecionada = getTblResultado().getSelectedRow();
-							String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
-							func.setId(Long.parseLong(id));
-							Client.getServer().updateFunctionality(func);
-						/* se não, representa um create */
-						} else {
-							func.setDataCriacao(new Date());
-							Client.getServer().createFunctionality(func);
-						};
-						loadData();
-						setContextoEditar(false);
-					};
-				}
-				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-			}
-		};
-		ActionListener removeClick = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					String id = getTblResultado().getValueAt(linhaSelecionada, 0).toString();
-					try {
-						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replaceFirst("\\?", "funcionalidade id: " + id);
-						if(exibirDialogConfirmation(msgConfirmacao)) {
-							Client.getServer().deleteUser(Long.parseLong(id));
-							loadData();
-						}
-						setContextoEditar(false);
-					}
-					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-				};
-			}
-		};
-		initListeners(selectItemList, saveClick, removeClick, searchClick);
 	}
 	
 	@Override
@@ -214,6 +116,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 		List<? extends BusinessEntity> funcs = Client.getServer().getFunctionalities();
 		popularTabelaResultado(funcs);
 		List<? extends BusinessEntity> opcoes = Client.getServer().getPlugins();
+		atualizarCacheTodasFuncBanco();
 		cmbPlugin.popularFromBusinessEntity(opcoes);
 	}
 
@@ -253,5 +156,50 @@ public class AbaFuncionalidade extends AbaGenerica {
 		};
 		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
 		setJTableColumnInsivible(this.getTblResultado(), 0);
+	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().searchFunctionalities(atributo, termo);
+	}
+
+	@Override
+	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().deleteFunctionality(id);
+	}
+	
+	@Override
+	public void realizarCreate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().createFunctionality((Functionality)objToSave);
+		atualizarCacheTodasFuncBanco();
+	}
+
+	@Override
+	public void realizarUpdate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().updateFunctionality((Functionality)objToSave);
+	}
+
+	@Override
+	public BusinessEntity createObjToBeSaved() {
+		Long pluginId = cmbPlugin.getIdFromSelectedItem();
+		String name = txtNomeFunc.getText();
+		String desc = txtDescricao.getText();
+		Functionality func = new Functionality(null, name, desc, null);
+		func.setPlugin(new Plugin(pluginId, null, null, null));
+		return func;
+	}
+
+	@Override
+	public void setFormEdicao(int linhaSelecionada) {
+		// como pluginId é estrangeira e obrigatória, então não checar se é null
+		BusinessEntity pluginSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 4);
+		cmbPlugin.setSelectedItemById(pluginSelecionado.getId());
+		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+		txtNomeFunc.setText(( campo != null ? campo.toString() : ""));
+		campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+		txtDescricao.setText(( campo != null ? campo.toString() : ""));
+		String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+		if(!data.equals("")) setDataModelFromStringDate(dateModel, data);
+		else dateModel.setSelected(false);
 	}
 }
