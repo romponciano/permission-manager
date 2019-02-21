@@ -1,4 +1,9 @@
-##Gerenciador de permissões para Plug-Ins do VGE
+# Gerenciador de permissões para Plug-Ins
+1. About
+2. How to run
+3. License
+
+## 1. About
 
 Seu trabalho será desenvolver uma aplicação em Java com interface gráfica Swing, baseada em uma arquitetura "cliente/servidor" usando RMI. Essa aplicação deve ser capaz de cadastrar, editar e consultar os dados dos plug-Ins, suas funcionalidades e permissões dos usuários. Além disso, é desejável a criação de um conjunto mínimo de testes unitários.
 
@@ -38,3 +43,20 @@ Esse módulo deve possuir os seguintes recursos:
 
 3.4) Atribuir e remover funcionalidades de plug-ins aos usuários cadastrados.
 
+## 2. How to run
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+1. JDK 8 161 (https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+'''
+java version "1.8.0_161"
+Java(TM) SE Runtime Environment (build 1.8.0_161-b12)
+Java HotSpot(TM) 64-Bit Server VM (build 25.161-b12, mixed mode)
+'''
+
+2. Apache Maven 3.5.0 (https://maven.apache.org/docs/3.5.0/release-notes.html)
+
+### Getting started
+
+1. Download or clone this repo
