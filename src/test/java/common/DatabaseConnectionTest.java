@@ -6,7 +6,7 @@ import java.sql.Connection;
 
 import org.junit.Test;
 
-import exception.DBConnectException;
+import server.exceptions.DBConnectException;
 
 public class DatabaseConnectionTest {
 

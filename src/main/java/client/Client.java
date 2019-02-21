@@ -5,8 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import client.ui.GUI;
 import common.ServerInterface;
-import ui.GUI;
 
 public class Client {
 

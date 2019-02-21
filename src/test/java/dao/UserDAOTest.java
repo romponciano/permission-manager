@@ -3,8 +3,9 @@ package dao;
 import org.junit.Before;
 import org.junit.Test;
 
-import exception.DBConnectException;
-import exception.DBCreateException;
+import server.dao.UserDAO;
+import server.exceptions.DBConnectException;
+import server.exceptions.DBCreateException;
 
 public class UserDAOTest {
 

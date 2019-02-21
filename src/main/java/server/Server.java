@@ -9,27 +9,27 @@ import java.util.List;
 
 import common.Const;
 import common.ServerInterface;
-import dao.FunctionalityDAO;
-import dao.LogDAO;
-import dao.PerfilDAO;
-import dao.PermissionDAO;
-import dao.PluginDAO;
-import dao.StatusDAO;
-import dao.UserDAO;
-import dao.UserProfileDAO;
-import exception.DBConnectException;
-import exception.DBConsultException;
-import exception.DBCreateException;
-import exception.DBDeleteException;
-import exception.DBUpdateException;
-import exception.ServerServiceException;
-import model.Functionality;
-import model.Log;
-import model.Log.TIPOS_LOG;
-import model.Perfil;
-import model.Plugin;
-import model.Status;
-import model.User;
+import common.exceptions.ServerServiceException;
+import common.model.Functionality;
+import common.model.Perfil;
+import common.model.Plugin;
+import common.model.Status;
+import common.model.User;
+import server.dao.FunctionalityDAO;
+import server.dao.LogDAO;
+import server.dao.PerfilDAO;
+import server.dao.PermissionDAO;
+import server.dao.PluginDAO;
+import server.dao.StatusDAO;
+import server.dao.UserDAO;
+import server.dao.UserProfileDAO;
+import server.exceptions.DBConnectException;
+import server.exceptions.DBConsultException;
+import server.exceptions.DBCreateException;
+import server.exceptions.DBDeleteException;
+import server.exceptions.DBUpdateException;
+import server.utils.Log;
+import server.utils.Log.TIPOS_LOG;
 
 public class Server implements ServerInterface {
 

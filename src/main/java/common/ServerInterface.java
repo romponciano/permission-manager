@@ -4,12 +4,12 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import exception.ServerServiceException;
-import model.Functionality;
-import model.Perfil;
-import model.Plugin;
-import model.Status;
-import model.User;
+import common.exceptions.ServerServiceException;
+import common.model.Functionality;
+import common.model.Perfil;
+import common.model.Plugin;
+import common.model.Status;
+import common.model.User;
 
 /**
  * Define a Longerface remota do servidor

@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import exception.DBConnectException;
+import server.exceptions.DBConnectException;
 
 public class DatabaseConnection implements Serializable {
 	private static final long serialVersionUID = 6153988507264596623L;
