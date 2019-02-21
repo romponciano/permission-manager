@@ -168,22 +168,6 @@ public class AbaPerfil extends AbaGenerica {
 	}
 	
 	@Override
-	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
-		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
-		for(Object obj : objs) {
-			Perfil perf = (Perfil)obj;
-			Vector<Object> linha = new Vector<Object>();
-			linha.add(perf.getId());
-			linha.add(perf.getName());
-			linha.add(perf.getDescription());
-			linha.add(perf.getDataCriacaoToString());
-			dadosFinal.add(linha);
-		};
-		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
-		setJTableColumnInsivible(this.getTblResultado(), 0);
-	}
-	
-	@Override
 	public String converComboChoiceToDBAtributte(String cmbChoice) {
 		if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Nome.toString())) return UIEnums.FILTROS_PERFIL.Nome.getValue();
 		if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Descrição.toString())) return UIEnums.FILTROS_PERFIL.Descrição.getValue();
@@ -246,5 +230,16 @@ public class AbaPerfil extends AbaGenerica {
 		txtNomePerfil.setEnabled(setar);;
 		txtDescricao.setEnabled(setar);
 		tblFuncs.setEnabled(setar);
+	}
+
+	@Override
+	public Vector<Object> generateJTableLine(Object obj) {
+		Perfil perf = (Perfil)obj;
+		Vector<Object> linha = new Vector<Object>();
+		linha.add(perf.getId());
+		linha.add(perf.getName());
+		linha.add(perf.getDescription());
+		linha.add(perf.getDataCriacaoToString());
+		return linha;
 	}
 }

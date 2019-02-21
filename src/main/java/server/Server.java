@@ -32,7 +32,7 @@ import model.Status;
 import model.User;
 
 public class Server implements ServerInterface {
-	
+
 	public static void main(String args[]) {
 		try {
 			ServerInterface server = new Server();
@@ -47,7 +47,7 @@ public class Server implements ServerInterface {
 			e.printStackTrace();
 		}
 	}
-	
+
 	// ----------------------- search
 	@Override
 	public List<User> searchUsers(String atributo, String termo) throws RemoteException, ServerServiceException {
@@ -61,10 +61,10 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return usrs;
 	}
-	
+
 	@Override
 	public List<Plugin> searchPlugins(String atributo, String termo) throws RemoteException, ServerServiceException {
 		PluginDAO pluginDAO = new PluginDAO();
@@ -77,12 +77,13 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return plgs;
 	}
-	
+
 	@Override
-	public List<Functionality> searchFunctionalities(String atributo, String termo) throws RemoteException, ServerServiceException {
+	public List<Functionality> searchFunctionalities(String atributo, String termo)
+			throws RemoteException, ServerServiceException {
 		FunctionalityDAO funcDAO = new FunctionalityDAO();
 		List<Functionality> funcs = new ArrayList<Functionality>();
 		try {
@@ -93,10 +94,10 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return funcs;
 	}
-	
+
 	@Override
 	public List<Perfil> searchPerfis(String atributo, String termo) throws RemoteException, ServerServiceException {
 		PerfilDAO perfilDAO = new PerfilDAO();
@@ -109,12 +110,13 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return perfils;
 	}
-	
+
 	@Override
-	public List<Functionality> searchPermissionsByPerfilId(Long perfilId) throws RemoteException, ServerServiceException {
+	public List<Functionality> searchPermissionsByPerfilId(Long perfilId)
+			throws RemoteException, ServerServiceException {
 		List<Functionality> funcs = new ArrayList<Functionality>();
 		PermissionDAO permissionDAO = new PermissionDAO();
 		try {
@@ -125,10 +127,10 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return funcs;
 	}
-	
+
 	@Override
 	public List<Perfil> searchUserProfilesByUserId(Long userId) throws RemoteException, ServerServiceException {
 		List<Perfil> perfis = new ArrayList<Perfil>();
@@ -141,18 +143,18 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return perfis;
 	}
-	
+
 	// ----------------------- deletes
 	@Override
 	public void deleteUser(Long userId) throws RemoteException, ServerServiceException {
 		UserDAO userDAO = new UserDAO();
 		UserProfileDAO userProfileDAO = new UserProfileDAO();
 		try {
-			userDAO.deleteUser(userId);
 			userProfileDAO.deleteUserProfilesByUserId(userId);
+			userDAO.deleteUser(userId);
 			logarSucesso(TIPOS_LOG.DELETE, userId.toString());
 		} catch (DBDeleteException e) {
 			logarException(TIPOS_LOG.ERRO, e);
@@ -162,14 +164,19 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void deletePlugin(Long pluginId) throws RemoteException, ServerServiceException {
 		PluginDAO pluginDAO = new PluginDAO();
+		FunctionalityDAO funcDAO = new FunctionalityDAO();
 		try {
+			List<Functionality> funcs = funcDAO.searchFunctionalitiesByPluginId(pluginId);
+			for (Functionality f : funcs) {
+				this.deleteFunctionality(f.getId());
+			}
 			pluginDAO.deletePlugin(pluginId);
 			logarSucesso(TIPOS_LOG.DELETE, pluginId.toString());
-		} catch (DBDeleteException e) {
+		} catch (DBConsultException | DBDeleteException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_DELETE.replace("?1", "Plugin"));
 		} catch (DBConnectException e) {
@@ -177,14 +184,14 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void deleteFunctionality(Long funcId) throws RemoteException, ServerServiceException {
 		FunctionalityDAO funcDAO = new FunctionalityDAO();
 		PermissionDAO permissionDAO = new PermissionDAO();
 		try {
-			funcDAO.deleteFunctionality(funcId);
 			permissionDAO.deletePermissionsByFunctionalityId(funcId);
+			funcDAO.deleteFunctionality(funcId);
 			logarSucesso(TIPOS_LOG.DELETE, funcId.toString());
 		} catch (DBDeleteException e) {
 			logarException(TIPOS_LOG.ERRO, e);
@@ -194,14 +201,16 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void deletePerfil(Long perfilId) throws RemoteException, ServerServiceException {
 		PerfilDAO perfilDAO = new PerfilDAO();
 		UserProfileDAO userProfileDAO = new UserProfileDAO();
+		PermissionDAO permissionDAO = new PermissionDAO();
 		try {
-			perfilDAO.deletePerfil(perfilId);
 			userProfileDAO.deleteUserProfilesByProfileId(perfilId);
+			permissionDAO.deletePermissionsByPerfilId(perfilId);
+			perfilDAO.deletePerfil(perfilId);
 			logarSucesso(TIPOS_LOG.DELETE, perfilId.toString());
 		} catch (DBDeleteException e) {
 			logarException(TIPOS_LOG.ERRO, e);
@@ -211,7 +220,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	// ----------------------- updates
 	@Override
 	public void updateUser(User user) throws RemoteException, ServerServiceException {
@@ -219,9 +228,12 @@ public class Server implements ServerInterface {
 		UserProfileDAO userProfileDAO = new UserProfileDAO();
 		try {
 			userDAO.updateUser(user);
-			/* 	essa abordagem de apagar todas os User_Profile e depois criar os User_Profiles novamente
-			*	foi adotada pois é isso que acontece na prática. Atualizar user_profiles é remover e/ou add, então
-			*	basta remover todas os user_profile que o perfil tinha e criar todas que estão na lista no momento. */
+			/*
+			 * essa abordagem de apagar todas os User_Profile e depois criar os
+			 * User_Profiles novamente foi adotada pois é isso que acontece na prática.
+			 * Atualizar user_profiles é remover e/ou add, então basta remover todas os
+			 * user_profile que o perfil tinha e criar todas que estão na lista no momento.
+			 */
 			userProfileDAO.deleteUserProfilesByUserId(user.getId());
 			createUserProfiles(user.getPerfis(), user.getId());
 			logarSucesso(TIPOS_LOG.UPDATE, user.toString());
@@ -236,7 +248,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void updatePlugin(Plugin plugin) throws RemoteException, ServerServiceException {
 		PluginDAO pluginDAO = new PluginDAO();
@@ -251,7 +263,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void updateFunctionality(Functionality func) throws RemoteException, ServerServiceException {
 		FunctionalityDAO funcDAO = new FunctionalityDAO();
@@ -266,16 +278,19 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void updatePerfil(Perfil perfil) throws RemoteException, ServerServiceException {
 		PerfilDAO perfilDAO = new PerfilDAO();
 		PermissionDAO permissionDAO = new PermissionDAO();
 		try {
 			perfilDAO.updatePerfil(perfil);
-			/* 	essa abordagem de apagar todas as permissões do perfil e depois criar as permissões concedidas
-			*	foi adotada pois é isso que acontece na prática. Atualizar permissões é remover e/ou add, então
-			*	basta remover todas as permissões que o perfil tinha e criar todas que estão marcadas no momento. */
+			/*
+			 * essa abordagem de apagar todas as permissões do perfil e depois criar as
+			 * permissões concedidas foi adotada pois é isso que acontece na prática.
+			 * Atualizar permissões é remover e/ou add, então basta remover todas as
+			 * permissões que o perfil tinha e criar todas que estão marcadas no momento.
+			 */
 			permissionDAO.deletePermissionsByPerfilId(perfil.getId());
 			createPermissions(perfil.getPermissoes(), perfil.getId());
 			logarSucesso(TIPOS_LOG.UPDATE, perfil.toString());
@@ -290,7 +305,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	// ----------------------- creates
 	@Override
 	public void createUser(User user) throws RemoteException, ServerServiceException {
@@ -307,7 +322,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void createPerfil(Perfil perfil) throws RemoteException, ServerServiceException {
 		PerfilDAO perfilDAO = new PerfilDAO();
@@ -323,7 +338,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void createPlugin(Plugin plg) throws RemoteException, ServerServiceException {
 		PluginDAO pluginDAO = new PluginDAO();
@@ -338,7 +353,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	@Override
 	public void createFunctionality(Functionality func) throws RemoteException, ServerServiceException {
 		FunctionalityDAO funcDAO = new FunctionalityDAO();
@@ -353,7 +368,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
 		}
 	}
-	
+
 	// ----------------------- getAll
 	@Override
 	public List<User> getUsers() throws RemoteException, ServerServiceException {
@@ -383,7 +398,7 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return plugins;
 	}
 
@@ -399,10 +414,10 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return funcionalidades;
 	}
-	
+
 	@Override
 	public List<Status> getStatus() throws RemoteException, ServerServiceException {
 		StatusDAO statusDAO = new StatusDAO();
@@ -415,10 +430,10 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return status;
 	}
-	
+
 	@Override
 	public List<Perfil> getPerfis() throws RemoteException, ServerServiceException {
 		PerfilDAO perfilDAO = new PerfilDAO();
@@ -431,30 +446,34 @@ public class Server implements ServerInterface {
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
-		} 
+		}
 		return perfils;
 	}
-	
+
 	private void logarException(TIPOS_LOG tipo, Exception e) {
 		LogDAO logDAO = new LogDAO();
 		Log log = new Log(tipo, e.getMessage());
-		if(e.getCause() != null) log.setCausa(e.getCause().toString());
+		if (e.getCause() != null)
+			log.setCausa(e.getCause().toString());
 		logDAO.createLog(log);
-	}	
-	
+	}
+
 	private void logarSucesso(TIPOS_LOG tipo, String msg) {
 		LogDAO logDAO = new LogDAO();
 		Log log = new Log(tipo, msg);
 		logDAO.createLog(log);
 	}
-	
-	private void createPermissions(List<Functionality> funcs, Long perfilId) throws DBCreateException, DBConnectException {
+
+	private void createPermissions(List<Functionality> funcs, Long perfilId)
+			throws DBCreateException, DBConnectException {
 		PermissionDAO permissionDAO = new PermissionDAO();
-		for(Functionality func : funcs) permissionDAO.createPermission(perfilId, func.getId());
+		for (Functionality func : funcs)
+			permissionDAO.createPermission(perfilId, func.getId());
 	}
-	
+
 	private void createUserProfiles(List<Perfil> perfis, Long userId) throws DBCreateException, DBConnectException {
 		UserProfileDAO userProfileDAO = new UserProfileDAO();
-		for(Perfil perf : perfis) userProfileDAO.createUserProfile(userId, perf.getId());
+		for (Perfil perf : perfis)
+			userProfileDAO.createUserProfile(userId, perf.getId());
 	}
 }

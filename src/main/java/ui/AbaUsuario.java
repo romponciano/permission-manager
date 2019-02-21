@@ -19,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
 
 import client.Client;
 import common.Const;
@@ -49,7 +48,7 @@ public class AbaUsuario extends AbaGenerica {
 	public AbaUsuario(JFrame parentFrame) {
 		super(parentFrame);
 		initPnlForm();
-		
+
 		// listeners dos componentes exclusivos da aba usuário
 		btnAddPerfil.addActionListener(createBtnAddPerfilActionListener());
 		btnRemoverPerfil.addActionListener(createRemoverPerfilActionListener());
@@ -58,15 +57,15 @@ public class AbaUsuario extends AbaGenerica {
 
 	private ListSelectionListener createLstPerfilItemSelectListener() {
 		return new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) { 
-				btnRemoverPerfil.setEnabled(true);	
+			public void valueChanged(ListSelectionEvent e) {
+				btnRemoverPerfil.setEnabled(true);
 			}
 		};
 	}
 
 	private ActionListener createRemoverPerfilActionListener() {
 		return new ActionListener() {
-			public void actionPerformed(ActionEvent evt) { 
+			public void actionPerformed(ActionEvent evt) {
 				modelPerfilList.removeElementAt(lstPerfis.getSelectedIndex());
 				btnRemoverPerfil.setEnabled(false);
 			}
@@ -74,12 +73,14 @@ public class AbaUsuario extends AbaGenerica {
 	}
 
 	private ActionListener createBtnAddPerfilActionListener() {
-		return new ActionListener() { 
-			public void actionPerformed(ActionEvent evt) { 
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
 				BusinessEntity itemSelecionado = cmbPerfis.getSelectedComboBoxItem();
-				if(modelPerfilList.contains(itemSelecionado)) exibirDialogError("Este perfil já esta lista.");
-				else modelPerfilList.addElement(itemSelecionado); 
-			} 
+				if (modelPerfilList.contains(itemSelecionado))
+					exibirDialogError("Este perfil já esta lista.");
+				else
+					modelPerfilList.addElement(itemSelecionado);
+			}
 		};
 	}
 
@@ -92,32 +93,33 @@ public class AbaUsuario extends AbaGenerica {
 		lay.add(new JScrollPane(lstPerfis), "spanx, growx, h min:100%");
 		return lay;
 	}
-	
+
 	private List<Perfil> getPerfisFromList() {
 		List<Perfil> out = new ArrayList<Perfil>();
-		for(int i=0; i < lstPerfis.getModel().getSize(); i++) {
+		for (int i = 0; i < lstPerfis.getModel().getSize(); i++) {
 			BusinessEntity be = lstPerfis.getModel().getElementAt(i);
-			out.add((Perfil)be);
+			out.add((Perfil) be);
 		}
 		return out;
 	}
-	
+
 	private void popularLstUserProfile(List<Perfil> perfisUsr) {
 		modelPerfilList.removeAllElements();
-		for(Perfil perf : perfisUsr) modelPerfilList.addElement(perf);
+		for (Perfil perf : perfisUsr)
+			modelPerfilList.addElement(perf);
 		lstPerfis.setModel(modelPerfilList);
 	}
-	
+
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
+		setContext(FORM_CONTEXT.Proibido);
 		popularTabelaResultado(Client.getServer().getUsers());
 		cmbStatus.popularFromBusinessEntity(Client.getServer().getStatus());
 		cmbPerfis.popularFromBusinessEntity(Client.getServer().getPerfis());
 		modelPerfilList.removeAllElements();
 		lstPerfis.setModel(modelPerfilList);
-		setContext(FORM_CONTEXT.Proibido);
 	}
-	
+
 	@Override
 	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("", "[right][grow]", ""));
@@ -157,51 +159,39 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String campo;
-		if(this.cmbStatus.getSelectedItem() == null) {
+		if (this.cmbStatus.getSelectedItem() == null) {
 			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "status"));
 		}
 		campo = this.txtNomeUsuario.getText();
-		if(campo == null || campo.length() <= 0) {
+		if (campo == null || campo.length() <= 0) {
 			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
 		}
 		campo = this.txtLogin.getText();
-		if(campo == null || campo.length() <= 0) {
+		if (campo == null || campo.length() <= 0) {
 			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "login"));
 		}
-		if(campo.length() > 4) {
+		if (campo.length() > 4) {
 			throw new UICheckFieldException(Const.INFO_BIG_FIELD.replaceFirst("\\?", "login").replaceFirst("\\?", "4"));
 		}
 		return true;
 	}
-	
+
 	@Override
 	public String converComboChoiceToDBAtributte(String cmbChoice) {
-		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Nome.toString())) return UIEnums.FILTROS_USUARIO.Nome.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Login.toString())) return UIEnums.FILTROS_USUARIO.Login.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Status.toString())) return UIEnums.FILTROS_USUARIO.Status.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Gerência.toString())) return UIEnums.FILTROS_USUARIO.Gerência.getValue();
+		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Nome.toString()))
+			return UIEnums.FILTROS_USUARIO.Nome.getValue();
+		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Login.toString()))
+			return UIEnums.FILTROS_USUARIO.Login.getValue();
+		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Status.toString()))
+			return UIEnums.FILTROS_USUARIO.Status.getValue();
+		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Gerência.toString()))
+			return UIEnums.FILTROS_USUARIO.Gerência.getValue();
 		return "";
 	}
-	
+
 	@Override
-	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
-		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
-		for (Object obj : objs) {
-			Vector<Object> linha = new Vector<Object>();
-			User usr = (User)obj;
-			linha.add(usr.getId());
-			linha.add(usr.getName());
-			linha.add(usr.getLogin());
-			linha.add(usr.getStatus());
-			linha.add(usr.getGerenciaAtual());
-			dadosFinal.add(linha);
-		};
-		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
-		setJTableColumnInsivible(this.getTblResultado(), 0);
-	}
-	
-	@Override
-	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
+	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo)
+			throws RemoteException, ServerServiceException, NotBoundException {
 		return Client.getServer().searchUsers(atributo, termo);
 	}
 
@@ -209,15 +199,17 @@ public class AbaUsuario extends AbaGenerica {
 	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
 		Client.getServer().deleteUser(id);
 	}
-	
+
 	@Override
-	public void realizarCreate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
-		Client.getServer().createUser((User)objToSave);
+	public void realizarCreate(BusinessEntity objToSave)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().createUser((User) objToSave);
 	}
 
 	@Override
-	public void realizarUpdate(BusinessEntity objToSave) throws RemoteException, ServerServiceException, NotBoundException {
-		Client.getServer().updateUser((User)objToSave);
+	public void realizarUpdate(BusinessEntity objToSave)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		Client.getServer().updateUser((User) objToSave);
 	}
 
 	@Override
@@ -233,20 +225,22 @@ public class AbaUsuario extends AbaGenerica {
 	}
 
 	@Override
-	public void fillFormToEdit(int selectedRowToEdit) throws RemoteException, ServerServiceException, NotBoundException {
-		Object campo =  getTblResultado().getValueAt(selectedRowToEdit, 1);
-		txtNomeUsuario.setText(( campo != null ? (String)campo : ""));
+	public void fillFormToEdit(int selectedRowToEdit)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		Object campo = getTblResultado().getValueAt(selectedRowToEdit, 1);
+		txtNomeUsuario.setText((campo != null ? (String) campo : ""));
 		campo = getTblResultado().getValueAt(selectedRowToEdit, 2);
-		txtLogin.setText(( campo != null ? (String)campo : ""));
+		txtLogin.setText((campo != null ? (String) campo : ""));
 		campo = getTblResultado().getValueAt(selectedRowToEdit, 4);
-		txtGerencia.setText(( campo != null ? (String)campo : ""));
+		txtGerencia.setText((campo != null ? (String) campo : ""));
 		// como statusId é estrangeira e obrigatória, então não precisa checar se é null
 		BusinessEntity statusSelecionado = (BusinessEntity) getTblResultado().getValueAt(selectedRowToEdit, 3);
 		cmbStatus.setSelectedItemById(statusSelecionado.getId());
-		Long userId = Long.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
-		popularLstUserProfile(Client.getServer().searchUserProfilesByUserId(userId));	
+		Long userId = Long
+				.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
+		popularLstUserProfile(Client.getServer().searchUserProfilesByUserId(userId));
 	}
-	
+
 	@Override
 	public void setEnabledForm(boolean setValue) {
 		txtNomeUsuario.setEditable(setValue);
@@ -258,12 +252,24 @@ public class AbaUsuario extends AbaGenerica {
 		btnAddPerfil.setEnabled(setValue);
 		btnRemoverPerfil.setEnabled(false);
 	}
-	
+
 	@Override
 	public void clearForm() {
 		txtNomeUsuario.setText("");
 		txtLogin.setText("");
 		txtGerencia.setText("");
 		popularLstUserProfile(new ArrayList<Perfil>());
+	}
+
+	@Override
+	public Vector<Object> generateJTableLine(Object obj) {
+		Vector<Object> out = new Vector<Object>();
+		User usr = (User) obj;
+		out.add(usr.getId());
+		out.add(usr.getName());
+		out.add(usr.getLogin());
+		out.add(usr.getStatus());
+		out.add(usr.getGerenciaAtual());
+		return out;
 	}
 }

@@ -11,7 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
 
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -105,23 +104,6 @@ public class AbaFuncionalidade extends AbaGenerica {
 		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Plugin.getValue();
 		return "";
 	}
-	
-	@Override
-	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
-		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
-		for(Object obj: objs) {
-			Functionality func = (Functionality)obj;
-			Vector<Object> linha = new Vector<Object>();
-			linha.add(func.getId());
-			linha.add(func.getName());
-			linha.add(func.getDescription());
-			linha.add(func.getDataCriacaoToString());
-			linha.add(func.getPlugin());
-			dadosFinal.add(linha);
-		};
-		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
-		setJTableColumnInsivible(this.getTblResultado(), 0);
-	}
 
 	@Override
 	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
@@ -180,5 +162,17 @@ public class AbaFuncionalidade extends AbaGenerica {
 		cmbPlugin.setEnabled(setar);
 		txtNomeFunc.setEditable(setar);
 		txtDescricao.setEditable(setar);	
+	}
+
+	@Override
+	public Vector<Object> generateJTableLine(Object obj) {
+		Functionality func = (Functionality)obj;
+		Vector<Object> linha = new Vector<Object>();
+		linha.add(func.getId());
+		linha.add(func.getName());
+		linha.add(func.getDescription());
+		linha.add(func.getDataCriacaoToString());
+		linha.add(func.getPlugin());
+		return linha;
 	}
 }

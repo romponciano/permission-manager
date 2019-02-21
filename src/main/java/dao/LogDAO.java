@@ -21,7 +21,6 @@ public class LogDAO implements Serializable {
 			statment.setString(3, log.getCausa());
 			statment.executeUpdate();
 		} catch (Exception e) {
-			System.out.println("ERROR!!!!!!!!!!!!!!!!!!!! " + e.getMessage());
 			 // Ignorar pq qualquer exceção ao inserir o Log, não tem o que ser feito
 		} finally {
 		    try { statment.close(); } catch (Exception e) { /* ignorar */ }

@@ -11,7 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
 
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -96,22 +95,6 @@ public class AbaPlugin extends AbaGenerica {
 	}
 	
 	@Override
-	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
-		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
-		for(Object obj: objs) {
-			Plugin plg = (Plugin)obj;
-			Vector<Object> linha = new Vector<Object>();
-			linha.add(plg.getId());
-			linha.add(plg.getName());
-			linha.add(plg.getDescription());
-			linha.add(plg.getDataCriacaoToString()); 
-			dadosFinal.add(linha);
-		};
-		this.getTblResultado().setModel(new DefaultTableModel(dadosFinal, gerarHeaderTabelaResultado()));
-		setJTableColumnInsivible(this.getTblResultado(), 0);
-	}
-
-	@Override
 	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
 		return Client.getServer().searchPlugins(atributo, termo);
 	}
@@ -161,5 +144,16 @@ public class AbaPlugin extends AbaGenerica {
 	public void setEnabledForm(boolean setar) {
 		txtNomePlugin.setEnabled(setar);
 		txtDescricao.setEnabled(setar);
+	}
+
+	@Override
+	public Vector<Object> generateJTableLine(Object obj) {
+		Plugin plg = (Plugin)obj;
+		Vector<Object> linha = new Vector<Object>();
+		linha.add(plg.getId());
+		linha.add(plg.getName());
+		linha.add(plg.getDescription());
+		linha.add(plg.getDataCriacaoToString());
+		return linha;
 	}
 }
