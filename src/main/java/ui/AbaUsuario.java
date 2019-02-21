@@ -51,22 +51,36 @@ public class AbaUsuario extends AbaGenerica {
 		initPnlForm();
 		
 		// listeners dos componentes exclusivos da aba usuário
-		btnAddPerfil.addActionListener(new ActionListener() { 
+		btnAddPerfil.addActionListener(createBtnAddPerfilActionListener());
+		btnRemoverPerfil.addActionListener(createRemoverPerfilActionListener());
+		lstPerfis.addListSelectionListener(createLstPerfilItemSelectListener());
+	}
+
+	private ListSelectionListener createLstPerfilItemSelectListener() {
+		return new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) { 
+				btnRemoverPerfil.setEnabled(true);	
+			}
+		};
+	}
+
+	private ActionListener createRemoverPerfilActionListener() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) { 
+				modelPerfilList.removeElementAt(lstPerfis.getSelectedIndex());
+				btnRemoverPerfil.setEnabled(false);
+			}
+		};
+	}
+
+	private ActionListener createBtnAddPerfilActionListener() {
+		return new ActionListener() { 
 			public void actionPerformed(ActionEvent evt) { 
 				BusinessEntity itemSelecionado = cmbPerfis.getSelectedComboBoxItem();
 				if(modelPerfilList.contains(itemSelecionado)) exibirDialogError("Este perfil já esta lista.");
 				else modelPerfilList.addElement(itemSelecionado); 
 			} 
-		});
-		btnRemoverPerfil.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) { 
-				modelPerfilList.removeElementAt(lstPerfis.getSelectedIndex());
-				btnRemoverPerfil.setEnabled(false);
-			}
-		});
-		lstPerfis.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) { btnRemoverPerfil.setEnabled(true);	}
-		});
+		};
 	}
 
 	private JPanel createProfilePanel() {

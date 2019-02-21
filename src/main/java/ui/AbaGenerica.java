@@ -88,34 +88,62 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	public abstract boolean checkFieldsOnCreate() throws UICheckFieldException;
 	
 	/**
-	 * Método para iniciar os listeners da aba
-	 * @param selectItemTable 
-	 * @param removeClick 
-	 * @param searchClick 
-	 * @param createNewElement 
+	 * Método para iniciar os listeners padrões das abas
 	 */
 	public void initListeners() {
-		// listener do botão para cancelar edição/criação e resetar os campos preenchidos
-		this.btnCancelar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) { setContext(FORM_CONTEXT.Proibido);  }
-		});
-		// listener do botão para criar novo cadastro de item. Este listener só limpa os campos para iniciar preenchimento do usuário
-		this.btnNovo.addActionListener(new ActionListener() {
+		this.btnCancelar.addActionListener(createBtnCancelarAction());
+		this.btnNovo.addActionListener(createBtnNovoAction());
+		this.tblResultado.getSelectionModel().addListSelectionListener(createTblResultadoItemSelectListener());
+		this.btnSalvar.addActionListener(createBtnSalverActionListener());
+		this.btnRemover.addActionListener(createBtnRemoverActionListener());
+		this.btnBuscar.addActionListener(createBtnBuscarActionListener());
+	};
+	
+	private ActionListener createBtnBuscarActionListener() {
+		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				try { loadData(); } catch (RemoteException | ServerServiceException | NotBoundException e) { } // nesse caso não fazer nada
-				setContext(FORM_CONTEXT.Criar);
+				try {
+					String termo = getTxtStringBusca().getText();
+					if(termo != null && termo.length() > 0) {
+						String atributo = converComboChoiceToDBAtributte(getCmbParametroConsulta().getSelectedItem().toString());
+						List<? extends BusinessEntity> resultadoConsulta = realizarBusca(atributo, termo);
+						popularTabelaResultado(resultadoConsulta);
+					} 
+					else loadData(); // se for campo em branco, então é para buscar todos
+					setContext(FORM_CONTEXT.Proibido);
+				}
+				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			}
-		});
-		// listener da tabela de resultado para preencher campos do form ao selecionar um item da tabela
-		this.tblResultado.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent event) {
+		};
+	}
+
+	private ActionListener createBtnRemoverActionListener() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (tblResultado.getSelectedRowCount() > 1) setContext(FORM_CONTEXT.Proibido);
-				else if (linhaSelecionada > -1) setContext(FORM_CONTEXT.Editar, linhaSelecionada);
+				if (linhaSelecionada > -1) {
+					Long id = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+					try {
+						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
+						msgConfirmacao = msgConfirmacao.replace("?1", "id: " + id);
+						if(exibirDialogConfirmation(msgConfirmacao)) {
+							realizarDelete(id);
+							loadData();
+						}
+						setContext(FORM_CONTEXT.Proibido);
+					}
+					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+				};
 			}
-		});
-		// listener do botão para salvar criação de um novo dado OU update de um dado existente
-		this.btnSalvar.addActionListener(new ActionListener() {
+		};
+	}
+
+	private ActionListener createBtnSalverActionListener() {
+		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				try {
 					if(checkFieldsOnCreate()) {
@@ -141,48 +169,28 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
 				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			}
-		});
-		// listener do botão remover para remover item selecionado na tabela
-		this.btnRemover.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
+		};
+	}
+
+	private ListSelectionListener createTblResultadoItemSelectListener() {
+		return new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent event) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					Long id = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-					try {
-						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replace("?1", "id: " + id);
-						if(exibirDialogConfirmation(msgConfirmacao)) {
-							realizarDelete(id);
-							loadData();
-						}
-						setContext(FORM_CONTEXT.Proibido);
-					}
-					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-					catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
-				};
+				if (tblResultado.getSelectedRowCount() > 1) setContext(FORM_CONTEXT.Proibido);
+				else if (linhaSelecionada > -1) setContext(FORM_CONTEXT.Editar, linhaSelecionada);
 			}
-		});
-		// listener do botão para fazer consulta por campo
-		this.btnBuscar.addActionListener(new ActionListener() {
+		};
+	}
+
+	private ActionListener createBtnNovoAction() {
+		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				try {
-					String termo = getTxtStringBusca().getText();
-					if(termo != null && termo.length() > 0) {
-						String atributo = converComboChoiceToDBAtributte(getCmbParametroConsulta().getSelectedItem().toString());
-						List<? extends BusinessEntity> resultadoConsulta = realizarBusca(atributo, termo);
-						popularTabelaResultado(resultadoConsulta);
-					} 
-					else loadData(); // se for campo em branco, então é para buscar todos
-					setContext(FORM_CONTEXT.Proibido);
-				}
-				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
-				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
-				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
+				try { loadData(); } catch (RemoteException | ServerServiceException | NotBoundException e) { } // nesse caso não fazer nada
+				setContext(FORM_CONTEXT.Criar);
 			}
-		});
-	};
-	
+		};
+	}
+
 	/**
 	 * Método para realizar o create, onde cada aba chama o seu create do server. 
 	 * Neste método o objeto é convertido para sua classe específica
@@ -396,6 +404,14 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 */
 	public abstract void initPnlForm();
 
+	private ActionListener createBtnCancelarAction() {
+		return new ActionListener() { 
+			public void actionPerformed(ActionEvent evt) { 
+				setContext(FORM_CONTEXT.Proibido);  
+				} 
+			};
+	}
+	
 	public JComboBox<String> getCmbParametroConsulta() {
 		return cmbParametroConsulta;
 	}
