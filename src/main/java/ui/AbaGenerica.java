@@ -31,13 +31,13 @@ import exception.UICheckFieldException;
 import model.BusinessEntity;
 import model.Functionality;
 import net.miginfocom.swing.MigLayout;
+import ui.UIEnums.FORM_CONTEXT;
 
 public abstract class AbaGenerica extends JPanel implements Serializable {
 
 	private static final long serialVersionUID = -2402354356633072054L;
 
 	private JPanel formPanel;
-	private JLabel lblFiltrarPor;
 	private JComboBox<String> cmbParametroConsulta;
 	private JTextField txtStringBusca;
 	private JButton btnBuscar;
@@ -56,7 +56,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		this.parentFrame = parentFrame;
 		
 		this.formPanel = new JPanel(new MigLayout("","[grow]", "[grow]"));
-		this.lblFiltrarPor = new JLabel("Filtrar por: ");
 		this.cmbParametroConsulta = new JComboBox<String>(createItemsCmbConsulta());
 		this.txtStringBusca = new JTextField(10);
 		this.btnBuscar = new JButton("Buscar");
@@ -98,25 +97,21 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	public void initListeners() {
 		// listener do botão para cancelar edição/criação e resetar os campos preenchidos
 		this.btnCancelar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) { setContextoEditar(false);  }
+			public void actionPerformed(ActionEvent evt) { setContext(FORM_CONTEXT.Proibido);  }
 		});
 		// listener do botão para criar novo cadastro de item. Este listener só limpa os campos para iniciar preenchimento do usuário
 		this.btnNovo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				try { loadData(); } catch (RemoteException | ServerServiceException | NotBoundException e) { } // nesse caso não fazer nada
-				setContextoCriar(true); 
-				btnRemover.setEnabled(false);
+				setContext(FORM_CONTEXT.Criar);
 			}
 		});
 		// listener da tabela de resultado para preencher campos do form ao selecionar um item da tabela
 		this.tblResultado.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent event) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					setContextoEditar(true);
-					setFormEdicao(linhaSelecionada);
-					setContextoEditar(true);
-				};
+				if (tblResultado.getSelectedRowCount() > 1) setContext(FORM_CONTEXT.Proibido);
+				else if (linhaSelecionada > -1) setContext(FORM_CONTEXT.Editar, linhaSelecionada);
 			}
 		});
 		// listener do botão para salvar criação de um novo dado OU update de um dado existente
@@ -137,9 +132,8 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 							objToSave.setDataCriacao(new Date());
 							realizarCreate(objToSave);
 						};
+						setContext(FORM_CONTEXT.Proibido);
 						loadData();
-						setContextoEditar(false);
-						getBtnNovo().setEnabled(true);
 					};
 				}
 				catch (UICheckFieldException err) { exibirDialogInfo(err.getMessage()); }
@@ -148,6 +142,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 				catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 			}
 		});
+		// listener do botão remover para remover item selecionado na tabela
 		this.btnRemover.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				int linhaSelecionada = getTblResultado().getSelectedRow();
@@ -160,8 +155,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 							realizarDelete(id);
 							loadData();
 						}
-						setContextoEditar(false);
-						getBtnNovo().setEnabled(true);
+						setContext(FORM_CONTEXT.Proibido);
 					}
 					catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 					catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -169,20 +163,18 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 				};
 			}
 		});
+		// listener do botão para fazer consulta por campo
 		this.btnBuscar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				try {
 					String termo = getTxtStringBusca().getText();
 					if(termo != null && termo.length() > 0) {
-						String atributo = getCmbParametroConsulta().getSelectedItem().toString();
-						atributo = converComboChoiceToDBAtributte(atributo);
+						String atributo = converComboChoiceToDBAtributte(getCmbParametroConsulta().getSelectedItem().toString());
 						List<? extends BusinessEntity> resultadoConsulta = realizarBusca(atributo, termo);
 						popularTabelaResultado(resultadoConsulta);
-					} else {
-						loadData();
-					}
-					setContextoEditar(false);
-					getBtnNovo().setEnabled(true);
+					} 
+					else loadData(); // se for campo em branco, então é para buscar todos
+					setContext(FORM_CONTEXT.Proibido);
 				}
 				catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
 				catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
@@ -191,12 +183,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		});
 	};
 	
-	/**
-	 * Método para setar valores nos campos do form de edição
-	 * @param linhaSelecionada - linha da tabela que foi selecionada para edição
-	 */
-	public abstract void setFormEdicao(int linhaSelecionada);
-
 	/**
 	 * Método para realizar o create, onde cada aba chama o seu create do server. 
 	 * Neste método o objeto é convertido para sua classe específica
@@ -261,25 +247,44 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 * @return - retorna um Vector<String> com o nome de cada coluna
 	 */
 	public abstract Vector<String> gerarHeaderTabelaResultado();
-
-	/**
-	 * Método para ativer os botões do modo edição: salvar e cancelar
-	 * e desativar os outros
-	 */
-	public void setContextoEditar(boolean setar) {
-		this.btnSalvar.setEnabled(setar);
-		this.btnCancelar.setEnabled(setar);
-		this.btnRemover.setEnabled(setar);
-	};
 	
-	/**
-	 * Método para ativer os botões do modo criação: salvar e cancelar
-	 * e desativar os outros
-	 */
-	public void setContextoCriar(boolean setar) {
-		this.btnSalvar.setEnabled(setar);
-		this.btnCancelar.setEnabled(setar);
-		this.btnRemover.setEnabled(!setar);
+	public abstract void clearForm();
+
+	public abstract void fillFormToEdit(int selectedRowToEdit) throws RemoteException, ServerServiceException, NotBoundException;
+
+	public abstract void setEnabledForm(boolean b);
+
+	public void setContext(FORM_CONTEXT context, Integer... selectedRowToEdit) {
+		if(context.equals(FORM_CONTEXT.Criar)) setContextoCriar();
+		else if(context.equals(FORM_CONTEXT.Editar)) setContextoEditar((int)selectedRowToEdit[0]);
+		else if(context.equals(FORM_CONTEXT.Proibido)) setContextoProibido();
+	}
+	
+	private void setContextoProibido() {
+		this.btnSalvar.setEnabled(false);
+		this.btnCancelar.setEnabled(false);
+		this.btnRemover.setEnabled(false);
+		this.setEnabledForm(false);
+		this.clearForm();
+	}
+	
+	private void setContextoCriar() {
+		this.btnSalvar.setEnabled(true);
+		this.btnCancelar.setEnabled(true);
+		this.btnRemover.setEnabled(false);
+		this.setEnabledForm(true);
+		this.clearForm();
+	}
+	
+	private void setContextoEditar(int selectedRowToEdit) {
+		this.btnSalvar.setEnabled(true);
+		this.btnCancelar.setEnabled(true);
+		this.btnRemover.setEnabled(true);
+		this.setEnabledForm(true);
+		try { this.fillFormToEdit(selectedRowToEdit); } 
+		catch (ServerServiceException err) { exibirDialogError(err.getMessage()); } 
+		catch (RemoteException err) { exibirDialogError(Const.ERROR_REMOTE_EXCEPT); } 
+		catch (NotBoundException err) { exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT); }
 	}
 
 	/**
@@ -316,7 +321,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 */
 	private JPanel createSearchPanel() {
 		JPanel searchPanel = new JPanel(new MigLayout("ins 5", "[][][grow][]", ""));
-		searchPanel.add(lblFiltrarPor);
+		searchPanel.add(new JLabel("Filtrar por: "));
 		searchPanel.add(cmbParametroConsulta);
 		searchPanel.add(txtStringBusca, "growx");
 		searchPanel.add(btnBuscar);
@@ -420,7 +425,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	}
 	
 	public List<Functionality> getCacheTodasFuncBanco() {
-		return this.cacheTodasFuncionalidadesBanco;
+		return cacheTodasFuncionalidadesBanco;
 	}
 	
 	public void setCacheTodasFuncBanco(List<Functionality> funcs) {

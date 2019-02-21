@@ -47,5 +47,9 @@ public class UIEnums {
 	public enum ABAS {
 		Usuário, Plugin, Funcionalidade, Perfil
 	}
+	
+	public enum FORM_CONTEXT {
+		Criar, Editar, Proibido
+	}
 
 }

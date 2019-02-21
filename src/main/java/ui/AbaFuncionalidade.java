@@ -25,19 +25,15 @@ import model.BusinessEntity;
 import model.Functionality;
 import model.Plugin;
 import net.miginfocom.swing.MigLayout;
+import ui.UIEnums.FORM_CONTEXT;
 
 public class AbaFuncionalidade extends AbaGenerica {
 
 	private static final long serialVersionUID = -8445952309777454337L;
 	
-	private JLabel lblNomePlugin = new JLabel("Plugin: ");
-	private JLabel lblNomeFunc = new JLabel("Nome: ");
-	private JLabel lblDescricao = new JLabel("Descrição: ");
-	private JLabel lblDataCriacao = new JLabel("Data de criação: ");
 	private ComboBoxWithItems cmbPlugin = new ComboBoxWithItems();
 	private JTextField txtNomeFunc = new JTextField(15);
 	private JTextField txtDescricao = new JTextField(15);
-
 	private UtilDateModel dateModel = new UtilDateModel();
 	private Properties dateProperties = new Properties();
 	private JDatePanelImpl datePanel = new JDatePanelImpl(dateModel, dateProperties);
@@ -46,47 +42,22 @@ public class AbaFuncionalidade extends AbaGenerica {
 	public AbaFuncionalidade(JFrame parentFrame) {
 		super(parentFrame);
 		initPnlForm();
-		setContextoEditar(false);
 	}
 	
 	@Override
 	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("","[right][grow]",""));
-		pnlForm.add(lblNomePlugin);
+		pnlForm.add(new JLabel("Plugin: "));
 		pnlForm.add(cmbPlugin, "wrap, growx");
-		pnlForm.add(lblNomeFunc);
+		pnlForm.add(new JLabel("Nome: "));
 		pnlForm.add(txtNomeFunc, "wrap, growx");
-		pnlForm.add(lblDescricao);
+		pnlForm.add(new JLabel("Descrição: "));
 		pnlForm.add(txtDescricao, "wrap, growx");
-		pnlForm.add(lblDataCriacao);
+		pnlForm.add(new JLabel("Data de criação: "));
 		datePicker.getComponent(1).setEnabled(false); // setar datePicker disabled
 		
 		pnlForm.add(datePicker, "wrap, growx");
 		registerForm(pnlForm);
-	}
-	
-	@Override
-	public void setContextoCriar(boolean setar) {
-		super.setContextoCriar(setar);
-		cmbPlugin.setEnabled(setar);
-		txtNomeFunc.setText("");
-		txtDescricao.setText("");
-		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
-		cmbPlugin.setEnabled(setar);
-		txtNomeFunc.setEditable(setar);
-		txtDescricao.setEditable(setar);
-	}
-	
-	@Override
-	public void setContextoEditar(boolean setar) {
-		super.setContextoEditar(setar);
-		if(!setar) {
-			txtNomeFunc.setText("");
-			txtDescricao.setText("");
-		}
-		cmbPlugin.setEnabled(setar);
-		txtNomeFunc.setEditable(setar);
-		txtDescricao.setEditable(setar);
 	}
 	
 	@Override
@@ -112,23 +83,17 @@ public class AbaFuncionalidade extends AbaGenerica {
 	
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		setContextoEditar(false);
-		List<? extends BusinessEntity> funcs = Client.getServer().getFunctionalities();
-		popularTabelaResultado(funcs);
-		List<? extends BusinessEntity> opcoes = Client.getServer().getPlugins();
 		atualizarCacheTodasFuncBanco();
-		cmbPlugin.popularFromBusinessEntity(opcoes);
+		popularTabelaResultado(Client.getServer().getFunctionalities());
+		cmbPlugin.popularFromBusinessEntity(Client.getServer().getPlugins());
+		setContext(FORM_CONTEXT.Proibido);
 	}
 
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String campo = this.txtNomeFunc.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
-		}
-		if(this.cmbPlugin.getSelectedItem() == null) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
-		}
+		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+		if(this.cmbPlugin.getSelectedItem() == null) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
 		return true;
 	}	
 	
@@ -190,16 +155,30 @@ public class AbaFuncionalidade extends AbaGenerica {
 	}
 
 	@Override
-	public void setFormEdicao(int linhaSelecionada) {
-		// como pluginId é estrangeira e obrigatória, então não checar se é null
-		BusinessEntity pluginSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 4);
-		cmbPlugin.setSelectedItemById(pluginSelecionado.getId());
-		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+	public void clearForm() {
+		txtNomeFunc.setText("");
+		txtDescricao.setText("");
+		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
+	}
+
+	@Override
+	public void fillFormToEdit(int selectedRowToEdit) throws RemoteException, ServerServiceException, NotBoundException {
+		Object campo =  getTblResultado().getValueAt(selectedRowToEdit, 1);
 		txtNomeFunc.setText(( campo != null ? campo.toString() : ""));
-		campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+		campo =  getTblResultado().getValueAt(selectedRowToEdit, 2);
 		txtDescricao.setText(( campo != null ? campo.toString() : ""));
-		String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+		String data = getTblResultado().getValueAt(selectedRowToEdit, 3).toString();
 		if(!data.equals("")) setDataModelFromStringDate(dateModel, data);
 		else dateModel.setSelected(false);
+		// como pluginId é estrangeira e obrigatória, então não checar se é null
+		BusinessEntity pluginSelecionado = (BusinessEntity) getTblResultado().getValueAt(selectedRowToEdit, 4);
+		cmbPlugin.setSelectedItemById(pluginSelecionado.getId());
+	}
+
+	@Override
+	public void setEnabledForm(boolean setar) {
+		cmbPlugin.setEnabled(setar);
+		txtNomeFunc.setEditable(setar);
+		txtDescricao.setEditable(setar);	
 	}
 }

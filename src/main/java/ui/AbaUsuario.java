@@ -30,15 +30,12 @@ import model.Perfil;
 import model.Status;
 import model.User;
 import net.miginfocom.swing.MigLayout;
+import ui.UIEnums.FORM_CONTEXT;
 
 public class AbaUsuario extends AbaGenerica {
 
 	private static final long serialVersionUID = -8445952309777454337L;
 
-	final private JLabel lblNomeUsuario = new JLabel("Nome: ");
-	final private JLabel lblLogin = new JLabel("Login: ");
-	final private JLabel lblStatus = new JLabel("Status: ");
-	final private JLabel lblGerencia = new JLabel("Gerência Atual: ");
 	final private JTextField txtNomeUsuario = new JTextField(15);
 	final private JTextField txtLogin = new JTextField(15);
 	final private JTextField txtGerencia = new JTextField(15);
@@ -52,7 +49,6 @@ public class AbaUsuario extends AbaGenerica {
 	public AbaUsuario(JFrame parentFrame) {
 		super(parentFrame);
 		initPnlForm();
-		setContextoEditar(false);
 		
 		// listeners dos componentes exclusivos da aba usuário
 		btnAddPerfil.addActionListener(new ActionListener() { 
@@ -92,14 +88,6 @@ public class AbaUsuario extends AbaGenerica {
 		return out;
 	}
 	
-	private void setEditarLstPerfis(boolean setar, Long userId) {
-		List<Perfil> perfisUsr = new ArrayList<Perfil>();
-		try {
-			if(setar) perfisUsr = Client.getServer().searchUserProfilesByUserId(userId);
-		} catch (Exception err) { }
-		finally { popularLstUserProfile(perfisUsr); }
-	}
-	
 	private void popularLstUserProfile(List<Perfil> perfisUsr) {
 		modelPerfilList.removeAllElements();
 		for(Perfil perf : perfisUsr) modelPerfilList.addElement(perf);
@@ -107,59 +95,28 @@ public class AbaUsuario extends AbaGenerica {
 	}
 	
 	@Override
-	public void setContextoCriar(boolean setar) {
-		super.setContextoCriar(setar);
-		setContextoEditar(true);
-		txtNomeUsuario.setText("");
-		txtLogin.setText("");
-		txtGerencia.setText("");
-	}
-	
-	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		setContextoEditar(false);
 		popularTabelaResultado(Client.getServer().getUsers());
 		cmbStatus.popularFromBusinessEntity(Client.getServer().getStatus());
 		cmbPerfis.popularFromBusinessEntity(Client.getServer().getPerfis());
 		modelPerfilList.removeAllElements();
 		lstPerfis.setModel(modelPerfilList);
+		setContext(FORM_CONTEXT.Proibido);
 	}
 	
 	@Override
 	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("", "[right][grow]", ""));
-		pnlForm.add(lblNomeUsuario);
+		pnlForm.add(new JLabel("Nome: "));
 		pnlForm.add(txtNomeUsuario, "growx, wrap");
-		pnlForm.add(lblLogin);
+		pnlForm.add(new JLabel("Login: "));
 		pnlForm.add(txtLogin, "growx, wrap");
-		pnlForm.add(lblStatus);
+		pnlForm.add(new JLabel("Status: "));
 		pnlForm.add(cmbStatus, "growx, wrap");
-		pnlForm.add(lblGerencia);
+		pnlForm.add(new JLabel("Gerência Atual: "));
 		pnlForm.add(txtGerencia, "growx, wrap");
 		pnlForm.add(createProfilePanel(), "spanx, grow, h min:100%");
 		registerForm(pnlForm);
-	}
-
-	@Override
-	public void setContextoEditar(boolean setar) {
-		super.setContextoEditar(setar);
-		if(!setar) {
-			txtNomeUsuario.setText("");
-			txtLogin.setText("");
-			txtGerencia.setText("");
-			setEditarLstPerfis(false, null);
-		} else {
-			Long userId = Long.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
-			setEditarLstPerfis(true, userId);
-		}
-		txtNomeUsuario.setEditable(setar);
-		txtLogin.setEditable(setar);
-		cmbStatus.setEnabled(setar);
-		cmbPerfis.setEnabled(setar);
-		txtGerencia.setEditable(setar);
-		lstPerfis.setEnabled(setar);
-		btnAddPerfil.setEnabled(setar);
-		btnRemoverPerfil.setEnabled(false);
 	}
 
 	@Override
@@ -262,15 +219,37 @@ public class AbaUsuario extends AbaGenerica {
 	}
 
 	@Override
-	public void setFormEdicao(int linhaSelecionada) {
-		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+	public void fillFormToEdit(int selectedRowToEdit) throws RemoteException, ServerServiceException, NotBoundException {
+		Object campo =  getTblResultado().getValueAt(selectedRowToEdit, 1);
 		txtNomeUsuario.setText(( campo != null ? (String)campo : ""));
-		campo = getTblResultado().getValueAt(linhaSelecionada, 2);
+		campo = getTblResultado().getValueAt(selectedRowToEdit, 2);
 		txtLogin.setText(( campo != null ? (String)campo : ""));
-		campo = getTblResultado().getValueAt(linhaSelecionada, 4);
+		campo = getTblResultado().getValueAt(selectedRowToEdit, 4);
 		txtGerencia.setText(( campo != null ? (String)campo : ""));
 		// como statusId é estrangeira e obrigatória, então não precisa checar se é null
-		BusinessEntity statusSelecionado = (BusinessEntity) getTblResultado().getValueAt(linhaSelecionada, 3);
+		BusinessEntity statusSelecionado = (BusinessEntity) getTblResultado().getValueAt(selectedRowToEdit, 3);
 		cmbStatus.setSelectedItemById(statusSelecionado.getId());
+		Long userId = Long.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
+		popularLstUserProfile(Client.getServer().searchUserProfilesByUserId(userId));	
+	}
+	
+	@Override
+	public void setEnabledForm(boolean setValue) {
+		txtNomeUsuario.setEditable(setValue);
+		txtLogin.setEditable(setValue);
+		txtGerencia.setEditable(setValue);
+		cmbStatus.setEnabled(setValue);
+		cmbPerfis.setEnabled(setValue);
+		lstPerfis.setEnabled(setValue);
+		btnAddPerfil.setEnabled(setValue);
+		btnRemoverPerfil.setEnabled(false);
+	}
+	
+	@Override
+	public void clearForm() {
+		txtNomeUsuario.setText("");
+		txtLogin.setText("");
+		txtGerencia.setText("");
+		popularLstUserProfile(new ArrayList<Perfil>());
 	}
 }

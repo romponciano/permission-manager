@@ -1,7 +1,5 @@
 package model;
 
-import java.io.Serializable;
-
 public class Status extends BusinessEntity {
 
 	private static final long serialVersionUID = -3875636949537998820L;

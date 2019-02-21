@@ -24,17 +24,14 @@ import exception.UICheckFieldException;
 import model.BusinessEntity;
 import model.Plugin;
 import net.miginfocom.swing.MigLayout;
+import ui.UIEnums.FORM_CONTEXT;
 
 public class AbaPlugin extends AbaGenerica {
 
 	private static final long serialVersionUID = -8445952309777454337L;
 	
-	private JLabel lblNomePlugin = new JLabel("Plugin: ");
-	private JLabel lblDescricao = new JLabel("Descrição: ");
-	private JLabel lblDataCriacao = new JLabel("Data de criação: ");
 	private JTextField txtNomePlugin = new JTextField(15);
 	private JTextField txtDescricao = new JTextField(15);
-
 	private UtilDateModel dateModel = new UtilDateModel();
 	private Properties dateProperties = new Properties();
 	private JDatePanelImpl datePanel = new JDatePanelImpl(dateModel, dateProperties);
@@ -43,41 +40,19 @@ public class AbaPlugin extends AbaGenerica {
 	public AbaPlugin(JFrame parentFrame) {
 		super(parentFrame);
 		initPnlForm();
-		setContextoEditar(false);
 	}
 	
 	@Override
 	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("","[right][grow]",""));
-		pnlForm.add(lblNomePlugin);
+		pnlForm.add(new JLabel("Nome: "));
 		pnlForm.add(txtNomePlugin, "wrap, growx");
-		pnlForm.add(lblDescricao);
+		pnlForm.add(new JLabel("Descrição: "));
 		pnlForm.add(txtDescricao, "wrap, growx");
-		pnlForm.add(lblDataCriacao);
+		pnlForm.add(new JLabel("Data de criação: "));
 		datePicker.getComponent(1).setEnabled(false); // setar datePicker disabled
 		pnlForm.add(datePicker, "wrap, growx");
 		registerForm(pnlForm);
-	}
-	
-	@Override
-	public void setContextoCriar(boolean setar) {
-		super.setContextoCriar(setar);
-		txtNomePlugin.setText("");
-		txtDescricao.setText("");
-		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
-		txtNomePlugin.setEditable(setar);
-		txtDescricao.setEditable(setar);
-	}
-	
-	@Override
-	public void setContextoEditar(boolean setar) {
-		super.setContextoEditar(setar);
-		if(!setar) {
-			txtNomePlugin.setText("");
-			txtDescricao.setText("");
-		}
-		txtNomePlugin.setEditable(setar);
-		txtDescricao.setEditable(setar);
 	}
 	
 	@Override
@@ -101,19 +76,14 @@ public class AbaPlugin extends AbaGenerica {
 	
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		setContextoEditar(false);
-		List<? extends BusinessEntity> plugins = Client.getServer().getPlugins();
-		popularTabelaResultado(plugins);
-		
+		popularTabelaResultado(Client.getServer().getPlugins());
+		setContext(FORM_CONTEXT.Proibido);
 	}
 
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
-		String campo;
-		campo = this.txtNomePlugin.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
-		}
+		String campo = this.txtNomePlugin.getText();
+		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
 		return true;
 	}	
 	
@@ -170,13 +140,26 @@ public class AbaPlugin extends AbaGenerica {
 	}
 
 	@Override
-	public void setFormEdicao(int linhaSelecionada) {
-		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+	public void clearForm() {
+		txtNomePlugin.setText("");
+		txtDescricao.setText("");
+		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
+	}
+
+	@Override
+	public void fillFormToEdit(int selectedRowToEdit) throws RemoteException, ServerServiceException, NotBoundException {
+		Object campo =  getTblResultado().getValueAt(selectedRowToEdit, 1);
 		txtNomePlugin.setText(( campo != null ? campo.toString() : ""));
-		campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+		campo =  getTblResultado().getValueAt(selectedRowToEdit, 2);
 		txtDescricao.setText(( campo != null ? campo.toString() : ""));
-		String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+		String data = getTblResultado().getValueAt(selectedRowToEdit, 3).toString();
 		if(!data.equals("")) setDataModelFromStringDate(dateModel, data);
 		else dateModel.setSelected(false); 
+	}
+
+	@Override
+	public void setEnabledForm(boolean setar) {
+		txtNomePlugin.setEnabled(setar);
+		txtDescricao.setEnabled(setar);
 	}
 }

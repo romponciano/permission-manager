@@ -27,14 +27,12 @@ import model.BusinessEntity;
 import model.Functionality;
 import model.Perfil;
 import net.miginfocom.swing.MigLayout;
+import ui.UIEnums.FORM_CONTEXT;
 
 public class AbaPerfil extends AbaGenerica {
 
 	private static final long serialVersionUID = -6213919187419684978L;
 	
-	private JLabel lblNomePerfil = new JLabel("Nome: ");
-	private JLabel lblDescricao = new JLabel("Descrição: ");
-	private JLabel lblDataCriacao = new JLabel("Data de criação: ");
 	private JTextField txtNomePerfil = new JTextField(15);
 	private JTextField txtDescricao = new JTextField(15);
 	private UtilDateModel dateModel = new UtilDateModel();
@@ -46,9 +44,7 @@ public class AbaPerfil extends AbaGenerica {
 	
 	public AbaPerfil(JFrame parentFrame) {
 		super(parentFrame);
-		
 		initPnlForm();
-		setContextoEditar(false);
 	}
 	
 	/**
@@ -121,63 +117,21 @@ public class AbaPerfil extends AbaGenerica {
 		return header;
 	}
 	
-	/**
-	 * Método para setar tabela de permissões quando for para editar um perfil
-	 * @param setar - irá definir se é para editar perms existentes (true) ou se é um novo perfil (false)
-	 * @param perfilId - id do perfil selecionado (só necessário se setar == true) ou null
-	 */
-	private void setEditarTblPermissoes(boolean setar, Long perfilId) {
-		List<Functionality> perms = new ArrayList<Functionality>();
-		try { 
-			checkCacheTodasFuncBancoEmpty();
-			if(setar) perms = Client.getServer().searchPermissionsByPerfilId(perfilId);
-		} catch (Exception err) { }
-		finally { popularTabelaPermissoes(perms); }
-	}
-	
 	@Override
 	public void initPnlForm() {
 		JPanel pnlForm = new JPanel(new MigLayout("","[right][grow]",""));
-		pnlForm.add(lblNomePerfil);
+		pnlForm.add(new JLabel("Nome: "));
 		pnlForm.add(txtNomePerfil, "wrap, growx");
-		pnlForm.add(lblDescricao);
+		pnlForm.add(new JLabel("Descrição: "));
 		pnlForm.add(txtDescricao, "wrap, growx");
-		pnlForm.add(lblDataCriacao);
-		datePicker.getComponent(1).setEnabled(false); // setar datePicker disabled
+		pnlForm.add(new JLabel("Data de Criação: "));
+		datePicker.getComponent(1).setEnabled(false);
+		dateModel.setSelected(false);
 		pnlForm.add(datePicker, "wrap, growx");
 		tblFuncs.setAutoCreateRowSorter(true);
 		this.tblFuncsScroll = new JScrollPane(tblFuncs);
 		pnlForm.add(tblFuncsScroll, "wrap, spanx, growx");
 		registerForm(pnlForm);
-	}
-	
-	@Override
-	public void setContextoCriar(boolean setar) {
-		super.setContextoCriar(setar);
-		txtNomePerfil.setText("");
-		txtDescricao.setText("");
-		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
-		setEditarTblPermissoes(false, null);
-		txtNomePerfil.setEditable(setar);
-		txtDescricao.setEditable(setar);
-		tblFuncs.setEnabled(setar);
-	}
-	
-	@Override
-	public void setContextoEditar(boolean setar) {
-		super.setContextoEditar(setar);
-		if(!setar) {
-			txtNomePerfil.setText("");
-			txtDescricao.setText("");
-			dateModel.setSelected(false);
-			setEditarTblPermissoes(false, null);
-		} else {
-			Long perfilId = Long.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
-			setEditarTblPermissoes(true, perfilId);
-		}
-		txtNomePerfil.setEditable(setar);
-		txtDescricao.setEditable(setar);
-		tblFuncs.setEnabled(setar);
 	}
 	
 	@Override
@@ -201,18 +155,15 @@ public class AbaPerfil extends AbaGenerica {
 	
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		setContextoEditar(false);
+		popularTabelaResultado(Client.getServer().getPerfis());
 		atualizarCacheTodasFuncBanco();
-		List<? extends BusinessEntity> perfs = Client.getServer().getPerfis();
-		popularTabelaResultado(perfs);
+		setContext(FORM_CONTEXT.Proibido);
 	}
 
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String campo = this.txtNomePerfil.getText();
-		if(campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
-		}
+		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
 		return true;
 	}
 	
@@ -270,13 +221,30 @@ public class AbaPerfil extends AbaGenerica {
 	}
 
 	@Override
-	public void setFormEdicao(int linhaSelecionada) {
-		Object campo =  getTblResultado().getValueAt(linhaSelecionada, 1);
+	public void clearForm() {
+		txtNomePerfil.setText("");
+		txtDescricao.setText("");
+		setDataModelFromStringDate(dateModel, Const.DATA_FORMAT.format(new Date()));
+		popularTabelaPermissoes(new ArrayList<Functionality>());
+	}
+
+	@Override
+	public void fillFormToEdit(int selectedRowToEdit) throws RemoteException, ServerServiceException, NotBoundException {
+		Object campo =  getTblResultado().getValueAt(selectedRowToEdit, 1);
 		txtNomePerfil.setText(( campo != null ? campo.toString() : ""));
-		campo =  getTblResultado().getValueAt(linhaSelecionada, 2);
+		campo =  getTblResultado().getValueAt(selectedRowToEdit, 2);
 		txtDescricao.setText(( campo != null ? campo.toString() : ""));
-		String data = getTblResultado().getValueAt(linhaSelecionada, 3).toString();
+		String data = getTblResultado().getValueAt(selectedRowToEdit, 3).toString();
 		if(!data.equals("")) setDataModelFromStringDate(dateModel, data);
 		else dateModel.setSelected(false);
+		Long perfilId = Long.parseLong(this.getTblResultado().getValueAt(this.getTblResultado().getSelectedRow(), 0).toString());
+		popularTabelaPermissoes(Client.getServer().searchPermissionsByPerfilId(perfilId));
+	}
+
+	@Override
+	public void setEnabledForm(boolean setar) {
+		txtNomePerfil.setEnabled(setar);;
+		txtDescricao.setEnabled(setar);
+		tblFuncs.setEnabled(setar);
 	}
 }
