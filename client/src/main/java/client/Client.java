@@ -1,10 +1,12 @@
-package client.ui.swing;
+package client;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import client.ui.javafx.FXGUI;
+import client.ui.swing.GUI;
 import common.ServerInterface;
 
 public class Client {
@@ -21,11 +23,20 @@ public class Client {
 
 	public static void main(String[] args) {
 		try {
-			GUI gui = new GUI();
-			gui.init();
+			//initSwingGUI();
+			initFXGUI();
 		} catch (Exception e) {
 			System.err.println("Client exception: " + e.toString());
 			e.printStackTrace();
 		}
+	}
+	
+	private static void initSwingGUI() {
+		GUI gui = new GUI();
+		gui.init();
+	}
+	
+	private static void initFXGUI() {
+		FXGUI.launch(FXGUI.class);
 	}
 }

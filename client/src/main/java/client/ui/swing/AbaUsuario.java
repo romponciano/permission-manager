@@ -20,6 +20,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
 import client.ui.UIEnums.FORM_CONTEXT;
