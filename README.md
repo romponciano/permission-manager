@@ -57,6 +57,51 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.161-b12, mixed mode)
 
 2. Apache Maven 3.5.0 (https://maven.apache.org/docs/3.5.0/release-notes.html)
 
+3. Install an Oracle Database (https://www.oracle.com/technetwork/database/database-technologies/express-edition/downloads/index.html) with minVersion >= 12g. 
+If you prefer, you could use some docker image with oracle, like https://github.com/fuzziebrain/docker-oracle-xe
+
+4. After install and execute Oracle Database properly, run the scripts inside scripts folder. It will create all tables.
+
 ### Getting started
 
-1. Download or clone this repo
+1. Download or clone this repo.
+
+2. Open common/Const.java and change 
+```
+public static final String DB_URL = "jdbc:oracle:thin:@localhost:32118/XE"; to your DB_URL
+public static final String USER = "ROMULOPONCIANO"; to the user created in you DB
+public static final String PASS = "root"; to the password of your user
+```
+Save it.
+
+3. Inside root folder, execute 
+```
+mvn clean package install
+```
+And you should get this output in terminal:
+```
+Reactor Summary:
+[INFO] 
+[INFO] root ............................................... SUCCESS 
+[INFO] common ............................................. SUCCESS 
+[INFO] server ............................................. SUCCESS 
+[INFO] client ............................................. SUCCESS 
+```
+This means that all modules (common, server and client) have been compiled and built successfully and in the corret order.
+
+4. Run the server's jar file
+```
+java -jar server/target/server.....-with-dependencies.jar
+```
+If you see 
+```
+Server Ready!
+```
+Then you are good to go!
+
+5. Run the client's jar file
+```
+java -jar client/target/client.....-with-dependencies.jar
+```
+
+You should see an interface and done! 
