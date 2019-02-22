@@ -1,4 +1,4 @@
-package client.ui;
+package client.ui.swing;
 
 import java.awt.Color;
 import java.io.Serializable;

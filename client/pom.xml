@@ -41,7 +41,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>client.Client</mainClass>
+							<mainClass>client.swing.Client</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

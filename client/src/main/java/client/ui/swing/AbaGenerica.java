@@ -1,4 +1,4 @@
-package client.ui;
+package client.ui.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,7 +24,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.jdatepicker.impl.UtilDateModel;
 
-import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;

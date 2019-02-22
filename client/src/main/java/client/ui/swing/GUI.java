@@ -1,4 +1,4 @@
-package client.ui;
+package client.ui.swing;
 
 import java.io.Serializable;
 import java.rmi.NotBoundException;
@@ -10,6 +10,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import client.ui.UIEnums;
 import common.Const;
 import common.exceptions.ServerServiceException;
 

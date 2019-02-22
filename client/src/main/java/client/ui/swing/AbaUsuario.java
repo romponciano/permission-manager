@@ -1,4 +1,4 @@
-package client.ui;
+package client.ui.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,8 +20,8 @@ import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import client.Client;
 import client.exceptions.UICheckFieldException;
+import client.ui.UIEnums;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;

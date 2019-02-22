@@ -1,4 +1,4 @@
-package client.ui;
+package client.ui.swing;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -19,8 +19,8 @@ import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 
-import client.Client;
 import client.exceptions.UICheckFieldException;
+import client.ui.UIEnums;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;

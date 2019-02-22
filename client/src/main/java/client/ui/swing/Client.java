@@ -1,11 +1,10 @@
-package client;
+package client.ui.swing;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import client.ui.GUI;
 import common.ServerInterface;
 
 public class Client {
