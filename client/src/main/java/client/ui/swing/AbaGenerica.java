@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
@@ -25,7 +24,7 @@ import javax.swing.event.ListSelectionListener;
 import org.jdatepicker.impl.UtilDateModel;
 
 import client.Client;
-import client.exceptions.UICheckFieldException;
+import client.ui.GenericUIFunctions;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
@@ -33,7 +32,7 @@ import common.model.BusinessEntity;
 import common.model.Functionality;
 import net.miginfocom.swing.MigLayout;
 
-public abstract class AbaGenerica extends JPanel implements Serializable {
+public abstract class AbaGenerica extends JPanel implements Serializable, GenericUIFunctions {
 
 	private static final long serialVersionUID = -2402354356633072054L;
 
@@ -113,39 +112,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	public abstract void initPnlForm();
 
 	/**
-	 * Método para checar se os campos estão válidos antes de salvar novo item
-	 * 
-	 * @throws UICheckFieldException - se algum campo não passar na validação
-	 */
-	public abstract boolean checkFieldsOnCreate() throws UICheckFieldException;
-
-	/**
-	 * Método para realizar o create, onde cada aba chama o seu create do server.
-	 * Neste método o objeto é convertido para sua classe específica
-	 * 
-	 * @param objToSave - obj genérico que extendeu BusinessEntity e que representa
-	 *                  o obj a ser salvo no bd
-	 * @throws RemoteException
-	 * @throws ServerServiceException
-	 * @throws NotBoundException
-	 */
-	public abstract void realizarCreate(BusinessEntity objToSave)
-			throws RemoteException, ServerServiceException, NotBoundException;
-
-	/**
-	 * Método para realizar o update, onde cada aba chama o seu update do server.
-	 * Neste método o objeto é convertido para sua classe específica
-	 * 
-	 * @param objToSave - obj genérico que extendeu BusinessEntity e que representa
-	 *                  o obj a ser salvo no bd
-	 * @throws RemoteException
-	 * @throws ServerServiceException
-	 * @throws NotBoundException
-	 */
-	public abstract void realizarUpdate(BusinessEntity objToSave)
-			throws RemoteException, ServerServiceException, NotBoundException;
-
-	/**
 	 * Método para pegar os campos de cada form e transformar em um objeto da classe
 	 * a ser trabalhada.
 	 * 
@@ -153,42 +119,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	 *         porém com os campos específicos de cada classe.
 	 */
 	public abstract BusinessEntity createObjToBeSaved();
-
-	/**
-	 * Método para realizar o delete, onde cada aba chama o seu delete do server.
-	 * Neste método o objeto é convertido para sua classe específica
-	 * 
-	 * @param id - id no banco do objeto a ser deleteado
-	 * @throws RemoteException
-	 * @throws ServerServiceException
-	 * @throws NotBoundException
-	 */
-	public abstract void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException;
-
-	/**
-	 * Método para realizar a busca, onde cada aba chama o seu search do server.
-	 * Neste método o objeto é convertido para sua classe específica
-	 * 
-	 * @param atributo - atributo selecionado na combobox de consulta
-	 * @param termo    - termo a ser procurado daquele atributo. Ex: atributo LIKE
-	 *                 termo
-	 * @return - Lista contendo os valores encontrados da classe que realizou a
-	 *         busca
-	 * @throws RemoteException
-	 * @throws ServerServiceException
-	 * @throws NotBoundException
-	 */
-	public abstract List<? extends BusinessEntity> realizarBusca(String atributo, String termo)
-			throws RemoteException, ServerServiceException, NotBoundException;
-
-	/**
-	 * Método para carregar todos os itens de um determinado elemento na tabela.
-	 * 
-	 * @throws NotBoundException      - erro ao 'renderizar' component
-	 * @throws ServerServiceException - erro vindo do servidor
-	 * @throws RemoteException        - erro de comunicação com o servidor
-	 */
-	public abstract void loadData() throws RemoteException, ServerServiceException, NotBoundException;
 
 	/**
 	 * Método para gerar vetor de strings com o cabeçalho da tabela de resultados da
@@ -234,7 +164,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	private ActionListener createBtnCancelarAction() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				setContext(FORM_CONTEXT.Proibido);
+				actionCancel();
 			}
 		};
 	}
@@ -248,22 +178,18 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	private ActionListener createBtnBuscarActionListener() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				try {
-					String termo = getTxtStringBusca().getText();
-					if (termo != null && termo.length() > 0) {
-						String atributo = converComboChoiceToDBAtributte(
-								getCmbParametroConsulta().getSelectedItem().toString());
-						List<? extends BusinessEntity> resultadoConsulta = realizarBusca(atributo, termo);
-						popularTabelaResultado(resultadoConsulta);
-					} else
-						loadData(); // se for campo em branco, então é para buscar todos
-					setContext(FORM_CONTEXT.Proibido);
-				} catch (ServerServiceException err) {
-					exibirDialogError(err.getMessage());
-				} catch (RemoteException err) {
-					exibirDialogError(Const.ERROR_REMOTE_EXCEPT);
-				} catch (NotBoundException err) {
-					exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT);
+				String termo = getTxtStringBusca().getText();
+				if (termo != null && termo.length() > 0) {
+					String atributo = converComboChoiceToDBAtributte(getCmbParametroConsulta().getSelectedItem().toString());
+					actionSearchItems(atributo, termo);
+				}
+				// se for campo em branco, então é para buscar todos
+				else {
+					try {
+						loadData();
+					} catch (RemoteException | ServerServiceException | NotBoundException e) {
+						dealWithError(e);
+					}
 				}
 			}
 		};
@@ -278,26 +204,8 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	private ActionListener createBtnRemoverActionListener() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (linhaSelecionada > -1) {
-					Long id = Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-					try {
-						String msgConfirmacao = Const.WARN_CONFIRM_DELETE;
-						msgConfirmacao = msgConfirmacao.replace("?1", "id: " + id);
-						if (exibirDialogConfirmation(msgConfirmacao)) {
-							realizarDelete(id);
-							loadData();
-						}
-						setContext(FORM_CONTEXT.Proibido);
-					} catch (ServerServiceException err) {
-						exibirDialogError(err.getMessage());
-					} catch (RemoteException err) {
-						exibirDialogError(Const.ERROR_REMOTE_EXCEPT);
-					} catch (NotBoundException err) {
-						exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT);
-					}
-				}
-				;
+				if (exibirDialogConfirmation(Const.WARN_CONFIRM_DELETE))
+					actionRemoveItem();
 			}
 		};
 	}
@@ -311,40 +219,35 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	private ActionListener createBtnSalverActionListener() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				try {
-					if (checkFieldsOnCreate()) {
-						BusinessEntity objToSave = createObjToBeSaved();
-						/*
-						 * se o botão 'remover' estiver habilitado, então é pq não não representa um
-						 * novo item, mas sim um update.
-						 */
-						if (getBtnRemover().isEnabled()) {
-							int linhaSelecionada = getTblResultado().getSelectedRow();
-							objToSave.setId(
-									Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString()));
-							objToSave.setDataUltimaModificacao(new Date());
-							realizarUpdate(objToSave);
-							/* se não, representa um create */
-						} else {
-							objToSave.setDataCriacao(new Date());
-							realizarCreate(objToSave);
-						}
-						;
-						setContext(FORM_CONTEXT.Proibido);
-						loadData();
-					}
-					;
-				} catch (UICheckFieldException err) {
-					exibirDialogInfo(err.getMessage());
-				} catch (ServerServiceException err) {
-					exibirDialogError(err.getMessage());
-				} catch (RemoteException err) {
-					exibirDialogError(Const.ERROR_REMOTE_EXCEPT);
-				} catch (NotBoundException err) {
-					exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT);
-				}
-			}
+				/*
+				 * se o botão 'remover' estiver habilitado, então é pq não não representa um
+				 * novo item, mas sim um update
+				 */
+				if (getBtnRemover().isEnabled())
+					actionUpdateItem();
+				/* se não, representa um create */
+				else
+					actionSaveNewItem();
+			};
 		};
+	};
+
+	@Override
+	public Long getIdToUpdateItem() {
+		int linhaSelecionada = getTblResultado().getSelectedRow();
+		if (linhaSelecionada > -1) {
+			return Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+		}
+		return null;
+	}
+
+	@Override
+	public Long getIdToRemoveItem() {
+		int linhaSelecionada = getTblResultado().getSelectedRow();
+		if (linhaSelecionada > -1) {
+			return Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+		}
+		return null;
 	}
 
 	/**
@@ -362,7 +265,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 					setContext(FORM_CONTEXT.Proibido);
 				else if (linhaSelecionada > -1)
 					setContext(FORM_CONTEXT.Editar, linhaSelecionada);
-
 			}
 		};
 	}
@@ -375,20 +277,14 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 	private ActionListener createBtnNovoAction() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				try {
-					loadData();
-				} catch (RemoteException | ServerServiceException | NotBoundException e) {
-				} // nesse caso não fazer nada
-				setContext(FORM_CONTEXT.Criar);
+				actionNewItem();
 			}
 		};
 	}
 
 	// ############################################ MÉTODOS GENÉRICOS
 	// ############################################
-	/**
-	 * Método para iniciar os listeners padrões das abas
-	 */
+	@Override
 	public void initListeners() {
 		this.btnCancelar.addActionListener(createBtnCancelarAction());
 		this.btnNovo.addActionListener(createBtnNovoAction());
@@ -398,30 +294,8 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		this.btnBuscar.addActionListener(createBtnBuscarActionListener());
 	};
 
-	/**
-	 * Método responsável por setar contexto do momento. Por exemplo: habilitar e
-	 * desabilitar os campos e botões corretos para edição de um item;
-	 * 
-	 * @param context           - Contexto desejado: Edição, Criação ou Proibido
-	 *                          (desabilita e limpa campos)
-	 * @param selectedRowToEdit - <b>OBRIGRATÓRIO SE<b> for contexto de Edição.
-	 *                          Passar linha que foi selecionada pelo usuário na
-	 *                          tabela de resultados
-	 */
-	public void setContext(FORM_CONTEXT context, Integer... selectedRowToEdit) {
-		if (context.equals(FORM_CONTEXT.Criar))
-			setContextoCriar();
-		else if (context.equals(FORM_CONTEXT.Editar))
-			setContextoEditar((int) selectedRowToEdit[0]);
-		else if (context.equals(FORM_CONTEXT.Proibido))
-			setContextoProibido();
-	}
-
-	/**
-	 * Método para setar campos do contexto proibido. Ou seja, contexto onde o
-	 * usuário não consegue clicar ou edição nenhum campo do formulário
-	 */
-	private void setContextoProibido() {
+	@Override
+	public void setContextoProibido() {
 		this.btnSalvar.setEnabled(false);
 		this.btnCancelar.setEnabled(false);
 		this.btnRemover.setEnabled(false);
@@ -429,12 +303,8 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		this.clearForm();
 	}
 
-	/**
-	 * Método para setar campos do contexto de criação. Ou seja, contexto onde o
-	 * usuário irá inserir um novo item e, portanto, preencher os campos do
-	 * formulário
-	 */
-	private void setContextoCriar() {
+	@Override
+	public void setContextoCriar() {
 		this.btnSalvar.setEnabled(true);
 		this.btnCancelar.setEnabled(true);
 		this.btnRemover.setEnabled(false);
@@ -442,26 +312,16 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		this.clearForm();
 	}
 
-	/**
-	 * Método para setar campos do contexto de edição. Ou seja, contexto onde o
-	 * usuário irá editar dados de uma dada linha selecionada.
-	 * 
-	 * @param selectedRowToEdit - linha selecionada pelo usuário, da tabela de
-	 *                          resultados, para edição
-	 */
-	private void setContextoEditar(int selectedRowToEdit) {
+	@Override
+	public void setContextoEditar(int selectedRowToEdit) {
 		this.btnSalvar.setEnabled(true);
 		this.btnCancelar.setEnabled(true);
 		this.btnRemover.setEnabled(true);
 		this.setEnabledForm(true);
 		try {
 			this.fillFormToEdit(selectedRowToEdit);
-		} catch (ServerServiceException err) {
-			exibirDialogError(err.getMessage());
-		} catch (RemoteException err) {
-			exibirDialogError(Const.ERROR_REMOTE_EXCEPT);
-		} catch (NotBoundException err) {
-			exibirDialogError(Const.ERROR_NOTBOUND_EXCEPT);
+		} catch (RemoteException | ServerServiceException | NotBoundException e) {
+			dealWithError(e);
 		}
 	}
 
@@ -518,21 +378,11 @@ public abstract class AbaGenerica extends JPanel implements Serializable {
 		table.getColumnModel().getColumn(columnIdx).setWidth(0);
 	}
 
-	/**
-	 * Método para exibir DialogBox de algum <b>erro</b>.
-	 * 
-	 * @param msg - mensagem a ser exibida no DialogBox
-	 */
-	public void exibirDialogInfo(String msg) {
+	public void showInfoMessage(String msg) {
 		JOptionPane.showMessageDialog(this.parentFrame, msg, "Info", JOptionPane.INFORMATION_MESSAGE);
 	}
 
-	/**
-	 * Método para exibir DialogBox de algum <b>erro</b>.
-	 * 
-	 * @param msg - mensagem a ser exibida no DialogBox
-	 */
-	public void exibirDialogError(String msg) {
+	public void showErrorMessage(String msg) {
 		JOptionPane.showMessageDialog(this.parentFrame, msg, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 

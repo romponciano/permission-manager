@@ -78,7 +78,7 @@ public class AbaUsuario extends AbaGenerica {
 			public void actionPerformed(ActionEvent evt) {
 				BusinessEntity itemSelecionado = cmbPerfis.getSelectedComboBoxItem();
 				if (modelPerfilList.contains(itemSelecionado))
-					exibirDialogError("Este perfil já esta lista.");
+					showInfoMessage("Este perfil já esta lista.");
 				else
 					modelPerfilList.addElement(itemSelecionado);
 			}

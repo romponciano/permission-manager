@@ -13,9 +13,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import client.Client;
+import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FILTROS_PERFIL;
 import common.exceptions.ServerServiceException;
+import common.model.BusinessEntity;
 
 public class PluginTab extends GenericTab {
 
@@ -66,6 +68,56 @@ public class PluginTab extends GenericTab {
 		getFormPane().add(txtDescription, "growx, wrap");
 		getFormPane().add(new Label("Creation Date: "));
 		getFormPane().add(dpCreationDate, "growx, wrap");
-	}	
-	
+	}
+
+	@Override
+	public BusinessEntity createObjToBeSaved() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setContextoEditar(int selectedRowToEdit) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean checkFieldsOnCreate() throws UICheckFieldException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void popularTabelaResultado(List<? extends BusinessEntity> resultadoConsulta) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void realizarCreate(BusinessEntity objToSave)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void realizarUpdate(BusinessEntity objToSave)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		
+	}
 }

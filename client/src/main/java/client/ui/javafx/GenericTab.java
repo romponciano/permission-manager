@@ -8,6 +8,8 @@ import java.util.List;
 import org.tbee.javafx.scene.layout.MigPane;
 
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -17,11 +19,13 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
 import client.Client;
+import client.ui.GenericUIFunctions;
+import client.ui.UIEnums.FORM_CONTEXT;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
 import common.model.Functionality;
 
-public abstract class GenericTab extends Tab implements Serializable {
+public abstract class GenericTab extends Tab implements Serializable, GenericUIFunctions {
 
 	private static final long serialVersionUID = 9025913767736072389L;
 	
@@ -57,10 +61,19 @@ public abstract class GenericTab extends Tab implements Serializable {
 		return controlPane;
 	}
 
-	protected abstract void loadData() throws RemoteException, ServerServiceException, NotBoundException;
 	protected abstract void createTableAllItemsHeader();
 	protected abstract List<String> createSearchOptions();
 	protected abstract void populateFormPane();
+	
+	public void initListeners() {
+		btnNew.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				try { loadData(); } catch (RemoteException | ServerServiceException | NotBoundException e) { /* ignorar */ }
+				setContext(FORM_CONTEXT.Criar);
+			}
+		});
+	}
 	
 	private MigPane createSearchPane() {
 		MigPane searchPane = new MigPane("ins 0", "[grow]", "");
@@ -92,5 +105,41 @@ public abstract class GenericTab extends Tab implements Serializable {
 		try {
 			cacheTodasFuncionalidadesBanco = Client.getServer().getFunctionalities();
 		} catch (RemoteException | ServerServiceException | NotBoundException e) { }
+	}
+	
+	// ######################################################
+
+	@Override
+	public void setContextoProibido() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setContextoCriar() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Long getIdToRemoveItem() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getIdToUpdateItem() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public void showInfoMessage(String message) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void showErrorMessage(String message) {
+		// TODO Auto-generated method stub
 	}
 }

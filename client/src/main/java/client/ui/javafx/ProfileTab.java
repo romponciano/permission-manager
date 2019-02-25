@@ -18,9 +18,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 
 import client.Client;
+import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums.ABAS;
-import client.ui.UIEnums.FILTROS_USUARIO;
+import client.ui.UIEnums.FILTROS_PERFIL;
 import common.exceptions.ServerServiceException;
+import common.model.BusinessEntity;
 import common.model.Functionality;
 
 public class ProfileTab extends GenericTab {
@@ -69,19 +71,17 @@ public class ProfileTab extends GenericTab {
 	public void createTableAllItemsHeader() {
 		TableColumn nameColumn = new TableColumn<>("Name");
 		nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-		TableColumn loginColumn = new TableColumn<>("Login");
-		loginColumn.setCellValueFactory(new PropertyValueFactory<>("login"));
-		TableColumn statusColumn = new TableColumn<>("Status");
-		statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-		TableColumn gerenciaColumn = new TableColumn<>("Gerência atual");
-		gerenciaColumn.setCellValueFactory(new PropertyValueFactory<>("gerenciaAtual"));
-		getTableAllItems().getColumns().addAll(nameColumn, loginColumn, statusColumn, gerenciaColumn);
+		TableColumn descriptionColumn = new TableColumn<>("Description");
+		descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+		TableColumn creationDateColumn = new TableColumn<>("Creation Date");
+		creationDateColumn.setCellValueFactory(new PropertyValueFactory<>("dataCriacao"));
+		getTableAllItems().getColumns().addAll(nameColumn, descriptionColumn, creationDateColumn);
 	}
 
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		getTableAllItems().getItems().clear();
-		getTableAllItems().getItems().addAll((FXCollections.observableArrayList(Client.getServer().getUsers())));
+		getTableAllItems().getItems().addAll(FXCollections.observableArrayList(Client.getServer().getPerfis()));
 		atualizarCacheTodasFuncBanco();
 		funcsTable.getItems().clear();
 		funcsTable.getItems().addAll(FXCollections.observableArrayList(getCacheTodasFuncBanco()));
@@ -90,10 +90,9 @@ public class ProfileTab extends GenericTab {
 	@Override
 	protected List<String> createSearchOptions() {
 		List<String> out = new ArrayList<String>();
-		out.add(FILTROS_USUARIO.Nome.toString());
-		out.add(FILTROS_USUARIO.Login.toString());
-		out.add(FILTROS_USUARIO.Status.toString());
-		out.add(FILTROS_USUARIO.Gerência.toString());
+		out.add(FILTROS_PERFIL.Nome.toString());
+		out.add(FILTROS_PERFIL.Descrição.toString());
+		out.add(FILTROS_PERFIL.Data.toString());
 		return out;
 	}
 
@@ -106,5 +105,56 @@ public class ProfileTab extends GenericTab {
 		getFormPane().add(new Label("Creation Date: "));
 		getFormPane().add(dpCreationDate, "growx, wrap");
 		getFormPane().add(funcsTable, "grow, spanx");
+	}
+
+	@Override
+	public BusinessEntity createObjToBeSaved() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setContextoEditar(int selectedRowToEdit) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean checkFieldsOnCreate() throws UICheckFieldException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void popularTabelaResultado(List<? extends BusinessEntity> resultadoConsulta) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void realizarCreate(BusinessEntity objToSave)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void realizarUpdate(BusinessEntity objToSave)
+			throws RemoteException, ServerServiceException, NotBoundException {
+		// TODO Auto-generated method stub
+		
 	}
 }
