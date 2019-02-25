@@ -18,7 +18,7 @@ import javafx.scene.control.TextField;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
 
-public abstract class AbaGenerica extends Tab implements Serializable {
+public abstract class GenericTab extends Tab implements Serializable {
 
 	private static final long serialVersionUID = 9025913767736072389L;
 	
@@ -32,7 +32,7 @@ public abstract class AbaGenerica extends Tab implements Serializable {
 	private Button btnSave = new Button("Save");
 	private Button btnNew = new Button("New");
 	
-	public AbaGenerica() {
+	public GenericTab() {
 		MigPane mainTabPane = new MigPane("", "[grow 70][grow 30]", "[][grow][]");
 		mainTabPane.add(createSearchPane(), "pushy, wrap");
 		mainTabPane.add(tableAllItems, "grow, spany");

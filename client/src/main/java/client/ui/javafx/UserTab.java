@@ -23,7 +23,7 @@ import common.exceptions.ServerServiceException;
 import common.model.Perfil;
 import common.model.Status;
 
-public class AbaUsuario extends AbaGenerica {
+public class UserTab extends GenericTab {
 
 	private static final long serialVersionUID = 96859842527558937L;
 
@@ -36,7 +36,7 @@ public class AbaUsuario extends AbaGenerica {
 	private Button btnRemoveProfile = new Button("-");
 	private ListView<Perfil> lstProfileList = new ListView<Perfil>();
 	
-	public AbaUsuario() {
+	public UserTab() {
 		super();
 		this.setText(ABAS.Usuário.toString());
 		populateFormPane();
@@ -78,7 +78,7 @@ public class AbaUsuario extends AbaGenerica {
 
 	@Override
 	protected void populateFormPane() {
-		getFormPane().add(new Label("Nome: "));
+		getFormPane().add(new Label("Name: "));
 		getFormPane().add(txtName, "growx, wrap");
 		getFormPane().add(new Label("Login: "));
 		getFormPane().add(txtLogin, "growx, wrap");
