@@ -12,7 +12,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 
-import client.ui.UIEnums.ABAS;
 import common.exceptions.ServerServiceException;
 
 public class FXGUI extends Application implements Serializable {
@@ -25,14 +24,16 @@ public class FXGUI extends Application implements Serializable {
 		GenericTab userTab = new UserTab();
 		GenericTab pluginTab = new PluginTab();
 		GenericTab funcTab = new FunctionalityTab();
-		Tab tabProfile = new Tab(ABAS.Perfil.toString());
+		GenericTab profileTab = new ProfileTab();
 		
-		tabPane.getTabs().addAll(userTab, pluginTab, funcTab, tabProfile);
+		tabPane.getTabs().addAll(userTab, pluginTab, funcTab, profileTab);
 
 		stage.setTitle("Gerenciador de Plugins");
 		stage.setScene(new Scene(tabPane));
 		stage.sizeToScene();
 		stage.show();
+		
+		tabPane.getSelectionModel().select(pluginTab);
 		
 		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 			@Override
@@ -41,6 +42,7 @@ public class FXGUI extends Application implements Serializable {
 					if(newValue.equals(userTab)) userTab.loadData();
 					else if(newValue.equals(pluginTab)) pluginTab.loadData(); 
 					else if(newValue.equals(funcTab)) funcTab.loadData();
+					else if(newValue.equals(profileTab)) profileTab.loadData();
 				} catch (RemoteException e) {
 					System.out.println(e.getMessage());
 				} catch (ServerServiceException e) {
@@ -51,5 +53,6 @@ public class FXGUI extends Application implements Serializable {
 			}
 	    });
 		
+		tabPane.getSelectionModel().select(userTab);
 	}
 }

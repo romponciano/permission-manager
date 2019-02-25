@@ -11,12 +11,15 @@ import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
+import client.Client;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
+import common.model.Functionality;
 
 public abstract class GenericTab extends Tab implements Serializable {
 
@@ -32,6 +35,8 @@ public abstract class GenericTab extends Tab implements Serializable {
 	private Button btnSave = new Button("Save");
 	private Button btnNew = new Button("New");
 	
+	private List<Functionality> cacheTodasFuncionalidadesBanco;
+	
 	public GenericTab() {
 		MigPane mainTabPane = new MigPane("", "[grow 70][grow 30]", "[][grow][]");
 		mainTabPane.add(createSearchPane(), "pushy, wrap");
@@ -40,6 +45,7 @@ public abstract class GenericTab extends Tab implements Serializable {
 		mainTabPane.add(createControlPane(), "skip 1, growx");
 		this.setContent(mainTabPane);
 		this.setClosable(false);
+		this.tableAllItems.getSelectionModel().setSelectionMode((SelectionMode.MULTIPLE));
 	}
 	
 	private MigPane createControlPane() {
@@ -76,5 +82,15 @@ public abstract class GenericTab extends Tab implements Serializable {
 
 	public void setFormPane(MigPane formPane) {
 		this.formPane = formPane;
+	}
+	
+	public List<Functionality> getCacheTodasFuncBanco() {
+		return cacheTodasFuncionalidadesBanco;
+	}
+
+	public void atualizarCacheTodasFuncBanco() {
+		try {
+			cacheTodasFuncionalidadesBanco = Client.getServer().getFunctionalities();
+		} catch (RemoteException | ServerServiceException | NotBoundException e) { }
 	}
 }
