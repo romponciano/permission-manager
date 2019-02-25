@@ -24,10 +24,10 @@ public class FXGUI extends Application implements Serializable {
 		TabPane tabPane = new TabPane();
 		GenericTab userTab = new UserTab();
 		GenericTab pluginTab = new PluginTab();
-		Tab tabFunc = new Tab(ABAS.Funcionalidade.toString());
+		GenericTab funcTab = new FunctionalityTab();
 		Tab tabProfile = new Tab(ABAS.Perfil.toString());
 		
-		tabPane.getTabs().addAll(userTab, pluginTab, tabFunc, tabProfile);
+		tabPane.getTabs().addAll(userTab, pluginTab, funcTab, tabProfile);
 
 		stage.setTitle("Gerenciador de Plugins");
 		stage.setScene(new Scene(tabPane));
@@ -40,7 +40,7 @@ public class FXGUI extends Application implements Serializable {
 				try {
 					if(newValue.equals(userTab)) userTab.loadData();
 					else if(newValue.equals(pluginTab)) pluginTab.loadData(); 
-					
+					else if(newValue.equals(funcTab)) funcTab.loadData();
 				} catch (RemoteException e) {
 					System.out.println(e.getMessage());
 				} catch (ServerServiceException e) {
