@@ -2,6 +2,7 @@ package client.ui.javafx;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.tbee.javafx.scene.layout.MigPane;
@@ -97,8 +98,7 @@ public class UserTab extends GenericTab {
 
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		getTableAllItems().getItems().clear();
-		getTableAllItems().getItems().addAll((FXCollections.observableArrayList(Client.getServer().getUsers())));
+		populateTableAllItems(Client.getServer().getUsers());
 		cmbStatus.getItems().clear();
 		cmbStatus.getItems().addAll(FXCollections.observableArrayList(Client.getServer().getStatus()));
 		cmbProfileList.getItems().clear();
@@ -134,8 +134,14 @@ public class UserTab extends GenericTab {
 		user.setStatus(cmbStatus.getSelectionModel().getSelectedItem());
 		user.setLogin(txtLogin.getText());
 		user.setGerenciaAtual(txtGerencia.getText());
-		// TODO pegar perfis
+		user.setPerfis(getProfilesFromList());
 		return user;
+	}
+
+	private List<Perfil> getProfilesFromList() {
+		List<Perfil> perfs = new ArrayList<Perfil>();
+		lstProfileList.getItems().forEach(perfil -> { perfs.add(perfil); });
+		return perfs;
 	}
 
 	@Override
@@ -153,7 +159,13 @@ public class UserTab extends GenericTab {
 		txtLogin.setText(user.getLogin());
 		txtGerencia.setText(user.getGerenciaAtual());
 		cmbStatus.getSelectionModel().select(user.getStatus());
-		// TODO setar perfis
+		List<Perfil> perfs = Client.getServer().searchUserProfilesByUserId(user.getId());
+		populateLstProfile(perfs);
+	}
+
+	private void populateLstProfile(List<Perfil> perfs) {
+		lstProfileList.getItems().clear();
+		lstProfileList.getItems().addAll(perfs);
 	}
 
 	@Override

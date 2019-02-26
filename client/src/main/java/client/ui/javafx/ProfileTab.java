@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -55,6 +56,7 @@ public class ProfileTab extends GenericTab {
 	        }
 	    });
         TableColumn pluginColumn = new TableColumn<>("Plugin");
+        pluginColumn.setEditable(true);
 		pluginColumn.setCellValueFactory(new PropertyValueFactory<>("plugin"));
 		TableColumn nameColumn = new TableColumn<>("Name");
 		nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -63,7 +65,7 @@ public class ProfileTab extends GenericTab {
 		TableColumn creationDateColumn = new TableColumn<>("Creation Date");
 		creationDateColumn.setCellValueFactory(new PropertyValueFactory<>("dataCriacao"));
 		tablePermission.getColumns().addAll(pluginColumn, nameColumn, descriptionColumn, creationDateColumn, permissionColumn);
-        
+        tablePermission.setEditable(true);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -88,6 +90,7 @@ public class ProfileTab extends GenericTab {
 			perms.add(new TableModelPermission(func.getId(), func.getName(), func.getDescription(), func.getDataCriacao(), func.getPlugin()));
 		}
 		tablePermission.getItems().addAll(FXCollections.observableArrayList(perms));
+		tablePermission.autosize();
 	}
 
 	@Override
@@ -108,8 +111,20 @@ public class ProfileTab extends GenericTab {
 		String desc = txtDescription.getText();
 		Date creationDate = new Date();
 		Perfil perfil = new Perfil(null, name, desc, creationDate);
-		// TODO: getPermissions
+		perfil.setPermissoes(getPermissions());
 		return perfil;
+	}
+
+	private List<Functionality> getPermissions() {
+		List<Functionality> out = new ArrayList<Functionality>();
+		tablePermission.getItems().forEach(perm -> {
+			if(perm.getChecked().getValue()) { 
+				Functionality func = new Functionality(perm.getId(), perm.getName(), perm.getDescription(), perm.getDataCriacao());
+				func.setPlugin(perm.getPlugin());
+				out.add(func);
+			}
+		});
+		return out;
 	}
 
 	@Override
@@ -125,7 +140,21 @@ public class ProfileTab extends GenericTab {
 		txtName.setText(perfil.getName());
 		txtDescription.setText(perfil.getDescription());
 		dpCreationDate.setValue(convertDateToLocalDate(perfil.getDataCriacao()));
-		// TODO: get permissions
+		List<Functionality> permissions = Client.getServer().searchPermissionsByPerfilId(perfil.getId());
+		checkPermissions(permissions);
+	}
+
+	private void checkPermissions(List<Functionality> permissions) {
+		for(Functionality func : permissions) {
+			int pos = 0;
+			for(TableModelPermission perm : tablePermission.getItems()) {
+				if(perm.getId().equals(func.getId())) {
+					tablePermission.getItems().get(pos).setChecked(new SimpleBooleanProperty(true));
+					break;
+				};
+				pos++;
+			};
+		};
 	}
 
 	@Override
@@ -133,7 +162,9 @@ public class ProfileTab extends GenericTab {
 		txtName.setText("");
 		txtDescription.setText("");
 		dpCreationDate.setValue(LocalDate.now());
-		// TODO: uncheck all 
+		tablePermission.getItems().forEach(perm -> {
+			perm.setChecked(new SimpleBooleanProperty(false));
+		});
 	}
 
 	@Override

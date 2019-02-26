@@ -73,8 +73,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		btnRemove.setOnAction(createBtnRemoveClickEvent());
 		tableAllItems.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
 			if (newSelection == null) {
-		    	clearForm();
-		    	setEnabledForm(false);
+				setContext(FORM_CONTEXT.Proibido);
 		    } else {
 		    	setContext(FORM_CONTEXT.Editar, 0);
 		    }
@@ -85,6 +84,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	public void populateTableAllItems(List<? extends BusinessEntity> objs) {
 		getTableAllItems().getItems().clear();
 		getTableAllItems().getItems().addAll(FXCollections.observableArrayList(objs));
+		getTableAllItems().autosize();
 	}
 
 	
