@@ -19,6 +19,7 @@ import org.jdatepicker.impl.UtilDateModel;
 import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
+import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
@@ -40,7 +41,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 	private JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
 	
 	public AbaFuncionalidade(JFrame parentFrame) {
-		super(parentFrame);
+		super(parentFrame, ABAS.Funcionalidade);
 		initPnlForm();
 	}
 	
@@ -61,13 +62,11 @@ public class AbaFuncionalidade extends AbaGenerica {
 	}
 	
 	@Override
-	public Vector<String> createItemsCmbConsulta() {
-		Vector<String> out = new Vector<String>();
-		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString());
-		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString());
-		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString());
-		out.add(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString());
-		return out;
+	public void populateConsultComboBox() {
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString(), 0);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString(), 1);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString(), 2);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString(), 3);
 	}
 	
 	@Override
@@ -84,7 +83,7 @@ public class AbaFuncionalidade extends AbaGenerica {
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		atualizarCacheTodasFuncBanco();
-		popularTabelaResultado(Client.getServer().getFunctionalities());
+		populateTableAllItems(Client.getServer().getFunctionalities());
 		cmbPlugin.popularFromBusinessEntity(Client.getServer().getPlugins());
 		setContext(FORM_CONTEXT.Proibido);
 	}
@@ -97,15 +96,6 @@ public class AbaFuncionalidade extends AbaGenerica {
 		return true;
 	}	
 	
-	@Override
-	public String converComboChoiceToDBAtributte(String cmbChoice) {
-		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Nome.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Descrição.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Data.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Plugin.getValue();
-		return "";
-	}
-
 	@Override
 	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
 		return Client.getServer().searchFunctionalities(atributo, termo);

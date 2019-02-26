@@ -25,6 +25,7 @@ import org.jdatepicker.impl.UtilDateModel;
 
 import client.Client;
 import client.ui.GenericUIFunctions;
+import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
@@ -46,16 +47,16 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 	private JButton btnCancelar;
 	private JButton btnRemover;
 	private JButton btnNovo;
-
 	private List<Functionality> cacheTodasFuncionalidadesBanco;
-
+	private ABAS aba;
 	protected JFrame parentFrame;
 
-	public AbaGenerica(JFrame parentFrame) {
+	public AbaGenerica(JFrame parentFrame, ABAS aba) {
 		this.parentFrame = parentFrame;
+		this.aba = aba;
 
 		this.formPanel = new JPanel(new MigLayout("", "[grow]", "[grow]"));
-		this.cmbParametroConsulta = new JComboBox<String>(createItemsCmbConsulta());
+		this.cmbParametroConsulta = new JComboBox<String>();
 		this.txtStringBusca = new JTextField(10);
 		this.btnBuscar = new JButton("Buscar");
 		this.btnRemover = new JButton("Remover");
@@ -75,12 +76,12 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 		add(createControlPanel(), "skip 1, growx");
 
 		cacheTodasFuncionalidadesBanco = new ArrayList<Functionality>();
+		
 
 		initListeners();
 	}
 
 	// ############################################ MÉTODOS ABSTRACT
-	// ############################################
 	/**
 	 * Método para gerar linha da JTable. É implementado na classe que extende pois
 	 * cada aba pode ter seus campos diferentes uma da outra.
@@ -91,36 +92,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 	public abstract Vector<Object> generateJTableLine(Object obj);
 
 	/**
-	 * Método para converter escolha de busca da combobox para atributo que será
-	 * utilizado na consulta ao banco.
-	 * 
-	 * @param cmbChoice - escolha do usuário
-	 * @return - String do atributo utilizado no banco
-	 */
-	public abstract String converComboChoiceToDBAtributte(String cmbChoice);
-
-	/**
-	 * Método para gerar items dos atributos que vão compor a combobox
-	 * 
-	 * @return - vetor de string contendo os items
-	 */
-	public abstract Vector<String> createItemsCmbConsulta();
-
-	/**
-	 * Método para iniciar painel de formulário de cada aba
-	 */
-	public abstract void initPnlForm();
-
-	/**
-	 * Método para pegar os campos de cada form e transformar em um objeto da classe
-	 * a ser trabalhada.
-	 * 
-	 * @return - um objeto BusinessEntity (de onde todos os modelos são extendidos),
-	 *         porém com os campos específicos de cada classe.
-	 */
-	public abstract BusinessEntity createObjToBeSaved();
-
-	/**
 	 * Método para gerar vetor de strings com o cabeçalho da tabela de resultados da
 	 * busca.
 	 * 
@@ -128,203 +99,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 	 */
 	public abstract Vector<String> gerarHeaderTabelaResultado();
 
-	/**
-	 * Método responsável por limpar formulário de edição/criação
-	 */
-	public abstract void clearForm();
-
-	/**
-	 * Método responsável por preencher formulário de edição com os valores de uma
-	 * linha que foi selecionada da tabela de resultados. Como alguns campos são
-	 * preenchidos com valores vindos do banco, então este método pode lançar
-	 * exceções vindas do server.
-	 * 
-	 * @param selectedRowToEdit - linha selecionada
-	 * @throws RemoteException
-	 * @throws ServerServiceException
-	 * @throws NotBoundException
-	 */
-	public abstract void fillFormToEdit(int selectedRowToEdit)
-			throws RemoteException, ServerServiceException, NotBoundException;
-
-	/**
-	 * Método responsável por habilitar ou desabilitar os campos de formulário
-	 * 
-	 * @param value - boolean: true para habilitar; false para desabilitar;
-	 */
-	public abstract void setEnabledForm(boolean value);
-
-	// ############################################ LISTENERS
-	// ############################################
-	/**
-	 * Listener responsável por resetar form de edição e proibir seu uso
-	 * 
-	 * @return
-	 */
-	private ActionListener createBtnCancelarAction() {
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				actionCancel();
-			}
-		};
-	}
-
-	/**
-	 * Listener responsável por pegar o campo (atributo) e termos desejados para
-	 * consulta do usuário e exibir o resultado da consulta na tabela de resultados.
-	 * 
-	 * @return
-	 */
-	private ActionListener createBtnBuscarActionListener() {
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				String termo = getTxtStringBusca().getText();
-				if (termo != null && termo.length() > 0) {
-					String atributo = converComboChoiceToDBAtributte(getCmbParametroConsulta().getSelectedItem().toString());
-					actionSearchItems(atributo, termo);
-				}
-				// se for campo em branco, então é para buscar todos
-				else {
-					try {
-						loadData();
-					} catch (RemoteException | ServerServiceException | NotBoundException e) {
-						dealWithError(e);
-					}
-				}
-			}
-		};
-	}
-
-	/**
-	 * Listener responsável por exibir confirmação de exclusão e chamar o método
-	 * para excluir um item selecionado
-	 * 
-	 * @return
-	 */
-	private ActionListener createBtnRemoverActionListener() {
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				if (exibirDialogConfirmation(Const.WARN_CONFIRM_DELETE))
-					actionRemoveItem();
-			}
-		};
-	}
-
-	/**
-	 * Listener responsável por gerar pegar valores do form e salvar OU criar novo
-	 * obj
-	 * 
-	 * @return
-	 */
-	private ActionListener createBtnSalverActionListener() {
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				/*
-				 * se o botão 'remover' estiver habilitado, então é pq não não representa um
-				 * novo item, mas sim um update
-				 */
-				if (getBtnRemover().isEnabled())
-					actionUpdateItem();
-				/* se não, representa um create */
-				else
-					actionSaveNewItem();
-			};
-		};
-	};
-
-	@Override
-	public Long getIdToUpdateItem() {
-		int linhaSelecionada = getTblResultado().getSelectedRow();
-		if (linhaSelecionada > -1) {
-			return Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-		}
-		return null;
-	}
-
-	@Override
-	public Long getIdToRemoveItem() {
-		int linhaSelecionada = getTblResultado().getSelectedRow();
-		if (linhaSelecionada > -1) {
-			return Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-		}
-		return null;
-	}
-
-	/**
-	 * Listener responsável por (1) setar valores no formulário caso o usuário
-	 * selecione item da tabela, (2) proibir e limpar formulário caso o usuário
-	 * selecione mais de uma item ou caso nenhuma linha esteja selecionada
-	 * 
-	 * @return
-	 */
-	private ListSelectionListener createTblResultadoItemSelectListener() {
-		return new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent event) {
-				int linhaSelecionada = getTblResultado().getSelectedRow();
-				if (tblResultado.getSelectedRowCount() > 1 || linhaSelecionada < 0)
-					setContext(FORM_CONTEXT.Proibido);
-				else if (linhaSelecionada > -1)
-					setContext(FORM_CONTEXT.Editar, linhaSelecionada);
-			}
-		};
-	}
-
-	/**
-	 * Listener responsável por limpar campos de formulário para um novo cadastro
-	 * 
-	 * @return
-	 */
-	private ActionListener createBtnNovoAction() {
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				actionNewItem();
-			}
-		};
-	}
-
-	// ############################################ MÉTODOS GENÉRICOS
-	// ############################################
-	@Override
-	public void initListeners() {
-		this.btnCancelar.addActionListener(createBtnCancelarAction());
-		this.btnNovo.addActionListener(createBtnNovoAction());
-		this.tblResultado.getSelectionModel().addListSelectionListener(createTblResultadoItemSelectListener());
-		this.btnSalvar.addActionListener(createBtnSalverActionListener());
-		this.btnRemover.addActionListener(createBtnRemoverActionListener());
-		this.btnBuscar.addActionListener(createBtnBuscarActionListener());
-	};
-
-	@Override
-	public void setContextoProibido() {
-		this.btnSalvar.setEnabled(false);
-		this.btnCancelar.setEnabled(false);
-		this.btnRemover.setEnabled(false);
-		this.setEnabledForm(false);
-		this.clearForm();
-	}
-
-	@Override
-	public void setContextoCriar() {
-		this.btnSalvar.setEnabled(true);
-		this.btnCancelar.setEnabled(true);
-		this.btnRemover.setEnabled(false);
-		this.setEnabledForm(true);
-		this.clearForm();
-	}
-
-	@Override
-	public void setContextoEditar(int selectedRowToEdit) {
-		this.btnSalvar.setEnabled(true);
-		this.btnCancelar.setEnabled(true);
-		this.btnRemover.setEnabled(true);
-		this.setEnabledForm(true);
-		try {
-			this.fillFormToEdit(selectedRowToEdit);
-		} catch (RemoteException | ServerServiceException | NotBoundException e) {
-			dealWithError(e);
-		}
-	}
-
+	// ############################################ MÉTODOS DA UI SWING
 	/**
 	 * Método para add o conteúdo pronto com os campos de formulário.
 	 * 
@@ -378,28 +153,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 		table.getColumnModel().getColumn(columnIdx).setWidth(0);
 	}
 
-	public void showInfoMessage(String msg) {
-		JOptionPane.showMessageDialog(this.parentFrame, msg, "Info", JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	public void showErrorMessage(String msg) {
-		JOptionPane.showMessageDialog(this.parentFrame, msg, "Error", JOptionPane.ERROR_MESSAGE);
-	}
-
-	/**
-	 * Método para exibir DialogBox de algum <b>erro</b>.
-	 * 
-	 * @param msg - mensagem a ser exibida no DialogBox
-	 */
-	public boolean exibirDialogConfirmation(String msg) {
-		int dialogButton = JOptionPane.YES_NO_OPTION;
-		int dialogResult = JOptionPane.showConfirmDialog(this.parentFrame, msg, "Warning", dialogButton);
-		if (dialogResult == JOptionPane.YES_OPTION) {
-			return true;
-		}
-		return false;
-	}
-
 	/**
 	 * Método usado para setar uma String de data YYYY-MM-DD em um dateModel
 	 * 
@@ -414,13 +167,190 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 		dateModel.setSelected(true);
 	}
 
+	// ############################################ LISTENERS
 	/**
-	 * Método para popular tabela de resultados de busca com lista de usuários
+	 * Listener responsável por resetar form de edição e proibir seu uso
 	 * 
-	 * @param users - Lista contendo os usuários a serem apresentados na tabela
-	 * @param tipo  - tipo para gerar Header da tabela
+	 * @return
 	 */
-	public void popularTabelaResultado(List<? extends BusinessEntity> objs) {
+	private ActionListener createBtnCancelarAction() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				actionCancel();
+			}
+		};
+	}
+
+	/**
+	 * Listener responsável por pegar o campo (atributo) e termos desejados para
+	 * consulta do usuário e exibir o resultado da consulta na tabela de resultados.
+	 * 
+	 * @return
+	 */
+	private ActionListener createBtnBuscarActionListener() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				String termo = getTxtStringBusca().getText();
+				if (termo != null && termo.length() > 0) {
+					String atributo = convertComboChoiceToDBAtributte(
+							getCmbParametroConsulta().getSelectedItem().toString(),
+							getAba());
+					actionSearchItems(atributo, termo);
+				}
+				// se for campo em branco, então é para buscar todos
+				else {
+					try {
+						loadData();
+					} catch (RemoteException | ServerServiceException | NotBoundException e) {
+						dealWithError(e);
+					}
+				}
+			}
+		};
+	}
+
+	/**
+	 * Listener responsável por exibir confirmação de exclusão e chamar o método
+	 * para excluir um item selecionado
+	 * 
+	 * @return
+	 */
+	private ActionListener createBtnRemoverActionListener() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				if (askConfirmation(Const.WARN_CONFIRM_DELETE))
+					actionRemoveItem();
+			}
+		};
+	}
+
+	/**
+	 * Listener responsável por gerar pegar valores do form e salvar OU criar novo
+	 * obj
+	 * 
+	 * @return
+	 */
+	private ActionListener createBtnSalverActionListener() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				/*
+				 * se o botão 'remover' estiver habilitado, então é pq não não representa um
+				 * novo item, mas sim um update
+				 */
+				if (getBtnRemover().isEnabled())
+					actionUpdateItem();
+				/* se não, representa um create */
+				else
+					actionSaveNewItem();
+			};
+		};
+	};
+
+	@Override
+	public Long getSelectedItemId() {
+		int linhaSelecionada = getTblResultado().getSelectedRow();
+		if (linhaSelecionada > -1) {
+			return Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+		}
+		return null;
+	}
+
+	/**
+	 * Listener responsável por (1) setar valores no formulário caso o usuário
+	 * selecione item da tabela, (2) proibir e limpar formulário caso o usuário
+	 * selecione mais de uma item ou caso nenhuma linha esteja selecionada
+	 * 
+	 * @return
+	 */
+	private ListSelectionListener createTblResultadoItemSelectListener() {
+		return new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent event) {
+				int linhaSelecionada = getTblResultado().getSelectedRow();
+				if (tblResultado.getSelectedRowCount() > 1 || linhaSelecionada < 0)
+					setContext(FORM_CONTEXT.Proibido);
+				else if (linhaSelecionada > -1)
+					setContext(FORM_CONTEXT.Editar, linhaSelecionada);
+			}
+		};
+	}
+
+	/**
+	 * Listener responsável por limpar campos de formulário para um novo cadastro
+	 * 
+	 * @return
+	 */
+	private ActionListener createBtnNovoAction() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				actionNewItem();
+			}
+		};
+	}
+
+	// ############################################ MÉTODOS DA INTERFACE GENÉRICA
+	@Override
+	public void initListeners() {
+		this.btnCancelar.addActionListener(createBtnCancelarAction());
+		this.btnNovo.addActionListener(createBtnNovoAction());
+		this.tblResultado.getSelectionModel().addListSelectionListener(createTblResultadoItemSelectListener());
+		this.btnSalvar.addActionListener(createBtnSalverActionListener());
+		this.btnRemover.addActionListener(createBtnRemoverActionListener());
+		this.btnBuscar.addActionListener(createBtnBuscarActionListener());
+	};
+
+	@Override
+	public void setContextoProibido() {
+		this.btnSalvar.setEnabled(false);
+		this.btnCancelar.setEnabled(false);
+		this.btnRemover.setEnabled(false);
+		this.setEnabledForm(false);
+		this.clearForm();
+	}
+
+	@Override
+	public void setContextoCriar() {
+		this.btnSalvar.setEnabled(true);
+		this.btnCancelar.setEnabled(true);
+		this.btnRemover.setEnabled(false);
+		this.setEnabledForm(true);
+		this.clearForm();
+	}
+
+	@Override
+	public void setContextoEditar(int selectedRowToEdit) {
+		this.btnSalvar.setEnabled(true);
+		this.btnCancelar.setEnabled(true);
+		this.btnRemover.setEnabled(true);
+		this.setEnabledForm(true);
+		try {
+			this.fillFormToEdit(selectedRowToEdit);
+		} catch (RemoteException | ServerServiceException | NotBoundException e) {
+			dealWithError(e);
+		}
+	}
+
+	@Override
+	public void showInfoMessage(String msg) {
+		JOptionPane.showMessageDialog(this.parentFrame, msg, "Info", JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	@Override
+	public void showErrorMessage(String msg) {
+		JOptionPane.showMessageDialog(this.parentFrame, msg, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	public boolean askConfirmation(String msg) {
+		int dialogButton = JOptionPane.YES_NO_OPTION;
+		int dialogResult = JOptionPane.showConfirmDialog(this.parentFrame, msg, "Warning", dialogButton);
+		if (dialogResult == JOptionPane.YES_OPTION) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void populateTableAllItems(List<? extends BusinessEntity> objs) {
 		Vector<Vector<Object>> dadosFinal = new Vector<Vector<Object>>();
 		for (Object obj : objs) {
 			Vector<Object> linha = generateJTableLine(obj);
@@ -430,6 +360,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 		setJTableColumnInsivible(this.getTblResultado(), 0);
 	};
 
+	// ############################################# MÉTODOS DA CLASSE
 	public JComboBox<String> getCmbParametroConsulta() {
 		return cmbParametroConsulta;
 	}
@@ -480,5 +411,9 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 			cacheTodasFuncionalidadesBanco = Client.getServer().getFunctionalities();
 		} catch (RemoteException | ServerServiceException | NotBoundException e) {
 		}
+	}
+
+	public ABAS getAba() {
+		return aba;
 	}
 }

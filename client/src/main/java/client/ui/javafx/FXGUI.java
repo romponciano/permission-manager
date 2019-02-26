@@ -44,11 +44,11 @@ public class FXGUI extends Application implements Serializable {
 					else if(newValue.equals(funcTab)) funcTab.loadData();
 					else if(newValue.equals(profileTab)) profileTab.loadData();
 				} catch (RemoteException e) {
-					System.out.println(e.getMessage());
+					// TODO
 				} catch (ServerServiceException e) {
-					System.out.println(e.getMessage());
+					// TODO
 				} catch (NotBoundException e) {
-					System.out.println(e.getMessage());
+					// TODO
 				}
 			}
 	    });

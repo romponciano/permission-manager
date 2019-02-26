@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import client.exceptions.UICheckFieldException;
+import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
@@ -19,8 +20,63 @@ public interface GenericUIFunctions {
 	 * @return - um objeto BusinessEntity (de onde todos os modelos são extendidos),
 	 *         porém com os campos específicos de cada classe.
 	 */
-	public abstract BusinessEntity createObjToBeSaved();
+	public BusinessEntity createObjToBeSaved();
+	
+	/**
+	 * Método para exibir DialogBox de algum <b>erro</b>.
+	 * 
+	 * @param msg - mensagem a ser exibida no DialogBox
+	 */
+	public boolean askConfirmation(String msg);
+	
+	/**
+	 * Método para popular tabela de resultados de busca com lista de usuários
+	 * 
+	 * @param users - Lista contendo os usuários a serem apresentados na tabela
+	 * @param tipo  - tipo para gerar Header da tabela
+	 */
+	public void populateTableAllItems(List<? extends BusinessEntity> objs);
 
+	/**
+	 * Método para converter escolha de busca da combobox para atributo que será
+	 * utilizado na consulta ao banco.
+	 * 
+	 * @param cmbChoice - escolha do usuário
+	 * @return - String do atributo utilizado no banco
+	 */
+	public default String convertComboChoiceToDBAtributte(String cmbChoice, ABAS aba) {
+		if(aba.equals(ABAS.Usuário)) {
+			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Nome.toString())) return UIEnums.FILTROS_USUARIO.Nome.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Login.toString())) return UIEnums.FILTROS_USUARIO.Login.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Gerência.toString())) return UIEnums.FILTROS_USUARIO.Gerência.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Status.toString())) return UIEnums.FILTROS_USUARIO.Status.getValue();
+		}
+		else if(aba.equals(ABAS.Funcionalidade)) {
+			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Nome.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Descrição.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Data.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Plugin.getValue();
+		}
+		else if(aba.equals(ABAS.Perfil)) {
+			if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Nome.toString())) return UIEnums.FILTROS_PERFIL.Nome.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Descrição.toString())) return UIEnums.FILTROS_PERFIL.Descrição.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Data.toString())) return UIEnums.FILTROS_PERFIL.Data.getValue();
+		}
+		else if(aba.equals(ABAS.Plugin)) {
+			if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Nome.toString())) return UIEnums.FILTROS_PLUGIN.Nome.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Descrição.toString())) return UIEnums.FILTROS_PLUGIN.Descrição.getValue();
+			if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Data.toString())) return UIEnums.FILTROS_PLUGIN.Data.getValue();
+		}
+		return "";
+	}
+	
+	/**
+	 * Método para gerar items dos atributos que vão compor a combobox
+	 * 
+	 * @return - vetor de string contendo os items
+	 */
+	public void populateConsultComboBox();
+	
 	/**
 	 * Método responsável por setar contexto do momento. Por exemplo: habilitar e
 	 * desabilitar os campos e botões corretos para edição de um item;
@@ -72,6 +128,36 @@ public interface GenericUIFunctions {
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException;
 
 	/**
+	 * Método responsável por preencher formulário de edição com os valores de uma
+	 * linha que foi selecionada da tabela de resultados. Como alguns campos são
+	 * preenchidos com valores vindos do banco, então este método pode lançar
+	 * exceções vindas do server.
+	 * 
+	 * @param selectedRowToEdit - linha selecionada
+	 * @throws RemoteException
+	 * @throws ServerServiceException
+	 * @throws NotBoundException
+	 */
+	public void fillFormToEdit(int selectedRow) throws RemoteException, ServerServiceException, NotBoundException;
+
+	/**
+	 * Método para iniciar painel de formulário de cada aba
+	 */
+	public void initPnlForm();
+	
+	/**
+	 * Método responsável por limpar formulário de edição/criação
+	 */
+	public void clearForm();
+
+	/**
+	 * Método responsável por habilitar ou desabilitar os campos de formulário
+	 * 
+	 * @param value - boolean: true para habilitar; false para desabilitar;
+	 */
+	public void setEnabledForm(boolean b);
+
+	/**
 	 * Método para iniciar os listeners padrões das abas
 	 */
 	public void initListeners();
@@ -102,7 +188,7 @@ public interface GenericUIFunctions {
 		try {
 			if (checkFieldsOnCreate()) {
 				BusinessEntity objToSave = createObjToBeSaved();
-				objToSave.setId(getIdToUpdateItem());
+				objToSave.setId(getSelectedItemId());
 				objToSave.setDataUltimaModificacao(new Date());
 				realizarUpdate(objToSave);
 				setContext(FORM_CONTEXT.Proibido);
@@ -122,7 +208,7 @@ public interface GenericUIFunctions {
 
 	public default void actionRemoveItem() {
 		try {
-			realizarDelete(getIdToRemoveItem());
+			realizarDelete(getSelectedItemId());
 			loadData();
 		} catch (ServerServiceException | RemoteException | NotBoundException e) {
 			dealWithError(e);
@@ -130,9 +216,11 @@ public interface GenericUIFunctions {
 		setContext(FORM_CONTEXT.Proibido);
 	}
 
+	public abstract Long getSelectedItemId();
+
 	public default void actionSearchItems(String att, String searchString) {
 		try {
-			popularTabelaResultado(realizarBusca(att, searchString));
+			populateTableAllItems(realizarBusca(att, searchString));
 		} catch (ServerServiceException | RemoteException | NotBoundException e) {
 			dealWithError(e);
 		}
@@ -159,8 +247,6 @@ public interface GenericUIFunctions {
 	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo)
 			throws RemoteException, ServerServiceException, NotBoundException;
 
-	public void popularTabelaResultado(List<? extends BusinessEntity> resultadoConsulta);
-
 	/**
 	 * Método para realizar o delete, onde cada aba chama o seu delete do server.
 	 * Neste método o objeto é convertido para sua classe específica
@@ -171,8 +257,6 @@ public interface GenericUIFunctions {
 	 * @throws NotBoundException
 	 */
 	public abstract void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException;
-
-	public Long getIdToRemoveItem();
 
 	/**
 	 * Método para realizar o create, onde cada aba chama o seu create do server.
@@ -186,8 +270,6 @@ public interface GenericUIFunctions {
 	 */
 	public void realizarCreate(BusinessEntity objToSave)
 			throws RemoteException, ServerServiceException, NotBoundException;
-
-	public Long getIdToUpdateItem();
 
 	/**
 	 * Método para realizar o update, onde cada aba chama o seu update do server.

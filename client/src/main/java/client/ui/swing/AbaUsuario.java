@@ -23,6 +23,7 @@ import javax.swing.event.ListSelectionListener;
 import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
+import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
@@ -47,7 +48,7 @@ public class AbaUsuario extends AbaGenerica {
 	final private DefaultListModel<BusinessEntity> modelPerfilList = new DefaultListModel<BusinessEntity>();
 
 	public AbaUsuario(JFrame parentFrame) {
-		super(parentFrame);
+		super(parentFrame, ABAS.Usuário);
 		initPnlForm();
 
 		// listeners dos componentes exclusivos da aba usuário
@@ -114,7 +115,7 @@ public class AbaUsuario extends AbaGenerica {
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		setContext(FORM_CONTEXT.Proibido);
-		popularTabelaResultado(Client.getServer().getUsers());
+		populateTableAllItems(Client.getServer().getUsers());
 		cmbStatus.popularFromBusinessEntity(Client.getServer().getStatus());
 		cmbPerfis.popularFromBusinessEntity(Client.getServer().getPerfis());
 		modelPerfilList.removeAllElements();
@@ -134,16 +135,6 @@ public class AbaUsuario extends AbaGenerica {
 		pnlForm.add(txtGerencia, "growx, wrap");
 		pnlForm.add(createProfilePanel(), "spanx, grow, h min:100%");
 		registerForm(pnlForm);
-	}
-
-	@Override
-	public Vector<String> createItemsCmbConsulta() {
-		Vector<String> out = new Vector<String>();
-		out.add(UIEnums.FILTROS_USUARIO.Nome.toString());
-		out.add(UIEnums.FILTROS_USUARIO.Login.toString());
-		out.add(UIEnums.FILTROS_USUARIO.Status.toString());
-		out.add(UIEnums.FILTROS_USUARIO.Gerência.toString());
-		return out;
 	}
 
 	@Override
@@ -175,19 +166,6 @@ public class AbaUsuario extends AbaGenerica {
 			throw new UICheckFieldException(Const.INFO_BIG_FIELD.replaceFirst("\\?", "login").replaceFirst("\\?", "4"));
 		}
 		return true;
-	}
-
-	@Override
-	public String converComboChoiceToDBAtributte(String cmbChoice) {
-		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Nome.toString()))
-			return UIEnums.FILTROS_USUARIO.Nome.getValue();
-		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Login.toString()))
-			return UIEnums.FILTROS_USUARIO.Login.getValue();
-		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Status.toString()))
-			return UIEnums.FILTROS_USUARIO.Status.getValue();
-		if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Gerência.toString()))
-			return UIEnums.FILTROS_USUARIO.Gerência.getValue();
-		return "";
 	}
 
 	@Override
@@ -272,5 +250,13 @@ public class AbaUsuario extends AbaGenerica {
 		out.add(usr.getStatus());
 		out.add(usr.getGerenciaAtual());
 		return out;
+	}
+
+	@Override
+	public void populateConsultComboBox() {
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_USUARIO.Nome.toString(), 0);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_USUARIO.Login.toString(), 1);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_USUARIO.Status.toString(), 2);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_USUARIO.Gerência.toString(), 3);
 	}
 }

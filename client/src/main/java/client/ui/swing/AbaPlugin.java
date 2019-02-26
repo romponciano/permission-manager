@@ -19,6 +19,7 @@ import org.jdatepicker.impl.UtilDateModel;
 import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
+import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
@@ -38,7 +39,7 @@ public class AbaPlugin extends AbaGenerica {
 	private JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
 	
 	public AbaPlugin(JFrame parentFrame) {
-		super(parentFrame);
+		super(parentFrame, ABAS.Plugin);
 		initPnlForm();
 	}
 	
@@ -56,15 +57,6 @@ public class AbaPlugin extends AbaGenerica {
 	}
 	
 	@Override
-	public Vector<String> createItemsCmbConsulta() {
-		Vector<String> out = new Vector<String>();
-		out.add(UIEnums.FILTROS_PLUGIN.Nome.toString());
-		out.add(UIEnums.FILTROS_PLUGIN.Descrição.toString());
-		out.add(UIEnums.FILTROS_PLUGIN.Data.toString());
-		return out;
-	}
-	
-	@Override
 	public Vector<String> gerarHeaderTabelaResultado() {
 		Vector<String> header = new Vector<String>();
 		header.add("ID");
@@ -76,7 +68,7 @@ public class AbaPlugin extends AbaGenerica {
 	
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		popularTabelaResultado(Client.getServer().getPlugins());
+		populateTableAllItems(Client.getServer().getPlugins());
 		setContext(FORM_CONTEXT.Proibido);
 	}
 
@@ -85,14 +77,6 @@ public class AbaPlugin extends AbaGenerica {
 		String campo = this.txtNomePlugin.getText();
 		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
 		return true;
-	}	
-	
-	@Override
-	public String converComboChoiceToDBAtributte(String cmbChoice) {
-		if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Nome.toString())) return UIEnums.FILTROS_PLUGIN.Nome.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Descrição.toString())) return UIEnums.FILTROS_PLUGIN.Descrição.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Data.toString())) return UIEnums.FILTROS_PLUGIN.Data.getValue();
-		return "";
 	}
 	
 	@Override
@@ -156,5 +140,12 @@ public class AbaPlugin extends AbaGenerica {
 		linha.add(plg.getDescription());
 		linha.add(plg.getDataCriacaoToString());
 		return linha;
+	}
+
+	@Override
+	public void populateConsultComboBox() {
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PLUGIN.Nome.toString(), 0);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PLUGIN.Descrição.toString(), 1);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PLUGIN.Data.toString(), 2);
 	}
 }

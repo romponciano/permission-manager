@@ -22,6 +22,7 @@ import org.jdatepicker.impl.UtilDateModel;
 import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
+import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
@@ -44,7 +45,7 @@ public class AbaPerfil extends AbaGenerica {
 	private JScrollPane tblFuncsScroll;
 	
 	public AbaPerfil(JFrame parentFrame) {
-		super(parentFrame);
+		super(parentFrame, ABAS.Perfil);
 		initPnlForm();
 	}
 	
@@ -136,15 +137,6 @@ public class AbaPerfil extends AbaGenerica {
 	}
 	
 	@Override
-	public Vector<String> createItemsCmbConsulta() {
-		Vector<String> out = new Vector<String>();
-		out.add(UIEnums.FILTROS_PERFIL.Nome.toString());
-		out.add(UIEnums.FILTROS_PERFIL.Descrição.toString());
-		out.add(UIEnums.FILTROS_PERFIL.Data.toString());
-		return out;
-	}
-	
-	@Override
 	public Vector<String> gerarHeaderTabelaResultado() {
 		Vector<String> header = new Vector<String>();
 		header.add("ID");
@@ -156,7 +148,7 @@ public class AbaPerfil extends AbaGenerica {
 	
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		popularTabelaResultado(Client.getServer().getPerfis());
+		populateTableAllItems(Client.getServer().getPerfis());
 		atualizarCacheTodasFuncBanco();
 		setContext(FORM_CONTEXT.Proibido);
 	}
@@ -168,14 +160,6 @@ public class AbaPerfil extends AbaGenerica {
 		return true;
 	}
 	
-	@Override
-	public String converComboChoiceToDBAtributte(String cmbChoice) {
-		if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Nome.toString())) return UIEnums.FILTROS_PERFIL.Nome.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Descrição.toString())) return UIEnums.FILTROS_PERFIL.Descrição.getValue();
-		if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Data.toString())) return UIEnums.FILTROS_PERFIL.Data.getValue();
-		return "";
-	}
-
 	@Override
 	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo) throws RemoteException, ServerServiceException, NotBoundException {
 		return Client.getServer().searchPerfis(atributo, termo);
@@ -242,5 +226,12 @@ public class AbaPerfil extends AbaGenerica {
 		linha.add(perf.getDescription());
 		linha.add(perf.getDataCriacaoToString());
 		return linha;
+	}
+
+	@Override
+	public void populateConsultComboBox() {
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PERFIL.Nome.toString(), 0);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PERFIL.Descrição.toString(), 1);
+		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PERFIL.Data.toString(), 2);
 	}
 }

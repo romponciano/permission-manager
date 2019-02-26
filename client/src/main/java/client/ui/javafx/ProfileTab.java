@@ -2,28 +2,31 @@ package client.ui.javafx;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 
 import client.Client;
 import client.exceptions.UICheckFieldException;
+import client.ui.UIEnums;
 import client.ui.UIEnums.ABAS;
-import client.ui.UIEnums.FILTROS_PERFIL;
+import common.Const;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
 import common.model.Functionality;
+import common.model.Perfil;
 
 public class ProfileTab extends GenericTab {
 
@@ -32,29 +35,25 @@ public class ProfileTab extends GenericTab {
 	private TextField txtName = new TextField();
 	private TextField txtDescription = new TextField();
 	private DatePicker dpCreationDate = new DatePicker();
-	private TableView<Functionality> funcsTable = new TableView<Functionality>();
+	private TableView<TableModelPermission> tablePermission = new TableView<TableModelPermission>();
 	
 	public ProfileTab() {
 		super();
 		this.setText(ABAS.Perfil.toString());
-		populateFormPane();
+		initPnlForm();
 		createTableAllItemsHeader();
-		createTableFuncsHeader();
+		createTablePermissionHeader();
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void createTableFuncsHeader() {
-		TableColumn select = new TableColumn("Permission");
-        select.setMinWidth(200);
-        select.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Functionality, CheckBox>, ObservableValue<CheckBox>>() {
-            @Override
-            public ObservableValue<CheckBox> call(
-                TableColumn.CellDataFeatures<Functionality, CheckBox> arg0) {
-        		Functionality func = arg0.getValue();
-        		CheckBox checkBox = new CheckBox();
-                return new SimpleObjectProperty<CheckBox>(checkBox);		
-            }
-        });
+	private void createTablePermissionHeader() {
+		TableColumn permissionColumn = new TableColumn("Permission");
+		permissionColumn.setCellValueFactory(new PropertyValueFactory<>("checked"));
+		permissionColumn.setCellFactory(new Callback<TableColumn<TableModelPermission, Boolean>, TableCell<TableModelPermission, Boolean>>() {
+	        public TableCell<TableModelPermission, Boolean> call(TableColumn<TableModelPermission, Boolean> p) {
+	            return new CheckBoxTableCell<TableModelPermission, Boolean>();
+	        }
+	    });
         TableColumn pluginColumn = new TableColumn<>("Plugin");
 		pluginColumn.setCellValueFactory(new PropertyValueFactory<>("plugin"));
 		TableColumn nameColumn = new TableColumn<>("Name");
@@ -63,10 +62,11 @@ public class ProfileTab extends GenericTab {
 		descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
 		TableColumn creationDateColumn = new TableColumn<>("Creation Date");
 		creationDateColumn.setCellValueFactory(new PropertyValueFactory<>("dataCriacao"));
-		funcsTable.getColumns().addAll(pluginColumn, nameColumn, descriptionColumn, creationDateColumn, select);
+		tablePermission.getColumns().addAll(pluginColumn, nameColumn, descriptionColumn, creationDateColumn, permissionColumn);
         
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void createTableAllItemsHeader() {
 		TableColumn nameColumn = new TableColumn<>("Name");
@@ -80,81 +80,96 @@ public class ProfileTab extends GenericTab {
 
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		getTableAllItems().getItems().clear();
-		getTableAllItems().getItems().addAll(FXCollections.observableArrayList(Client.getServer().getPerfis()));
+		populateTableAllItems(Client.getServer().getPerfis());
 		atualizarCacheTodasFuncBanco();
-		funcsTable.getItems().clear();
-		funcsTable.getItems().addAll(FXCollections.observableArrayList(getCacheTodasFuncBanco()));
+		tablePermission.getItems().clear();
+		List<TableModelPermission> perms = new ArrayList<TableModelPermission>();
+		for(Functionality func : getCacheTodasFuncBanco()) {
+			perms.add(new TableModelPermission(func.getId(), func.getName(), func.getDescription(), func.getDataCriacao(), func.getPlugin()));
+		}
+		tablePermission.getItems().addAll(FXCollections.observableArrayList(perms));
 	}
 
 	@Override
-	protected List<String> createSearchOptions() {
-		List<String> out = new ArrayList<String>();
-		out.add(FILTROS_PERFIL.Nome.toString());
-		out.add(FILTROS_PERFIL.Descrição.toString());
-		out.add(FILTROS_PERFIL.Data.toString());
-		return out;
-	}
-
-	@Override
-	protected void populateFormPane() {
+	public void initPnlForm() {
 		getFormPane().add(new Label("Name: "));
 		getFormPane().add(txtName, "growx, wrap");
 		getFormPane().add(new Label("Description: "));
 		getFormPane().add(txtDescription, "growx, wrap");
 		getFormPane().add(new Label("Creation Date: "));
+		dpCreationDate.setDisable(true);
 		getFormPane().add(dpCreationDate, "growx, wrap");
-		getFormPane().add(funcsTable, "grow, spanx");
+		getFormPane().add(tablePermission, "grow, spanx");
 	}
 
 	@Override
 	public BusinessEntity createObjToBeSaved() {
-		// TODO Auto-generated method stub
-		return null;
+		String name = txtName.getText();
+		String desc = txtDescription.getText();
+		Date creationDate = new Date();
+		Perfil perfil = new Perfil(null, name, desc, creationDate);
+		// TODO: getPermissions
+		return perfil;
 	}
 
 	@Override
-	public void setContextoEditar(int selectedRowToEdit) {
-		// TODO Auto-generated method stub
-		
+	public void populateConsultComboBox() {
+		this.getCmbConsult().getItems().add(UIEnums.FILTROS_PERFIL.Nome.toString());
+		this.getCmbConsult().getItems().add(UIEnums.FILTROS_PERFIL.Descrição.toString());
+		this.getCmbConsult().getItems().add(UIEnums.FILTROS_PERFIL.Data.toString());
+	}
+
+	@Override
+	public void fillFormToEdit(int selectedRow) throws RemoteException, ServerServiceException, NotBoundException {
+		Perfil perfil = (Perfil)getTableAllItems().getSelectionModel().getSelectedItem();
+		txtName.setText(perfil.getName());
+		txtDescription.setText(perfil.getDescription());
+		dpCreationDate.setValue(convertDateToLocalDate(perfil.getDataCriacao()));
+		// TODO: get permissions
+	}
+
+	@Override
+	public void clearForm() {
+		txtName.setText("");
+		txtDescription.setText("");
+		dpCreationDate.setValue(LocalDate.now());
+		// TODO: uncheck all 
+	}
+
+	@Override
+	public void setEnabledForm(boolean b) {
+		txtName.setDisable(!b);
+		txtDescription.setDisable(!b);
+		tablePermission.setDisable(!b);
 	}
 
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
-		// TODO Auto-generated method stub
-		return false;
+		String value = txtName.getText();
+		if(value == null || value.isEmpty() || value.equals("")) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "nome"));
+		return true;
 	}
 
 	@Override
 	public List<? extends BusinessEntity> realizarBusca(String atributo, String termo)
 			throws RemoteException, ServerServiceException, NotBoundException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void popularTabelaResultado(List<? extends BusinessEntity> resultadoConsulta) {
-		// TODO Auto-generated method stub
-		
+		return Client.getServer().getPerfis();
 	}
 
 	@Override
 	public void realizarDelete(Long id) throws RemoteException, ServerServiceException, NotBoundException {
-		// TODO Auto-generated method stub
-		
+		Client.getServer().deletePerfil(id);
 	}
 
 	@Override
 	public void realizarCreate(BusinessEntity objToSave)
 			throws RemoteException, ServerServiceException, NotBoundException {
-		// TODO Auto-generated method stub
-		
+		Client.getServer().createPerfil((Perfil)objToSave);
 	}
 
 	@Override
 	public void realizarUpdate(BusinessEntity objToSave)
 			throws RemoteException, ServerServiceException, NotBoundException {
-		// TODO Auto-generated method stub
-		
+		Client.getServer().updatePerfil((Perfil)objToSave);
 	}
 }
