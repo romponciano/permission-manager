@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -36,19 +35,16 @@ public class FXGUI extends Application implements Serializable {
 		// selecionando uma tabela qualquer diferente da tabela inicial
 		tabPane.getSelectionModel().select(pluginTab);
 		
-		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
-			@Override
-			public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {
-				try {
-					if(newValue.equals(userTab)) userTab.loadData();
-					else if(newValue.equals(pluginTab)) pluginTab.loadData(); 
-					else if(newValue.equals(funcTab)) funcTab.loadData();
-					else if(newValue.equals(profileTab)) profileTab.loadData();
-				} catch (RemoteException | ServerServiceException | NotBoundException e) {
-					userTab.dealWithError(e);
-				}
+		tabPane.getSelectionModel().selectedItemProperty().addListener((ChangeListener<Tab>) (observable, oldValue, newValue) -> {
+			try {
+				if(newValue.equals(userTab)) userTab.loadData();
+				else if(newValue.equals(pluginTab)) pluginTab.loadData(); 
+				else if(newValue.equals(funcTab)) funcTab.loadData();
+				else if(newValue.equals(profileTab)) profileTab.loadData();
+			} catch (RemoteException | ServerServiceException | NotBoundException e) {
+				userTab.dealWithError(e);
 			}
-	    });
+		});
 		
 		// para poder selecionar a tabela inicial novamente e ativar o listener de carregamento
 		tabPane.getSelectionModel().select(userTab);

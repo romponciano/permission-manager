@@ -42,7 +42,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	private ComboBox<String> cmbConsult = new ComboBox<String>();
 	private TextField txtSearchString = new TextField();
 	private Button btnSearch = new Button("Search");
-	private MigPane formPane = new MigPane("", "[al right][grow]", "[grow]");
+	private MigPane formPane = new MigPane("", "[al right][grow]", "");
 	private Button btnRemove = new Button("Remove");
 	private Button btnCancel = new Button("Cancel");
 	private Button btnSave = new Button("Save");
@@ -52,9 +52,9 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 
 	public GenericTab() {
 		MigPane mainTabPane = new MigPane("", "[grow 70][grow 30]", "[][grow][]");
-		mainTabPane.add(createSearchPane(), "pushy, wrap");
+		mainTabPane.add(createSearchPane(), "wrap");
 		mainTabPane.add(tableAllItems, "grow, spany");
-		mainTabPane.add(formPane, "top, grow, wrap");
+		mainTabPane.add(formPane, "top, grow, wrap, pushy");
 		mainTabPane.add(createControlPane(), "skip 1, growx");
 		this.setContent(mainTabPane);
 		this.setClosable(false);
