@@ -23,6 +23,10 @@ public class Client {
 
 	public static void main(String[] args) {
 		try {
+			/**
+			 * Escolha qual interface deseja utilizar comentand ou descomentando
+			 * as duas linhas a seguir. 
+			 */
 			//initSwingGUI();
 			initFXGUI();
 		} catch (Exception e) {
