@@ -241,7 +241,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_UPDATE.replace("?1", "usuário"));
 		} catch (DBCreateException | DBDeleteException e) {
 			logarException(TIPOS_LOG.ERRO, e);
-			throw new ServerServiceException(Const.ERROR_DB_UPDATE.replace("?", "user_profile"));
+			throw new ServerServiceException(Const.ERROR_DB_UPDATE.replace("?1", "user_profile"));
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);
@@ -298,7 +298,7 @@ public class Server implements ServerInterface {
 			throw new ServerServiceException(Const.ERROR_DB_UPDATE.replace("?1", "perfil"));
 		} catch (DBCreateException | DBDeleteException e) {
 			logarException(TIPOS_LOG.ERRO, e);
-			throw new ServerServiceException(Const.ERROR_DB_UPDATE.replace("?", "permissão"));
+			throw new ServerServiceException(Const.ERROR_DB_UPDATE.replace("?1", "permissão"));
 		} catch (DBConnectException e) {
 			logarException(TIPOS_LOG.ERRO, e);
 			throw new ServerServiceException(Const.ERROR_DB_CONNECT);

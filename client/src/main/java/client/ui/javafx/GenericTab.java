@@ -124,19 +124,27 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 
 	@Override
 	public void showInfoMessage(String message) {
-		Alert alert = new Alert(AlertType.INFORMATION, message);
+		Alert alert = new Alert(AlertType.WARNING);
+		alert.setTitle("Information");
+		alert.setHeaderText(null);
+		alert.setContentText(message);
 		alert.showAndWait();
 	}
 
 	@Override
 	public void showErrorMessage(String message) {
 		Alert alert = new Alert(AlertType.ERROR, message);
+		alert.setTitle("Error");
+		alert.setHeaderText(null);
+		alert.setContentText(message);
 		alert.showAndWait();
 	}
 
 	@Override
 	public boolean askConfirmation(String msg) {
 		Alert alert = new Alert(AlertType.CONFIRMATION, msg, ButtonType.NO, ButtonType.YES);
+		alert.setTitle("Confirmation");
+		alert.setHeaderText(null);
 		Optional<ButtonType> option = alert.showAndWait();
 		if (option.get().equals(ButtonType.OK))
 			return true;

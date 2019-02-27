@@ -8,6 +8,7 @@ import java.util.List;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
+import common.Const;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
 
@@ -328,11 +329,11 @@ public interface GenericUIFunctions {
 		if (ex instanceof UICheckFieldException)
 			showInfoMessage(((UICheckFieldException) ex).getMessage());
 		else if (ex instanceof ServerServiceException)
-			showErrorMessage(((ServerServiceException) ex).getMessage());
+			showErrorMessage(Const.ERROR_DB_ACCESS);
 		else if (ex instanceof RemoteException)
-			showErrorMessage(((RemoteException) ex).getMessage());
+			showErrorMessage(Const.ERROR_REMOTE_EXCEPT);
 		else if (ex instanceof NotBoundException)
-			showErrorMessage(((NotBoundException) ex).getMessage());
+			showErrorMessage(Const.ERROR_NOTBOUND_EXCEPT);
 	}
 
 	/**

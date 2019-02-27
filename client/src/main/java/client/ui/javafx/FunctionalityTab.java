@@ -120,10 +120,10 @@ public class FunctionalityTab extends GenericTab {
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		int value = cmbPlugin.getSelectionModel().getSelectedIndex();
 		if(value < 0) 
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "plugin"));
 		String aux = txtName.getText(); 
 		if(aux == null || aux.isEmpty() || aux.equals("")) 
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "nome"));
 		return true;
 	}
 

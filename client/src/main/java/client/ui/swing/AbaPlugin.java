@@ -75,7 +75,7 @@ public class AbaPlugin extends AbaGenerica {
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String campo = this.txtNomePlugin.getText();
-		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "nome"));
 		return true;
 	}
 	

@@ -91,8 +91,8 @@ public class AbaFuncionalidade extends AbaGenerica {
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String campo = this.txtNomeFunc.getText();
-		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
-		if(this.cmbPlugin.getSelectedItem() == null) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "plugin"));
+		if(campo == null || campo.length() <= 0) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "nome"));
+		if(this.cmbPlugin.getSelectedItem() == null) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "plugin"));
 		return true;
 	}	
 	

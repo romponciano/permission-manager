@@ -146,8 +146,8 @@ public class UserTab extends GenericTab {
 	@Override
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String aux = txtLogin.getText();
-		if(aux == null || aux.isEmpty() || aux.equals("")) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "login"));
-		if(aux.length() > 4) throw new UICheckFieldException(Const.INFO_BIG_FIELD.replace("?", "login"));
+		if(aux == null || aux.isEmpty() || aux.equals("")) throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "login"));
+		if(aux.length() > 4) throw new UICheckFieldException(Const.INFO_BIG_FIELD.replace("?1", "login").replace("?2", "4"));
 		return true;
 	}
 

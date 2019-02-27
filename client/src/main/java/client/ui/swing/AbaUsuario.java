@@ -152,18 +152,18 @@ public class AbaUsuario extends AbaGenerica {
 	public boolean checkFieldsOnCreate() throws UICheckFieldException {
 		String campo;
 		if (this.cmbStatus.getSelectedItem() == null) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "status"));
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "status"));
 		}
 		campo = this.txtNomeUsuario.getText();
 		if (campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "nome"));
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "nome"));
 		}
 		campo = this.txtLogin.getText();
 		if (campo == null || campo.length() <= 0) {
-			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?", "login"));
+			throw new UICheckFieldException(Const.INFO_EMPTY_FIELD.replace("?1", "login"));
 		}
 		if (campo.length() > 4) {
-			throw new UICheckFieldException(Const.INFO_BIG_FIELD.replaceFirst("\\?", "login").replaceFirst("\\?", "4"));
+			throw new UICheckFieldException(Const.INFO_BIG_FIELD.replace("?1", "login").replace("?2", "4"));
 		}
 		return true;
 	}

@@ -20,20 +20,19 @@ public final class Const implements Serializable {
     // formato de data para models e DB
     public static final SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     
-    // Auto messages
+    // Mensagens para alerts
     public static final String ERROR_REMOTE_EXCEPT = "Erro ao tentar realizar comunicação com o servidor";
     public static final String ERROR_DB_CONNECT = "Erro ao tentar conectar com o banco de dados.";
-    public static final String ERROR_DB_CONSULT = "Erro ao tentar consultar ?1 no banco de dados.";
+    public static final String ERROR_DB_CONSULT = "Erro ao tentar consultar no banco de dados.";
     public static final String ERROR_NOTBOUND_EXCEPT = "Erro ao renderizar interface.";
 	public static final String ERROR_DB_CREATE = "Erro ao tentar realizar o cadastro de ?1.";
 	public static final String ERROR_DB_UPDATE = "Erro ao tentar atualizar ?1.";
 	public static final String ERROR_DB_DELETE = "Erro ao tentar remover ?1.";
-
+	public static final String ERROR_DB_ACCESS = "Erro ao tentar acessar o banco de dados.";
 	public static final String INFO_DATA_NOT_FOUND = "Nenhum dado encontrado.";
 	public static final String INFO_EMPTY_FIELD = "O campo ?1 não pode ser vazio.";
 	public static final String INFO_BIG_FIELD = "O campo ?1 não pode ter mais de ?2 caracters";
-
-	public static final String WARN_CONFIRM_DELETE = "Você tem certeza que deseja excluir ?1 ?";
+	public static final String WARN_CONFIRM_DELETE = "Você tem certeza que deseja excluir?";
 	
 	/**
 	   The caller references the constants using <tt>Consts.EMPTY_STRING</tt>, 
