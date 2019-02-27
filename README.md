@@ -1,8 +1,10 @@
 # Gerenciador de permissões para Plug-Ins
-1. About
-2. How to run
-3. Troubleshooting
-4. License
+A Java project demonstrating the use of RMI, Client / Server architecture, multi-module management with maven and CRUD with Oracle database. Two interfaces developed for demonstration of code sharing: one with Java Swing and one with JavaFX
+
+1. [About](#1-About)
+2. [How to run](#2-How-to-run)
+3. [Troubleshooting](#3-Troubleshooting)
+4. [License](#4-License)
 
 ## 1. About
 
