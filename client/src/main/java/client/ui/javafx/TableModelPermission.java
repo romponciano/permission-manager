@@ -20,10 +20,28 @@ public class TableModelPermission extends Functionality {
 		this.checked = new SimpleBooleanProperty(false);
 	}
 	
+	public TableModelPermission(Functionality func, Boolean value) {
+		super(func.getId(), func.getName(), func.getDescription(), func.getDataCriacao());
+		this.setPlugin(func.getPlugin());
+		this.checked = new SimpleBooleanProperty(value);
+	}
+	
+	
 	public BooleanProperty getChecked() {
-		return checked;
-	}
-	public void setChecked(BooleanProperty checked) {
-		this.checked = checked;
-	}
+        return checked;
+    }
+	
+	/**
+	 *  <b>Não</b> editar pois este método, pois ele é usado pelo 
+	 *  cellfactory para construir a coluna de checkbox e setar 
+	 *  seus valores corretamente.
+	 * @return
+	 */
+	public BooleanProperty checkedProperty() {
+        return checked;
+    }
+
+    public void setChecked(boolean active) {
+        checked.set(active);
+    }
 }

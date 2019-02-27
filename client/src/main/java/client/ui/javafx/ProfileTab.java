@@ -7,17 +7,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.util.Callback;
 
 import client.Client;
 import client.exceptions.UICheckFieldException;
@@ -48,15 +45,11 @@ public class ProfileTab extends GenericTab {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void createTablePermissionHeader() {
-		TableColumn permissionColumn = new TableColumn("Permission");
-		permissionColumn.setCellValueFactory(new PropertyValueFactory<>("checked"));
-		permissionColumn.setCellFactory(new Callback<TableColumn<TableModelPermission, Boolean>, TableCell<TableModelPermission, Boolean>>() {
-	        public TableCell<TableModelPermission, Boolean> call(TableColumn<TableModelPermission, Boolean> p) {
-	            return new CheckBoxTableCell<TableModelPermission, Boolean>();
-	        }
-	    });
+		TableColumn permissionColumn = new TableColumn<>("Permission");
+		permissionColumn.setCellValueFactory(new PropertyValueFactory<TableModelPermission, Boolean>("checked"));
+        permissionColumn.setCellFactory(CheckBoxTableCell.forTableColumn(permissionColumn));
+		permissionColumn.setEditable(true);
         TableColumn pluginColumn = new TableColumn<>("Plugin");
-        pluginColumn.setEditable(true);
 		pluginColumn.setCellValueFactory(new PropertyValueFactory<>("plugin"));
 		TableColumn nameColumn = new TableColumn<>("Name");
 		nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -118,7 +111,7 @@ public class ProfileTab extends GenericTab {
 	private List<Functionality> getPermissions() {
 		List<Functionality> out = new ArrayList<Functionality>();
 		tablePermission.getItems().forEach(perm -> {
-			if(perm.getChecked().getValue()) { 
+			if(perm.getChecked().get()) { 
 				Functionality func = new Functionality(perm.getId(), perm.getName(), perm.getDescription(), perm.getDataCriacao());
 				func.setPlugin(perm.getPlugin());
 				out.add(func);
@@ -141,20 +134,22 @@ public class ProfileTab extends GenericTab {
 		txtDescription.setText(perfil.getDescription());
 		dpCreationDate.setValue(convertDateToLocalDate(perfil.getDataCriacao()));
 		List<Functionality> permissions = Client.getServer().searchPermissionsByPerfilId(perfil.getId());
-		checkPermissions(permissions);
+		setPermissions(permissions);
 	}
 
-	private void checkPermissions(List<Functionality> permissions) {
-		for(Functionality func : permissions) {
-			int pos = 0;
-			for(TableModelPermission perm : tablePermission.getItems()) {
-				if(perm.getId().equals(func.getId())) {
-					tablePermission.getItems().get(pos).setChecked(new SimpleBooleanProperty(true));
-					break;
-				};
-				pos++;
-			};
-		};
+	private void setPermissions(List<Functionality> permissoesConcedidas) {
+		ArrayList<TableModelPermission> out = new ArrayList<TableModelPermission>();
+		getCacheTodasFuncBanco().forEach(func -> {
+			TableModelPermission perm = new TableModelPermission(func, false);
+			permissoesConcedidas.forEach(concedida -> {
+				if(concedida.getId().equals(func.getId())) {
+					perm.setChecked(true);
+				}
+			});
+			out.add(perm);
+		});
+		tablePermission.getItems().clear();
+		tablePermission.getItems().addAll(out);
 	}
 
 	@Override
@@ -163,7 +158,7 @@ public class ProfileTab extends GenericTab {
 		txtDescription.setText("");
 		dpCreationDate.setValue(LocalDate.now());
 		tablePermission.getItems().forEach(perm -> {
-			perm.setChecked(new SimpleBooleanProperty(false));
+			perm.setChecked(false);
 		});
 	}
 
