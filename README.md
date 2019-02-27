@@ -1,47 +1,48 @@
 # Gerenciador de permissões para Plug-Ins
 1. About
 2. How to run
-3. License
+3. Troubleshooting
+4. License
 
 ## 1. About
 
-Seu trabalho será desenvolver uma aplicação em Java com interface gráfica Swing, baseada em uma arquitetura "cliente/servidor" usando RMI. Essa aplicação deve ser capaz de cadastrar, editar e consultar os dados dos plug-Ins, suas funcionalidades e permissões dos usuários. Além disso, é desejável a criação de um conjunto mínimo de testes unitários.
+Your work is to develop a Java application with Swing and JavaFX graphical interface, based on a "client / server" architecture using RMI. This application must be able to create, edit and consult the data of the plug-ins, their features and permissions of the users. In addition, it is desirable to create a minimum set of unit tests.
 
-1) Usar Oracle XE (http://www.oracle.com/) como SGBD do seu projeto;
+1) Use Oracle XE (http://www.oracle.com/) as SGBD;
 
-2) Modelar uma solução de banco para armazenar os dados dos usuários, plug-ins, funcionalidades e permissões. 
+2) Model a database solution to store user data, plug-ins, functionalities, and permissions.
 
-Inserir através de um script ".sql" os dados da entidade "Usuário":
+Insert a ".sql" script into the "User" entity data:
 2.1) Login (4 caracteres);
-2.2) Nome completo;
-2.3) Status (ativo ou inativo);
-2.4) Gerência Atual (não é necessário criar uma tabela de dicionário para essa informação);
+2.2) Name;
+2.3) Status (active or inative);
+2.4) Current Manager (it is not necessary to create a dictionary table for this information);
 
-3) Com base no projeto "exam.zip" (em anexo), desenvolver o módulo de gerenciamento de permissões para atribuir e remover funcionalidades de plug-ins aos usuários cadastrados. 
+3) Based on the "exam.zip" project (link), develop the Permissions Management Module (PMM) to assign and remove plug-in functionality to registered users.
 
-Obs.: criar o diretório "scripts" no seu projeto e adicionar os scripts de criação do modelo físico de banco de dados e o script de cadastro dos usuários.
+Obs.: create the "scripts" directory in your project, and add the database physical template creation scripts and the user registration script.
 
-Esse módulo deve possuir os seguintes recursos:
+This PMM should have the following features:
 
-3.1) Consulta, cadastro, edição e exclusão de plug-ins. A entidade Plug-In tem os seguintes atributos:
-3.1.1) Nome;
-3.1.2) Descrição;
-3.1.3) Data de criação;
+3.1) Query, create, edit and delete plug-ins. The Plug-In entity has the following attributes:
+3.1.1) Name;
+3.1.2) Description;
+3.1.3) Creation date;
 
-3.2) Consulta, cadastro, edição e exclusão de funcionalidades dos plug-ins. A entidade Funcionalidade tem os seguintes atributos:
-3.2.1) Nome;
-3.2.2) Descrição;
-3.2.3) Data de criação;
+3.2) Query, create, edit and delete plug-in functionality. The Functionality feature has the following attributes:
+3.2.1) Name;
+3.2.2) Description;
+3.2.3) Creation date;
 
-3.3) Consulta de usuários e suas informações. Deve ser possível filtrar e/ou ordenar usuários por:
+3.3) Query, create, edit and delete users. It should be possible to filter and/or sort users by:
 3.3.1) Login;
-3.3.2) Nome completo;
+3.3.2) Name;
 3.3.3) Status;
-3.3.4) Gerência Atual;
+3.3.4) Current manager;
 3.3.5) Plug-Ins;
-3.3.6) Funcionalidades;
+3.3.6) Functionalities;
 
-3.4) Atribuir e remover funcionalidades de plug-ins aos usuários cadastrados.
+3.4) Assign and remove plug-in functionalities to registered users.
 
 ## 2. How to run
 
@@ -74,11 +75,18 @@ public static final String PASS = "root"; to the password of your user
 ```
 Save it.
 
+2.1 (Optional) Choose the interface you want to start: open client/src/main/java/client/Client.java, then comment/uncomment your choice.
+```
+initSwingGUI();
+initFXGUI();
+```
+Save it.
+
 3. Inside root folder, execute 
 ```
 mvn clean package install
 ```
-And you should get this output in terminal:
+And you should see:
 ```
 Reactor Summary:
 [INFO] 
@@ -105,3 +113,24 @@ java -jar client/target/client.....-with-dependencies.jar
 ```
 
 You should see an interface and done! 
+
+## 3. Troubleshooting
+
+### Server build failure after mvn clean package install
+```
+[INFO] root ............................................... SUCCESS 
+[INFO] common ............................................. SUCCESS 
+[INFO] server ............................................. FAILURE 
+[INFO] client ............................................. SKIPPED
+[ERROR] Failed to execute goal on project server: Could not resolve dependencies for project tecgraf-exam:server:jar:0.0.1-SNAPSHOT: Could not find artifact com.oracle:ojdbc6:jar:11.2.0.3 in central (https://repo.maven.apache.org/maven2)
+```
+If you see this error, it means that maven had a problem downloading the jar from ojdbc6. To resolve it, execute the following command:
+```
+mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0.3 -Dpackaging=jar -Dfile=server/lib/ojdbc6-11.2.0.3.jar -DgeneratePom=true
+```
+It will install the dependency based on a jar already inside the project. 
+Now go back to step 3, inside How to Run, and try again. :)
+
+## 4. License
+
+The code is under the [Common Creative License BY-NonCommercial](https://creativecommons.org/licenses/by-nc/4.0/legalcode)
