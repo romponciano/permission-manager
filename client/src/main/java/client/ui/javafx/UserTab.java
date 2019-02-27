@@ -59,29 +59,6 @@ public class UserTab extends GenericTab {
 		});
 	}
 	
-	private EventHandler<ActionEvent> createBtnRemoveProfileClickEvent() {
-		return new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				lstProfileList.getItems().remove(lstProfileList.getSelectionModel().getSelectedItem());
-				btnRemoveProfile.setDisable(true);
-			}
-		};
-	}
-
-	private EventHandler<ActionEvent> createBtnAddProfileClickEvent() {
-		return new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				Perfil perfSelecionado = cmbProfileList.getSelectionModel().getSelectedItem();
-				if(!lstProfileList.getItems().contains(perfSelecionado)) {
-					lstProfileList.getItems().add(perfSelecionado);
-				}
-				btnRemoveProfile.setDisable(true);
-			}
-		};
-	}
-
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void createTableAllItemsHeader() {
@@ -118,15 +95,6 @@ public class UserTab extends GenericTab {
 		getFormPane().add(createProfileListForm(), "grow, spanx");
 	}
 
-	private MigPane createProfileListForm() {
-		MigPane profileListPane = new MigPane("", "[][][]", "[][grow]");
-		profileListPane.add(cmbProfileList, "pushx");
-		profileListPane.add(btnAddProfile);
-		profileListPane.add(btnRemoveProfile, "wrap");
-		profileListPane.add(lstProfileList, "grow, spanx");
-		return profileListPane;
-	}
-
 	@Override
 	public BusinessEntity createObjToBeSaved() {
 		String name = txtName.getText();
@@ -136,12 +104,6 @@ public class UserTab extends GenericTab {
 		user.setGerenciaAtual(txtGerencia.getText());
 		user.setPerfis(getProfilesFromList());
 		return user;
-	}
-
-	private List<Perfil> getProfilesFromList() {
-		List<Perfil> perfs = new ArrayList<Perfil>();
-		lstProfileList.getItems().forEach(perfil -> { perfs.add(perfil); });
-		return perfs;
 	}
 
 	@Override
@@ -160,10 +122,6 @@ public class UserTab extends GenericTab {
 		txtGerencia.setText(user.getGerenciaAtual());
 		cmbStatus.getSelectionModel().select(user.getStatus());
 		List<Perfil> perfs = Client.getServer().searchUserProfilesByUserId(user.getId());
-		populateLstProfile(perfs);
-	}
-
-	private void populateLstProfile(List<Perfil> perfs) {
 		lstProfileList.getItems().clear();
 		lstProfileList.getItems().addAll(perfs);
 	}
@@ -214,5 +172,62 @@ public class UserTab extends GenericTab {
 	public void realizarUpdate(BusinessEntity objToSave)
 			throws RemoteException, ServerServiceException, NotBoundException {
 		Client.getServer().updateUser((User)objToSave);
+	}
+	
+	/**
+	 * Método para criar ação do click no botão de remover perfil 
+	 * da lista de perfis. 
+	 */
+	private EventHandler<ActionEvent> createBtnRemoveProfileClickEvent() {
+		return new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				lstProfileList.getItems().remove(lstProfileList.getSelectionModel().getSelectedItem());
+				btnRemoveProfile.setDisable(true);
+			}
+		};
+	}
+
+	/**
+	 * Método para criar ação do click no botão de adicionar perfil 
+	 * na lista de perfis.
+	 */
+	private EventHandler<ActionEvent> createBtnAddProfileClickEvent() {
+		return new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				Perfil perfSelecionado = cmbProfileList.getSelectionModel().getSelectedItem();
+				// só add perfil na lista se este ainda não estiver adicionado
+				if(!lstProfileList.getItems().contains(perfSelecionado)) {
+					lstProfileList.getItems().add(perfSelecionado);
+				}
+				btnRemoveProfile.setDisable(true);
+			}
+		};
+	}
+
+	/** 
+	 * Método responsável por criar o layout da lista de 
+	 * perfis do usuário.
+	 */
+	private MigPane createProfileListForm() {
+		MigPane profileListPane = new MigPane("", "[][][]", "[][grow]");
+		profileListPane.add(cmbProfileList, "pushx");
+		profileListPane.add(btnAddProfile);
+		profileListPane.add(btnRemoveProfile, "wrap");
+		profileListPane.add(lstProfileList, "grow, spanx");
+		return profileListPane;
+	}
+
+	/**
+	 * Método responsável por pegar os perfis presentes
+	 * na lista de perfis
+	 * @return - lista com os perfis existentes na lista
+	 * de perfis
+	 */
+	private List<Perfil> getProfilesFromList() {
+		List<Perfil> perfs = new ArrayList<Perfil>();
+		lstProfileList.getItems().forEach(perfil -> { perfs.add(perfil); });
+		return perfs;
 	}
 }

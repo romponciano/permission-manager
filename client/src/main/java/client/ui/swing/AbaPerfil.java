@@ -115,6 +115,9 @@ public class AbaPerfil extends AbaGenerica {
 		header.add("DESCRIÇÃO");
 		header.add("DATA DE CRIAÇÃO");
 		header.add("PLUGIN");
+		/*	se mudar a coluna PERMITIDO da 6ª posição,
+		 	então deve alterar também na classe 
+		 	TableWithCheckBox. */
 		header.add("PERMITIDO");
 		return header;
 	}

@@ -42,35 +42,17 @@ public class ProfileTab extends GenericTab {
 		createTableAllItemsHeader();
 		createTablePermissionHeader();
 	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void createTablePermissionHeader() {
-		TableColumn permissionColumn = new TableColumn<>("Permission");
-		permissionColumn.setCellValueFactory(new PropertyValueFactory<TableModelPermission, Boolean>("checked"));
-        permissionColumn.setCellFactory(CheckBoxTableCell.forTableColumn(permissionColumn));
-		permissionColumn.setEditable(true);
-        TableColumn pluginColumn = new TableColumn<>("Plugin");
-		pluginColumn.setCellValueFactory(new PropertyValueFactory<>("plugin"));
-		TableColumn nameColumn = new TableColumn<>("Name");
-		nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-		TableColumn descriptionColumn = new TableColumn<>("Description");
-		descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-		TableColumn creationDateColumn = new TableColumn<>("Creation Date");
-		creationDateColumn.setCellValueFactory(new PropertyValueFactory<>("dataCriacao"));
-		tablePermission.getColumns().addAll(pluginColumn, nameColumn, descriptionColumn, creationDateColumn, permissionColumn);
-        tablePermission.setEditable(true);
-	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void createTableAllItemsHeader() {
-		TableColumn nameColumn = new TableColumn<>("Name");
-		nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-		TableColumn descriptionColumn = new TableColumn<>("Description");
-		descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-		TableColumn creationDateColumn = new TableColumn<>("Creation Date");
-		creationDateColumn.setCellValueFactory(new PropertyValueFactory<>("dataCriacao"));
-		getTableAllItems().getColumns().addAll(nameColumn, descriptionColumn, creationDateColumn);
+		TableColumn nameCol = new TableColumn<>("Name");
+		nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+		TableColumn descriptionCol = new TableColumn<>("Description");
+		descriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
+		TableColumn creationDateCol = new TableColumn<>("Creation Date");
+		creationDateCol.setCellValueFactory(new PropertyValueFactory<>("dataCriacao"));
+		getTableAllItems().getColumns().addAll(nameCol, descriptionCol, creationDateCol);
 	}
 
 	@Override
@@ -108,18 +90,6 @@ public class ProfileTab extends GenericTab {
 		return perfil;
 	}
 
-	private List<Functionality> getPermissions() {
-		List<Functionality> out = new ArrayList<Functionality>();
-		tablePermission.getItems().forEach(perm -> {
-			if(perm.getChecked().get()) { 
-				Functionality func = new Functionality(perm.getId(), perm.getName(), perm.getDescription(), perm.getDataCriacao());
-				func.setPlugin(perm.getPlugin());
-				out.add(func);
-			}
-		});
-		return out;
-	}
-
 	@Override
 	public void populateConsultComboBox() {
 		this.getCmbConsult().getItems().add(UIEnums.FILTROS_PERFIL.Nome.toString());
@@ -135,21 +105,6 @@ public class ProfileTab extends GenericTab {
 		dpCreationDate.setValue(convertDateToLocalDate(perfil.getDataCriacao()));
 		List<Functionality> permissions = Client.getServer().searchPermissionsByPerfilId(perfil.getId());
 		setPermissions(permissions);
-	}
-
-	private void setPermissions(List<Functionality> permissoesConcedidas) {
-		ArrayList<TableModelPermission> out = new ArrayList<TableModelPermission>();
-		getCacheTodasFuncBanco().forEach(func -> {
-			TableModelPermission perm = new TableModelPermission(func, false);
-			permissoesConcedidas.forEach(concedida -> {
-				if(concedida.getId().equals(func.getId())) {
-					perm.setChecked(true);
-				}
-			});
-			out.add(perm);
-		});
-		tablePermission.getItems().clear();
-		tablePermission.getItems().addAll(out);
 	}
 
 	@Override
@@ -197,5 +152,65 @@ public class ProfileTab extends GenericTab {
 	public void realizarUpdate(BusinessEntity objToSave)
 			throws RemoteException, ServerServiceException, NotBoundException {
 		Client.getServer().updatePerfil((Perfil)objToSave);
+	}
+	
+	/**
+	 * Método para criar header da tabela de permissões, onde os usuários
+	 * setam quais permissões um perfil terá.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void createTablePermissionHeader() {
+		TableColumn permissionCol = new TableColumn<>("Permission");
+		permissionCol.setCellValueFactory(new PropertyValueFactory<TableModelPermission, Boolean>("checked"));
+        permissionCol.setCellFactory(CheckBoxTableCell.forTableColumn(permissionCol));
+		permissionCol.setEditable(true);
+        TableColumn pluginCol = new TableColumn<>("Plugin");
+		pluginCol.setCellValueFactory(new PropertyValueFactory<>("plugin"));
+		TableColumn nameCol = new TableColumn<>("Name");
+		nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+		TableColumn descriptionCol = new TableColumn<>("Description");
+		descriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
+		TableColumn creationDateCol = new TableColumn<>("Creation Date");
+		creationDateCol.setCellValueFactory(new PropertyValueFactory<>("dataCriacao"));
+		tablePermission.getColumns().addAll(pluginCol, nameCol, descriptionCol, creationDateCol, permissionCol);
+        tablePermission.setEditable(true); // setar true para efetivar o editable da coluna permissionCol
+	}
+	
+	/**
+	 * Método para pegar as permissões que estão marcadas na
+	 * tableview tablePermission
+	 * @return - lista das funcionalidades marcadas na tabela
+	 */
+	private List<Functionality> getPermissions() {
+		List<Functionality> out = new ArrayList<Functionality>();
+		tablePermission.getItems().forEach(perm -> {
+			if(perm.getChecked().get()) { 
+				Functionality func = new Functionality(perm.getId(), perm.getName(), perm.getDescription(), perm.getDataCriacao());
+				func.setPlugin(perm.getPlugin());
+				out.add(func);
+			}
+		});
+		return out;
+	}
+	
+	/**
+	 * Método para setar permissões marcando as checkbox na 
+	 * tabela tablePermission
+	 * @param permissoesConcedidas - lista com as funcionalidades
+	 * que o perfil possui permissão
+	 */
+	private void setPermissions(List<Functionality> permissoesConcedidas) {
+		ArrayList<TableModelPermission> setted = new ArrayList<TableModelPermission>();
+		getCacheTodasFuncBanco().forEach(func -> {
+			TableModelPermission perm = new TableModelPermission(func, false);
+			permissoesConcedidas.forEach(concedida -> {
+				if(concedida.getId().equals(func.getId())) {
+					perm.setChecked(true);
+				}
+			});
+			setted.add(perm);
+		});
+		tablePermission.getItems().clear();
+		tablePermission.getItems().addAll(setted);
 	}
 }

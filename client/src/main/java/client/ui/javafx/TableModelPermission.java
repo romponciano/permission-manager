@@ -8,6 +8,14 @@ import javafx.beans.property.SimpleBooleanProperty;
 import common.model.Functionality;
 import common.model.Plugin;
 
+/**
+ * Classe usada para popular tabela de permissões que é
+ * apresentada na aba Perfil. Esta tabela é responsável por 
+ * permitir que o usuário set/unset as funcionalidades que 
+ * um perfil terá.
+ * @author romuloponciano
+ *
+ */
 public class TableModelPermission extends Functionality {
 	
 	private static final long serialVersionUID = 3596435184590585958L;

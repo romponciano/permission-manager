@@ -63,8 +63,6 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		populateConsultComboBox();
 	}
 
-	protected abstract void createTableAllItemsHeader();
-
 	@Override
 	public void initListeners() {
 		btnNew.setOnAction(createBtnNewClickEvent());
@@ -92,7 +90,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	public void setContextoProibido() {
 		this.btnCancel.setDisable(true);
 		this.btnRemove.setDisable(true);
-		this.getBtnSave().setDisable(true);
+		this.btnSave.setDisable(true);
 		this.setEnabledForm(false);
 		this.clearForm();
 	}
@@ -101,7 +99,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	public void setContextoEditar(int selectedRow) {
 		this.btnCancel.setDisable(false);
 		this.btnRemove.setDisable(false);
-		this.getBtnSave().setDisable(false);
+		this.btnSave.setDisable(false);
 		this.setEnabledForm(true);
 		try {
 			this.fillFormToEdit(selectedRow);
@@ -114,7 +112,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	public void setContextoCriar() {
 		this.btnCancel.setDisable(false);
 		this.btnRemove.setDisable(true);
-		this.getBtnSave().setDisable(false);
+		this.btnSave.setDisable(false);
 		this.setEnabledForm(true);
 		this.clearForm();
 	}
@@ -145,6 +143,17 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		return false;
 	}
 
+	/**
+	 * Método para criar header da tabela principal que mostra
+	 * todos (ou consultados) os itens do modelo pertencente
+	 * aquela aba. 
+	 */
+	protected abstract void createTableAllItemsHeader();
+	
+	/**
+	 * Método para criar EventHandler da ação ao clicar no botão 
+	 * para remover item
+	 */
 	private EventHandler<ActionEvent> createBtnRemoveClickEvent() {
 		return new EventHandler<ActionEvent>() {
 			@Override
@@ -156,10 +165,18 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		};
 	}
 
+	/**
+	 * Método para criar EventHandler da ação ao clicar no botão 
+	 * para salvar item (seja update ou criação de novo item)
+	 */
 	private EventHandler<ActionEvent> createBtnSaveClickEvent() {
 		return new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
+				/* caso o botão remover esteja desabilitado,
+				 * significa que o contexto atual é de novo
+				 * item.  
+				 */
 				if (btnRemove.isDisabled()) {
 					actionSaveNewItem();
 				} else {
@@ -169,6 +186,10 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		};
 	}
 
+	/**
+	 * Método para criar EventHandler da ação ao clicar no botão 
+	 * para cancelar edição ou criação de novo item
+	 */
 	private EventHandler<ActionEvent> createBtnCancelClickEvent() {
 		return new EventHandler<ActionEvent>() {
 			@Override
@@ -179,6 +200,12 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		};
 	}
 
+	/**
+	 * Método para criar EventHandler da ação ao clicar no botão 
+	 * para criar novo item. Este método irá apenas mudar o 
+	 * contexto dos campos para criação de items. Ele <b>não</b>
+	 * é responsável por salvar itens.
+	 */
 	private EventHandler<ActionEvent> createBtnNewClickEvent() {
 		return new EventHandler<ActionEvent>() {
 			@Override
@@ -192,21 +219,37 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		};
 	}
 
+	/**
+	 * Método para converter Date to LocalDate. É necessário
+	 * pois o controle do javafx funciona com LocalDate, enquanto
+	 * o modelo de negócios esta com campo Date.
+	 * @param date - data a ser convertida
+	 * @return - data convertida para LocalDate ou data atual
+	 * em caso de parâmetro nulo
+	 */
 	public LocalDate convertDateToLocalDate(Date date) {
 		if (date == null)
 			return LocalDate.now();
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
 	}
 	
+	/**
+	 * Método para criar painel de controle: botões de novo,
+	 * cancelar, remover e salvar item
+	 */
 	private MigPane createControlPane() {
 		MigPane controlPane = new MigPane("", "[][][][]", "");
 		controlPane.add(btnRemove, "pushx");
 		controlPane.add(btnCancel);
-		controlPane.add(getBtnSave());
+		controlPane.add(btnSave);
 		controlPane.add(btnNew);
 		return controlPane;
 	}
 
+	/**
+	 * Método para criar painel de busca através de campo
+	 * selecionado e string de busca
+	 */
 	private MigPane createSearchPane() {
 		MigPane searchPane = new MigPane("ins 0", "[grow]", "");
 		searchPane.add(new Label("Filtrar por:"));
@@ -238,6 +281,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		try {
 			cacheTodasFuncionalidadesBanco = Client.getServer().getFunctionalities();
 		} catch (RemoteException | ServerServiceException | NotBoundException e) {
+			dealWithError(e);
 		}
 	}
 
@@ -247,13 +291,5 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 
 	public void setCmbConsult(ComboBox<String> cmbConsult) {
 		this.cmbConsult = cmbConsult;
-	}
-
-	public Button getBtnSave() {
-		return btnSave;
-	}
-
-	public void setBtnSave(Button btnSave) {
-		this.btnSave = btnSave;
 	}
 }

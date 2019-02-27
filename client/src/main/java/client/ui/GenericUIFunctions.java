@@ -11,6 +11,12 @@ import client.ui.UIEnums.FORM_CONTEXT;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
 
+/**
+ * Interface criada para definir métodos que são compartilhados entre
+ * todas as UIs e abas do sistema. 
+ * @author romuloponciano
+ *
+ */
 public interface GenericUIFunctions {
 
 	/**
@@ -162,6 +168,10 @@ public interface GenericUIFunctions {
 	 */
 	public void initListeners();
 
+	/**
+	 * Método responsável por atualizar os dados e setar contexto de criação
+	 * de novo item. Este método <b>não</b> é responsável por salvar o item no banco.
+	 */
 	public default void actionNewItem() {
 		try {
 			loadData();
@@ -170,6 +180,9 @@ public interface GenericUIFunctions {
 		setContextoCriar();
 	}
 
+	/**
+	 * Método responsável pela criação de um novo item no banco. 
+	 */
 	public default void actionSaveNewItem() {
 		try {
 			if (checkFieldsOnCreate()) {
@@ -184,6 +197,9 @@ public interface GenericUIFunctions {
 		}
 	}
 
+	/**
+	 * Método responsável pela atualização de um item no banco
+	 */
 	public default void actionUpdateItem() {
 		try {
 			if (checkFieldsOnCreate()) {
@@ -201,11 +217,13 @@ public interface GenericUIFunctions {
 
 	/**
 	 * Método para checar se os campos estão válidos antes de salvar novo item
-	 * 
 	 * @throws UICheckFieldException - se algum campo não passar na validação
 	 */
 	public boolean checkFieldsOnCreate() throws UICheckFieldException;
 
+	/**
+	 * Método responsável pela ação de remover um item do banco de dados
+	 */
 	public default void actionRemoveItem() {
 		try {
 			realizarDelete(getSelectedItemId());
@@ -216,8 +234,21 @@ public interface GenericUIFunctions {
 		setContext(FORM_CONTEXT.Proibido);
 	}
 
+	/**
+	 * Método responsável por get o id de um item selecionado na 
+	 * tabela principal de cada aba
+	 * @return - id do item selecionado
+	 */
 	public abstract Long getSelectedItemId();
 
+	/**
+	 * Método responsável por executar a ação de busca de itens pelo campo
+	 * e string de buscas escolhidos e definidos, respectivamente, pelo usuário.
+	 * O método não retorna o resultado da busca, pois ele popula diretamente 
+	 * na tabela principal da aba.
+	 * @param att - atributo escolhido
+	 * @param searchString - string de busca definida 
+	 */
 	public default void actionSearchItems(String att, String searchString) {
 		try {
 			populateTableAllItems(realizarBusca(att, searchString));
@@ -227,6 +258,9 @@ public interface GenericUIFunctions {
 		setContext(FORM_CONTEXT.Proibido);
 	}
 
+	/**
+	 * Método responsável pela ação dos botões de cancelar edição e criação de item
+	 */
 	public default void actionCancel() {
 		setContext(FORM_CONTEXT.Proibido);
 	}
@@ -284,6 +318,12 @@ public interface GenericUIFunctions {
 	public void realizarUpdate(BusinessEntity objToSave)
 			throws RemoteException, ServerServiceException, NotBoundException;
 
+	/**
+	 * Método responsável por lidar com erros do sistema. Este método checa
+	 * se é um erro esperado e conhecido. Caso seja, ele irá exibir a
+	 * informação desse erro para o usuário.
+	 * @param ex - exception que ocorreu
+	 */
 	public default void dealWithError(Object ex) {
 		if (ex instanceof UICheckFieldException)
 			showInfoMessage(((UICheckFieldException) ex).getMessage());
@@ -296,15 +336,13 @@ public interface GenericUIFunctions {
 	}
 
 	/**
-	 * Método para exibir DialogBox de algum <b>erro</b>.
-	 * 
+	 * Método para exibir DialogBox de alguma <b>informação</b>.
 	 * @param msg - mensagem a ser exibida no DialogBox
 	 */
 	public abstract void showInfoMessage(String message);
 
 	/**
 	 * Método para exibir DialogBox de algum <b>erro</b>.
-	 * 
 	 * @param msg - mensagem a ser exibida no DialogBox
 	 */
 	public abstract void showErrorMessage(String message);

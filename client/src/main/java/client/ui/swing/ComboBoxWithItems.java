@@ -8,6 +8,12 @@ import javax.swing.JComboBox;
 
 import common.model.BusinessEntity;
 
+/**
+ * Classe criada como substituta para compor combox usada na interface, pois 
+ * alguns métodos precisam ser diferentes dos existentes na classe JComboBox
+ * @author romuloponciano
+ *
+ */
 public class ComboBoxWithItems extends JComboBox<BusinessEntity> implements Serializable {
 	
 	private static final long serialVersionUID = -6497993382058846123L;

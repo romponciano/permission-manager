@@ -33,6 +33,7 @@ public class FXGUI extends Application implements Serializable {
 		stage.sizeToScene();
 		stage.show();
 		
+		// selecionando uma tabela qualquer diferente da tabela inicial
 		tabPane.getSelectionModel().select(pluginTab);
 		
 		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
@@ -43,16 +44,13 @@ public class FXGUI extends Application implements Serializable {
 					else if(newValue.equals(pluginTab)) pluginTab.loadData(); 
 					else if(newValue.equals(funcTab)) funcTab.loadData();
 					else if(newValue.equals(profileTab)) profileTab.loadData();
-				} catch (RemoteException e) {
-					// TODO
-				} catch (ServerServiceException e) {
-					// TODO
-				} catch (NotBoundException e) {
-					// TODO
+				} catch (RemoteException | ServerServiceException | NotBoundException e) {
+					userTab.dealWithError(e);
 				}
 			}
 	    });
 		
+		// para poder selecionar a tabela inicial novamente e ativar o listener de carregamento
 		tabPane.getSelectionModel().select(userTab);
 	}
 }

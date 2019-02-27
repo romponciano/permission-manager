@@ -4,9 +4,17 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
- 
+
 import javax.swing.JFormattedTextField.AbstractFormatter;
  
+/**
+ * Classe criada para definir formato de data ao utilizar 
+ * a classe JDatePickerImpl. 
+ * <b>Caso queira mudar o formato da data, basta alterar 
+ * a variável datePattern</b>.
+ * @author romuloponciano
+ *
+ */
 public class DateLabelFormatter extends AbstractFormatter implements Serializable {
  
 	private static final long serialVersionUID = 4951009520890590390L;

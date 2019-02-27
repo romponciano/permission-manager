@@ -142,6 +142,7 @@ public class FunctionalityTab extends GenericTab {
 	public void realizarCreate(BusinessEntity objToSave)
 			throws RemoteException, ServerServiceException, NotBoundException {
 		Client.getServer().createFunctionality((Functionality)objToSave);
+		atualizarCacheTodasFuncBanco();
 	}
 
 	@Override
