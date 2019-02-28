@@ -22,6 +22,7 @@ import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
 import client.ui.UIEnums.ABAS;
+import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
@@ -43,7 +44,7 @@ public class UserTab extends GenericTab {
 	private ListView<Perfil> lstProfileList = new ListView<Perfil>();
 	
 	public UserTab() {
-		super();
+		super(ABAS.Usuário);
 		this.setText(ABAS.Usuário.toString());
 		initPnlForm();
 		btnRemoveProfile.setDisable(true);
@@ -80,6 +81,7 @@ public class UserTab extends GenericTab {
 		cmbStatus.getItems().addAll(FXCollections.observableArrayList(Client.getServer().getStatus()));
 		cmbProfileList.getItems().clear();
 		cmbProfileList.getItems().addAll(FXCollections.observableArrayList(Client.getServer().getPerfis()));
+		setContext(FORM_CONTEXT.Proibido);
 	}
 
 	@Override
@@ -141,6 +143,8 @@ public class UserTab extends GenericTab {
 		txtLogin.setDisable(!b);
 		cmbStatus.setDisable(!b);
 		lstProfileList.setDisable(!b);
+		cmbProfileList.setDisable(!b);
+		btnAddProfile.setDisable(!b);
 	}
 
 	@Override

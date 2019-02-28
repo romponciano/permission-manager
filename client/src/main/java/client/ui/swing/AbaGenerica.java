@@ -67,7 +67,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 		this.tblResultado.setAutoCreateRowSorter(true);
 		this.tblResultadoScroll = new JScrollPane(tblResultado);
 
-		getBtnNovo().setEnabled(true); // sempre ativo
+		btnNovo.setEnabled(true); // sempre ativo
 
 		setLayout(new MigLayout("", "[grow 70][grow 30]", "[][grow][]"));
 		add(createSearchPanel(), "growx, wrap");
@@ -190,21 +190,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 	private ActionListener createBtnBuscarActionListener() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				String termo = getTxtStringBusca().getText();
-				if (termo != null && termo.length() > 0) {
-					String atributo = convertComboChoiceToDBAtributte(
-							getCmbParametroConsulta().getSelectedItem().toString(),
-							getAba());
-					actionSearchItems(atributo, termo);
-				}
-				// se for campo em branco, então é para buscar todos
-				else {
-					try {
-						loadData();
-					} catch (RemoteException | ServerServiceException | NotBoundException e) {
-						dealWithError(e);
-					}
-				}
+				actionSearchItems();
 			}
 		};
 	}
@@ -237,7 +223,7 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 				 * se o botão 'remover' estiver habilitado, então é pq não não representa um
 				 * novo item, mas sim um update
 				 */
-				if (getBtnRemover().isEnabled())
+				if (btnRemover.isEnabled())
 					actionUpdateItem();
 				/* se não, representa um create */
 				else
@@ -245,15 +231,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 			};
 		};
 	};
-
-	@Override
-	public Long getSelectedItemId() {
-		int linhaSelecionada = getTblResultado().getSelectedRow();
-		if (linhaSelecionada > -1) {
-			return Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
-		}
-		return null;
-	}
 
 	/**
 	 * Listener responsável por (1) setar valores no formulário caso o usuário
@@ -360,6 +337,26 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 		setJTableColumnInsivible(this.getTblResultado(), 0);
 	};
 
+	@Override
+	public Long getSelectedItemId() {
+		int linhaSelecionada = getTblResultado().getSelectedRow();
+		if (linhaSelecionada > -1) {
+			return Long.parseLong(getTblResultado().getValueAt(linhaSelecionada, 0).toString());
+		}
+		return null;
+	}
+
+	@Override
+	public String getSearchString() {
+		return txtStringBusca.getText();
+	};
+
+	@Override
+	public String getSelectedAttribute() {
+		String aux = getCmbParametroConsulta().getSelectedItem().toString();
+		return convertComboChoiceToDBAtributte(aux, this.aba);
+	}
+
 	// ############################################# MÉTODOS DA CLASSE
 	public JComboBox<String> getCmbParametroConsulta() {
 		return cmbParametroConsulta;
@@ -367,26 +364,6 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 
 	public JTable getTblResultado() {
 		return tblResultado;
-	}
-
-	public JButton getBtnSalvar() {
-		return btnSalvar;
-	}
-
-	public JButton getBtnCancelar() {
-		return btnCancelar;
-	}
-
-	public JButton getBtnRemover() {
-		return btnRemover;
-	}
-
-	public JButton getBtnNovo() {
-		return btnNovo;
-	}
-
-	public JTextField getTxtStringBusca() {
-		return txtStringBusca;
 	}
 
 	public List<Functionality> getCacheTodasFuncBanco() {
@@ -411,9 +388,5 @@ public abstract class AbaGenerica extends JPanel implements Serializable, Generi
 			cacheTodasFuncionalidadesBanco = Client.getServer().getFunctionalities();
 		} catch (RemoteException | ServerServiceException | NotBoundException e) {
 		}
-	}
-
-	public ABAS getAba() {
-		return aba;
 	}
 }

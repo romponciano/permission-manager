@@ -16,6 +16,7 @@ import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
 import client.ui.UIEnums.ABAS;
+import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
@@ -30,7 +31,7 @@ public class PluginTab extends GenericTab {
 	private DatePicker dpCreationDate = new DatePicker();
 	
 	public PluginTab() {
-		super();
+		super(ABAS.Plugin);
 		this.setText(ABAS.Plugin.toString());
 		initPnlForm();
 		createTableAllItemsHeader();
@@ -51,6 +52,7 @@ public class PluginTab extends GenericTab {
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
 		populateTableAllItems(Client.getServer().getPlugins());
+		setContext(FORM_CONTEXT.Proibido);
 	}
 	
 	@Override

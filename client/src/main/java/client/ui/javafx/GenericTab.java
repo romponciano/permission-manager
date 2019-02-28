@@ -28,6 +28,7 @@ import javafx.scene.control.TextField;
 
 import client.Client;
 import client.ui.GenericUIFunctions;
+import client.ui.UIEnums.ABAS;
 import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
@@ -48,9 +49,12 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	private Button btnSave = new Button("Save");
 	private Button btnNew = new Button("New");
 
+	private ABAS aba;
+	
 	private List<Functionality> cacheTodasFuncionalidadesBanco;
 
-	public GenericTab() {
+	public GenericTab(ABAS aba) {
+		this.aba = aba;
 		MigPane mainTabPane = new MigPane("", "[grow 70][grow 30]", "[][grow][]");
 		mainTabPane.add(createSearchPane(), "wrap");
 		mainTabPane.add(tableAllItems, "grow, spany");
@@ -69,6 +73,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		btnCancel.setOnAction(createBtnCancelClickEvent());
 		btnSave.setOnAction(createBtnSaveClickEvent());
 		btnRemove.setOnAction(createBtnRemoveClickEvent());
+		btnSearch.setOnAction(createBtnSearchClickEvent());
 		tableAllItems.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
 			if (newSelection == null) {
 				setContext(FORM_CONTEXT.Proibido);
@@ -77,7 +82,7 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		    }
 		});
 	}
-	
+
 	@Override
 	public void populateTableAllItems(List<? extends BusinessEntity> objs) {
 		getTableAllItems().getItems().clear();
@@ -151,6 +156,17 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		return false;
 	}
 
+	@Override
+	public String getSearchString() {
+		return txtSearchString.getText();
+	};
+
+	@Override
+	public String getSelectedAttribute() {
+		String aux = cmbConsult.getSelectionModel().getSelectedItem();
+		return convertComboChoiceToDBAtributte(aux, this.aba);
+	}
+
 	/**
 	 * Método para criar header da tabela principal que mostra
 	 * todos (ou consultados) os itens do modelo pertencente
@@ -218,11 +234,22 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		return new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				try {
-					loadData();
-				} catch (RemoteException | ServerServiceException | NotBoundException e) {
-					/* ignorar */ }
-				setContext(FORM_CONTEXT.Criar);
+				actionNewItem();
+			}
+		};
+	}
+
+	/**
+	 * Método para criar EventHandler da ação ao clicar no botão para
+	 * procurar por um termo e um atributo, em uma aba. Este método não
+	 * retorna o resultado, pois a List de resultado é utilizada para
+	 * popular a tabela diretamente.
+	 */
+	private EventHandler<ActionEvent> createBtnSearchClickEvent() {
+		return new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				actionSearchItems();
 			}
 		};
 	}

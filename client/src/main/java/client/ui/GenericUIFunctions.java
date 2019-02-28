@@ -247,17 +247,36 @@ public interface GenericUIFunctions {
 	 * e string de buscas escolhidos e definidos, respectivamente, pelo usuário.
 	 * O método não retorna o resultado da busca, pois ele popula diretamente 
 	 * na tabela principal da aba.
-	 * @param att - atributo escolhido
-	 * @param searchString - string de busca definida 
 	 */
-	public default void actionSearchItems(String att, String searchString) {
+	public default void actionSearchItems() {
 		try {
-			populateTableAllItems(realizarBusca(att, searchString));
+			String searchString = getSearchString();
+			if (searchString != null && searchString.length() > 0) {
+				String att = getSelectedAttribute();			
+				populateTableAllItems(realizarBusca(att, searchString));
+			} 
+			else { // se for campo em branco, então é para buscar todos
+				loadData();
+			}
 		} catch (ServerServiceException | RemoteException | NotBoundException e) {
 			dealWithError(e);
 		}
 		setContext(FORM_CONTEXT.Proibido);
 	}
+
+	/**
+	 * Método responsável por pegar o atributo selecionado na combobox
+	 * de busca
+	 * @return - retorna o atributo em formato String
+	 */
+	public String getSelectedAttribute();
+
+	/**
+	 * Método responśavel por pegar a string de busca digitada no
+	 * campo de busca.
+	 * @return - retorna a String digitada
+	 */
+	public String getSearchString();
 
 	/**
 	 * Método responsável pela ação dos botões de cancelar edição e criação de item

@@ -18,6 +18,7 @@ import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
 import client.ui.UIEnums.ABAS;
+import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
@@ -34,7 +35,7 @@ public class FunctionalityTab extends GenericTab {
 	private DatePicker dpCreationDate = new DatePicker();
 	
 	public FunctionalityTab() {
-		super();
+		super(ABAS.Funcionalidade);
 		this.setText(ABAS.Funcionalidade.toString());
 		initPnlForm();
 		createTableAllItemsHeader();
@@ -59,6 +60,7 @@ public class FunctionalityTab extends GenericTab {
 		populateTableAllItems(Client.getServer().getFunctionalities());
 		cmbPlugin.getItems().clear();
 		cmbPlugin.getItems().addAll(FXCollections.observableArrayList(Client.getServer().getPlugins()));
+		setContext(FORM_CONTEXT.Proibido);
 	}
 
 	@Override

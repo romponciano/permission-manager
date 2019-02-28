@@ -20,6 +20,7 @@ import client.Client;
 import client.exceptions.UICheckFieldException;
 import client.ui.UIEnums;
 import client.ui.UIEnums.ABAS;
+import client.ui.UIEnums.FORM_CONTEXT;
 import common.Const;
 import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
@@ -36,7 +37,7 @@ public class ProfileTab extends GenericTab {
 	private TableView<TableModelPermission> tablePermission = new TableView<TableModelPermission>();
 	
 	public ProfileTab() {
-		super();
+		super(ABAS.Perfil);
 		this.setText(ABAS.Perfil.toString());
 		initPnlForm();
 		createTableAllItemsHeader();
@@ -65,7 +66,7 @@ public class ProfileTab extends GenericTab {
 			perms.add(new TableModelPermission(func.getId(), func.getName(), func.getDescription(), func.getDataCriacao(), func.getPlugin()));
 		}
 		tablePermission.getItems().addAll(FXCollections.observableArrayList(perms));
-		tablePermission.autosize();
+		setContext(FORM_CONTEXT.Proibido);
 	}
 
 	@Override
