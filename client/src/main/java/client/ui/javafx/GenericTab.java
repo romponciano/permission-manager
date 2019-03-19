@@ -48,9 +48,10 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	private Button btnCancel = new Button("Cancel");
 	private Button btnSave = new Button("Save");
 	private Button btnNew = new Button("New");
+	private ProgressBarWihService<List<? extends BusinessEntity>> progressBar;
 
 	private ABAS aba;
-	
+
 	private List<Functionality> cacheTodasFuncionalidadesBanco;
 
 	public GenericTab(ABAS aba) {
@@ -77,20 +78,35 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		tableAllItems.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
 			if (newSelection == null) {
 				setContext(FORM_CONTEXT.Proibido);
-		    } else {
-		    	setContext(FORM_CONTEXT.Editar, 0);
-		    }
+			} else {
+				setContext(FORM_CONTEXT.Editar, 0);
+			}
 		});
 	}
 
 	@Override
 	public void populateTableAllItems(List<? extends BusinessEntity> objs) {
 		getTableAllItems().getItems().clear();
-		getTableAllItems().getItems().addAll(FXCollections.observableArrayList(objs));
-		getTableAllItems().autosize();
+		progressBar = createProgressBar();
+		progressBar.getService().cancel();
+		progressBar.startService();
 	}
 
-	
+	private ProgressBarWihService<List<? extends BusinessEntity>> createProgressBar() {
+		
+		return new ProgressBarWihService<List<? extends BusinessEntity>>() {
+			@Override
+			public List<? extends BusinessEntity> methodToBeLoad() throws Exception {
+				return realizarGetAll();
+			}
+
+			@Override
+			public void actionAfterSuccess(List<? extends BusinessEntity> result) {
+				getTableAllItems().getItems().addAll(FXCollections.observableArrayList(result));
+			}
+		};
+	}
+
 	@Override
 	public void setContextoProibido() {
 		this.btnCancel.setDisable(true);
@@ -168,15 +184,13 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	}
 
 	/**
-	 * Método para criar header da tabela principal que mostra
-	 * todos (ou consultados) os itens do modelo pertencente
-	 * aquela aba. 
+	 * Método para criar header da tabela principal que mostra todos (ou
+	 * consultados) os itens do modelo pertencente aquela aba.
 	 */
 	protected abstract void createTableAllItemsHeader();
-	
+
 	/**
-	 * Método para criar EventHandler da ação ao clicar no botão 
-	 * para remover item
+	 * Método para criar EventHandler da ação ao clicar no botão para remover item
 	 */
 	private EventHandler<ActionEvent> createBtnRemoveClickEvent() {
 		return new EventHandler<ActionEvent>() {
@@ -190,16 +204,16 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	}
 
 	/**
-	 * Método para criar EventHandler da ação ao clicar no botão 
-	 * para salvar item (seja update ou criação de novo item)
+	 * Método para criar EventHandler da ação ao clicar no botão para salvar item
+	 * (seja update ou criação de novo item)
 	 */
 	private EventHandler<ActionEvent> createBtnSaveClickEvent() {
 		return new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				/* caso o botão remover esteja desabilitado,
-				 * significa que o contexto atual é de novo
-				 * item.  
+				/*
+				 * caso o botão remover esteja desabilitado, significa que o contexto atual é de
+				 * novo item.
 				 */
 				if (btnRemove.isDisabled()) {
 					actionSaveNewItem();
@@ -211,8 +225,8 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	}
 
 	/**
-	 * Método para criar EventHandler da ação ao clicar no botão 
-	 * para cancelar edição ou criação de novo item
+	 * Método para criar EventHandler da ação ao clicar no botão para cancelar
+	 * edição ou criação de novo item
 	 */
 	private EventHandler<ActionEvent> createBtnCancelClickEvent() {
 		return new EventHandler<ActionEvent>() {
@@ -225,10 +239,9 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	}
 
 	/**
-	 * Método para criar EventHandler da ação ao clicar no botão 
-	 * para criar novo item. Este método irá apenas mudar o 
-	 * contexto dos campos para criação de items. Ele <b>não</b>
-	 * é responsável por salvar itens.
+	 * Método para criar EventHandler da ação ao clicar no botão para criar novo
+	 * item. Este método irá apenas mudar o contexto dos campos para criação de
+	 * items. Ele <b>não</b> é responsável por salvar itens.
 	 */
 	private EventHandler<ActionEvent> createBtnNewClickEvent() {
 		return new EventHandler<ActionEvent>() {
@@ -240,10 +253,9 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	}
 
 	/**
-	 * Método para criar EventHandler da ação ao clicar no botão para
-	 * procurar por um termo e um atributo, em uma aba. Este método não
-	 * retorna o resultado, pois a List de resultado é utilizada para
-	 * popular a tabela diretamente.
+	 * Método para criar EventHandler da ação ao clicar no botão para procurar por
+	 * um termo e um atributo, em uma aba. Este método não retorna o resultado, pois
+	 * a List de resultado é utilizada para popular a tabela diretamente.
 	 */
 	private EventHandler<ActionEvent> createBtnSearchClickEvent() {
 		return new EventHandler<ActionEvent>() {
@@ -255,22 +267,23 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	}
 
 	/**
-	 * Método para converter Date to LocalDate. É necessário
-	 * pois o controle do javafx funciona com LocalDate, enquanto
-	 * o modelo de negócios esta com campo Date.
+	 * Método para converter Date to LocalDate. É necessário pois o controle do
+	 * javafx funciona com LocalDate, enquanto o modelo de negócios esta com campo
+	 * Date.
+	 * 
 	 * @param date - data a ser convertida
-	 * @return - data convertida para LocalDate ou data atual
-	 * em caso de parâmetro nulo
+	 * @return - data convertida para LocalDate ou data atual em caso de parâmetro
+	 *         nulo
 	 */
 	public LocalDate convertDateToLocalDate(Date date) {
 		if (date == null)
 			return LocalDate.now();
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
 	}
-	
+
 	/**
-	 * Método para criar painel de controle: botões de novo,
-	 * cancelar, remover e salvar item
+	 * Método para criar painel de controle: botões de novo, cancelar, remover e
+	 * salvar item
 	 */
 	private MigPane createControlPane() {
 		MigPane controlPane = new MigPane("", "[][][][]", "");
@@ -282,8 +295,8 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 	}
 
 	/**
-	 * Método para criar painel de busca através de campo
-	 * selecionado e string de busca
+	 * Método para criar painel de busca através de campo selecionado e string de
+	 * busca
 	 */
 	private MigPane createSearchPane() {
 		MigPane searchPane = new MigPane("ins 0", "[grow]", "");
@@ -294,7 +307,6 @@ public abstract class GenericTab extends Tab implements Serializable, GenericUIF
 		searchPane.add(btnSearch);
 		return searchPane;
 	}
-
 
 	public TableView<BusinessEntity> getTableAllItems() {
 		return tableAllItems;

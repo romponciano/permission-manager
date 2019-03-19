@@ -148,4 +148,10 @@ public class AbaPlugin extends AbaGenerica {
 		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PLUGIN.Descrição.toString(), 1);
 		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PLUGIN.Data.toString(), 2);
 	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().getPlugins();
+	}
 }

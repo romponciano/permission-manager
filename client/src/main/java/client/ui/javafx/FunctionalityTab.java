@@ -152,5 +152,11 @@ public class FunctionalityTab extends GenericTab {
 			throws RemoteException, ServerServiceException, NotBoundException {
 		Client.getServer().updateFunctionality((Functionality)objToSave);
 	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().getFunctionalities();
+	}
 	
 }

@@ -13,8 +13,9 @@ import common.exceptions.ServerServiceException;
 import common.model.BusinessEntity;
 
 /**
- * Interface criada para definir métodos que são compartilhados entre
- * todas as UIs e abas do sistema. 
+ * Interface criada para definir métodos que são compartilhados entre todas as
+ * UIs e abas do sistema.
+ * 
  * @author romuloponciano
  *
  */
@@ -28,21 +29,21 @@ public interface GenericUIFunctions {
 	 *         porém com os campos específicos de cada classe.
 	 */
 	public BusinessEntity createObjToBeSaved();
-	
+
 	/**
 	 * Método para exibir DialogBox de algum <b>erro</b>.
 	 * 
 	 * @param msg - mensagem a ser exibida no DialogBox
 	 */
 	public boolean askConfirmation(String msg);
-	
+
 	/**
 	 * Método para popular tabela de resultados de busca com lista de usuários
 	 * 
 	 * @param users - Lista contendo os usuários a serem apresentados na tabela
 	 * @param tipo  - tipo para gerar Header da tabela
 	 */
-	public void populateTableAllItems(List<? extends BusinessEntity> objs);
+	public void populateTableAllItems(List<? extends BusinessEntity> obj);
 
 	/**
 	 * Método para converter escolha de busca da combobox para atributo que será
@@ -52,38 +53,49 @@ public interface GenericUIFunctions {
 	 * @return - String do atributo utilizado no banco
 	 */
 	public default String convertComboChoiceToDBAtributte(String cmbChoice, ABAS aba) {
-		if(aba.equals(ABAS.Usuário)) {
-			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Nome.toString())) return UIEnums.FILTROS_USUARIO.Nome.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Login.toString())) return UIEnums.FILTROS_USUARIO.Login.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Gerência.toString())) return UIEnums.FILTROS_USUARIO.Gerência.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_USUARIO.Status.toString())) return UIEnums.FILTROS_USUARIO.Status.getValue();
-		}
-		else if(aba.equals(ABAS.Funcionalidade)) {
-			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Nome.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Descrição.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Data.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString())) return UIEnums.FILTROS_FUNCIONALIDADE.Plugin.getValue();
-		}
-		else if(aba.equals(ABAS.Perfil)) {
-			if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Nome.toString())) return UIEnums.FILTROS_PERFIL.Nome.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Descrição.toString())) return UIEnums.FILTROS_PERFIL.Descrição.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_PERFIL.Data.toString())) return UIEnums.FILTROS_PERFIL.Data.getValue();
-		}
-		else if(aba.equals(ABAS.Plugin)) {
-			if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Nome.toString())) return UIEnums.FILTROS_PLUGIN.Nome.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Descrição.toString())) return UIEnums.FILTROS_PLUGIN.Descrição.getValue();
-			if(cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Data.toString())) return UIEnums.FILTROS_PLUGIN.Data.getValue();
+		if (aba.equals(ABAS.Usuário)) {
+			if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Nome.toString()))
+				return UIEnums.FILTROS_USUARIO.Nome.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Login.toString()))
+				return UIEnums.FILTROS_USUARIO.Login.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Gerência.toString()))
+				return UIEnums.FILTROS_USUARIO.Gerência.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_USUARIO.Status.toString()))
+				return UIEnums.FILTROS_USUARIO.Status.getValue();
+		} else if (aba.equals(ABAS.Funcionalidade)) {
+			if (cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Nome.toString()))
+				return UIEnums.FILTROS_FUNCIONALIDADE.Nome.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Descrição.toString()))
+				return UIEnums.FILTROS_FUNCIONALIDADE.Descrição.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Data.toString()))
+				return UIEnums.FILTROS_FUNCIONALIDADE.Data.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_FUNCIONALIDADE.Plugin.toString()))
+				return UIEnums.FILTROS_FUNCIONALIDADE.Plugin.getValue();
+		} else if (aba.equals(ABAS.Perfil)) {
+			if (cmbChoice.equals(UIEnums.FILTROS_PERFIL.Nome.toString()))
+				return UIEnums.FILTROS_PERFIL.Nome.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_PERFIL.Descrição.toString()))
+				return UIEnums.FILTROS_PERFIL.Descrição.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_PERFIL.Data.toString()))
+				return UIEnums.FILTROS_PERFIL.Data.getValue();
+		} else if (aba.equals(ABAS.Plugin)) {
+			if (cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Nome.toString()))
+				return UIEnums.FILTROS_PLUGIN.Nome.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Descrição.toString()))
+				return UIEnums.FILTROS_PLUGIN.Descrição.getValue();
+			if (cmbChoice.equals(UIEnums.FILTROS_PLUGIN.Data.toString()))
+				return UIEnums.FILTROS_PLUGIN.Data.getValue();
 		}
 		return "";
 	}
-	
+
 	/**
 	 * Método para gerar items dos atributos que vão compor a combobox
 	 * 
 	 * @return - vetor de string contendo os items
 	 */
 	public void populateConsultComboBox();
-	
+
 	/**
 	 * Método responsável por setar contexto do momento. Por exemplo: habilitar e
 	 * desabilitar os campos e botões corretos para edição de um item;
@@ -151,7 +163,7 @@ public interface GenericUIFunctions {
 	 * Método para iniciar painel de formulário de cada aba
 	 */
 	public void initPnlForm();
-	
+
 	/**
 	 * Método responsável por limpar formulário de edição/criação
 	 */
@@ -170,8 +182,8 @@ public interface GenericUIFunctions {
 	public void initListeners();
 
 	/**
-	 * Método responsável por atualizar os dados e setar contexto de criação
-	 * de novo item. Este método <b>não</b> é responsável por salvar o item no banco.
+	 * Método responsável por atualizar os dados e setar contexto de criação de novo
+	 * item. Este método <b>não</b> é responsável por salvar o item no banco.
 	 */
 	public default void actionNewItem() {
 		try {
@@ -182,7 +194,7 @@ public interface GenericUIFunctions {
 	}
 
 	/**
-	 * Método responsável pela criação de um novo item no banco. 
+	 * Método responsável pela criação de um novo item no banco.
 	 */
 	public default void actionSaveNewItem() {
 		try {
@@ -218,6 +230,7 @@ public interface GenericUIFunctions {
 
 	/**
 	 * Método para checar se os campos estão válidos antes de salvar novo item
+	 * 
 	 * @throws UICheckFieldException - se algum campo não passar na validação
 	 */
 	public boolean checkFieldsOnCreate() throws UICheckFieldException;
@@ -236,26 +249,26 @@ public interface GenericUIFunctions {
 	}
 
 	/**
-	 * Método responsável por get o id de um item selecionado na 
-	 * tabela principal de cada aba
+	 * Método responsável por get o id de um item selecionado na tabela principal de
+	 * cada aba
+	 * 
 	 * @return - id do item selecionado
 	 */
 	public abstract Long getSelectedItemId();
 
 	/**
-	 * Método responsável por executar a ação de busca de itens pelo campo
-	 * e string de buscas escolhidos e definidos, respectivamente, pelo usuário.
-	 * O método não retorna o resultado da busca, pois ele popula diretamente 
-	 * na tabela principal da aba.
+	 * Método responsável por executar a ação de busca de itens pelo campo e string
+	 * de buscas escolhidos e definidos, respectivamente, pelo usuário. O método não
+	 * retorna o resultado da busca, pois ele popula diretamente na tabela principal
+	 * da aba.
 	 */
 	public default void actionSearchItems() {
 		try {
 			String searchString = getSearchString();
 			if (searchString != null && searchString.length() > 0) {
-				String att = getSelectedAttribute();			
+				String att = getSelectedAttribute();
 				populateTableAllItems(realizarBusca(att, searchString));
-			} 
-			else { // se for campo em branco, então é para buscar todos
+			} else { // se for campo em branco, então é para buscar todos
 				loadData();
 			}
 		} catch (ServerServiceException | RemoteException | NotBoundException e) {
@@ -265,15 +278,15 @@ public interface GenericUIFunctions {
 	}
 
 	/**
-	 * Método responsável por pegar o atributo selecionado na combobox
-	 * de busca
+	 * Método responsável por pegar o atributo selecionado na combobox de busca
+	 * 
 	 * @return - retorna o atributo em formato String
 	 */
 	public String getSelectedAttribute();
 
 	/**
-	 * Método responśavel por pegar a string de busca digitada no
-	 * campo de busca.
+	 * Método responśavel por pegar a string de busca digitada no campo de busca.
+	 * 
 	 * @return - retorna a String digitada
 	 */
 	public String getSearchString();
@@ -326,6 +339,14 @@ public interface GenericUIFunctions {
 			throws RemoteException, ServerServiceException, NotBoundException;
 
 	/**
+	 * Método para realizar getAll e pegar todos os elementos daquele conceito.
+	 * 
+	 * @return retorna uma lista com todos os elementos.
+	 */
+	public abstract List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException;
+
+	/**
 	 * Método para realizar o update, onde cada aba chama o seu update do server.
 	 * Neste método o objeto é convertido para sua classe específica
 	 * 
@@ -339,9 +360,10 @@ public interface GenericUIFunctions {
 			throws RemoteException, ServerServiceException, NotBoundException;
 
 	/**
-	 * Método responsável por lidar com erros do sistema. Este método checa
-	 * se é um erro esperado e conhecido. Caso seja, ele irá exibir a
-	 * informação desse erro para o usuário.
+	 * Método responsável por lidar com erros do sistema. Este método checa se é um
+	 * erro esperado e conhecido. Caso seja, ele irá exibir a informação desse erro
+	 * para o usuário.
+	 * 
 	 * @param ex - exception que ocorreu
 	 */
 	public default void dealWithError(Object ex) {
@@ -357,12 +379,14 @@ public interface GenericUIFunctions {
 
 	/**
 	 * Método para exibir DialogBox de alguma <b>informação</b>.
+	 * 
 	 * @param msg - mensagem a ser exibida no DialogBox
 	 */
 	public abstract void showInfoMessage(String message);
 
 	/**
 	 * Método para exibir DialogBox de algum <b>erro</b>.
+	 * 
 	 * @param msg - mensagem a ser exibida no DialogBox
 	 */
 	public abstract void showErrorMessage(String message);

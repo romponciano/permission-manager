@@ -132,4 +132,10 @@ public class PluginTab extends GenericTab {
 		getCmbConsult().getItems().add(UIEnums.FILTROS_PLUGIN.Descrição.toString());
 		getCmbConsult().getItems().add(UIEnums.FILTROS_PLUGIN.Data.toString());
 	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().getPlugins();
+	}
 }

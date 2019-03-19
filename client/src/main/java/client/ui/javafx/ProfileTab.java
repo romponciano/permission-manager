@@ -214,4 +214,10 @@ public class ProfileTab extends GenericTab {
 		tablePermission.getItems().clear();
 		tablePermission.getItems().addAll(setted);
 	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().getPerfis();
+	}
 }

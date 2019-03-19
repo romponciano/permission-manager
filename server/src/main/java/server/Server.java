@@ -267,6 +267,11 @@ public class Server implements ServerInterface {
 	public void updateFunctionality(Functionality func) throws RemoteException, ServerServiceException {
 		FunctionalityDAO funcDAO = new FunctionalityDAO();
 		try {
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			funcDAO.updateFunctionality(func);
 			logarSucesso(TIPOS_LOG.UPDATE, func.toString());
 		} catch (DBUpdateException e) {
@@ -374,6 +379,12 @@ public class Server implements ServerInterface {
 		UserDAO userDAO = new UserDAO();
 		List<User> users = new ArrayList<User>();
 		try {
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			users = userDAO.getUsers();
 		} catch (DBConsultException e) {
 			logarException(TIPOS_LOG.ERRO, e);

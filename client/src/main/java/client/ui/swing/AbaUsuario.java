@@ -259,4 +259,10 @@ public class AbaUsuario extends AbaGenerica {
 		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_USUARIO.Status.toString(), 2);
 		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_USUARIO.Gerência.toString(), 3);
 	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().getUsers();
+	}
 }

@@ -76,7 +76,7 @@ public class UserTab extends GenericTab {
 
 	@Override
 	public void loadData() throws RemoteException, ServerServiceException, NotBoundException {
-		populateTableAllItems(Client.getServer().getUsers());
+		populateTableAllItems(null);
 		cmbStatus.getItems().clear();
 		cmbStatus.getItems().addAll(FXCollections.observableArrayList(Client.getServer().getStatus()));
 		cmbProfileList.getItems().clear();
@@ -233,5 +233,11 @@ public class UserTab extends GenericTab {
 		List<Perfil> perfs = new ArrayList<Perfil>();
 		lstProfileList.getItems().forEach(perfil -> { perfs.add(perfil); });
 		return perfs;
+	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().getUsers();
 	}
 }

@@ -237,4 +237,10 @@ public class AbaPerfil extends AbaGenerica {
 		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PERFIL.Descrição.toString(), 1);
 		getCmbParametroConsulta().insertItemAt(UIEnums.FILTROS_PERFIL.Data.toString(), 2);
 	}
+
+	@Override
+	public List<? extends BusinessEntity> realizarGetAll()
+			throws RemoteException, ServerServiceException, NotBoundException {
+		return Client.getServer().getPerfis();
+	}
 }
